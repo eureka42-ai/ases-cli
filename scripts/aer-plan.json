@@ -29,7 +29,8 @@
     },
     {
       "id": "PHASE-04",
-      "title": "TUI utilizável + marca Eureka42"
+      "title": "TUI utilizável + marca Eureka42",
+      "gate": "TUIs em 40x16, 80x24 e 120x35 sem quebra; resize; teclado; marca Eureka42 com fallback e sem ANSI em NO_COLOR; pty E2E"
     },
     {
       "id": "PHASE-05",
@@ -471,6 +472,134 @@
       ],
       "tests": [
         "test/e2e/two-processes.test.mjs"
+      ]
+    },
+    {
+      "id": "TAR-0016",
+      "phase": "PHASE-04",
+      "title": "tui-shared: tema, marca, badges, painéis, ajuda",
+      "priority": 90,
+      "risk": "MODERATE",
+      "dependencies": [],
+      "reqs": [
+        "AER-REQ-240",
+        "AER-REQ-243",
+        "AER-REQ-248",
+        "AER-REQ-100"
+      ],
+      "scope": "packages/tui-shared com Ink: contexto de UI (cor/Unicode/tema), cabeçalho de marca, badges de estado distinguíveis sem cor, painéis com borda ASCII de fallback, overlay de atalhos, hook de tamanho de terminal, renderização de teste com largura fixa",
+      "acceptance": [
+        "estados distinguíveis sem cor",
+        "bordas ASCII sem Unicode",
+        "mesmos tokens nos dois apps"
+      ],
+      "tests": [
+        "packages/tui-shared/test/*.test.tsx"
+      ]
+    },
+    {
+      "id": "TAR-0017",
+      "phase": "PHASE-04",
+      "title": "ases: home + sessão TUI",
+      "priority": 80,
+      "risk": "MODERATE",
+      "dependencies": [
+        "TAR-0016"
+      ],
+      "reqs": [
+        "AER-REQ-081",
+        "AER-REQ-084",
+        "AER-REQ-085",
+        "AER-REQ-087",
+        "AER-REQ-088",
+        "AER-REQ-090"
+      ],
+      "scope": "TUI Ink do ases: cabeçalho com projeto/engine, log da sessão, painel de fases/tarefas, prompt com histórico, Tab/?/Esc/Ctrl+L, Ctrl+C duplo; fallback modo linha fora de TTY",
+      "acceptance": [
+        "prompt único com histórico",
+        "Ctrl+C informa destino do engine",
+        "fora de TTY cai no modo linha"
+      ],
+      "tests": [
+        "apps/ases-cli/test/*.test.tsx",
+        "test/e2e/pty.test.mjs"
+      ]
+    },
+    {
+      "id": "TAR-0018",
+      "phase": "PHASE-04",
+      "title": "ases-tar: overview + eventos ao vivo",
+      "priority": 80,
+      "risk": "MODERATE",
+      "dependencies": [
+        "TAR-0016"
+      ],
+      "reqs": [
+        "AER-REQ-092",
+        "AER-REQ-096",
+        "AER-REQ-099",
+        "AER-REQ-203"
+      ],
+      "scope": "TUI Ink do ases-tar: projeção local por eventos, painel fases/tarefas, timeline por seq, badge LIVE/RECONNECTING/OFFLINE, r relê sem reiniciar execução",
+      "acceptance": [
+        "projeção igual ao snapshot após eventos",
+        "badge muda ao perder o engine",
+        "sem polling: atualiza por evento"
+      ],
+      "tests": [
+        "apps/ases-tar/test/*.test.tsx"
+      ]
+    },
+    {
+      "id": "TAR-0019",
+      "phase": "PHASE-04",
+      "title": "ases-tar: detalhe da tarefa",
+      "priority": 80,
+      "risk": "MODERATE",
+      "dependencies": [
+        "TAR-0018"
+      ],
+      "reqs": [
+        "AER-REQ-085",
+        "AER-REQ-094",
+        "AER-REQ-098"
+      ],
+      "scope": "Enter abre detalhe (estado, versão, requisitos, dependências, histórico por seq); Esc volta; progresso indeterminado sem milestones",
+      "acceptance": [
+        "detalhe mostra eventos da tarefa",
+        "sem porcentagem fictícia"
+      ],
+      "tests": [
+        "apps/ases-tar/test/*.test.tsx"
+      ]
+    },
+    {
+      "id": "TAR-0020",
+      "phase": "PHASE-04",
+      "title": "Acessibilidade, larguras e smoke em pty",
+      "priority": 85,
+      "risk": "MODERATE",
+      "dependencies": [
+        "TAR-0017",
+        "TAR-0018",
+        "TAR-0019"
+      ],
+      "reqs": [
+        "AER-REQ-088",
+        "AER-REQ-089",
+        "AER-REQ-201",
+        "AER-REQ-244",
+        "AER-REQ-245",
+        "AER-REQ-246"
+      ],
+      "scope": "golden/larguras 40/50/80/120 nas duas TUIs, NO_COLOR sem ANSI de cor, resize, E2E em pseudo-terminal real (script) no macOS/Linux",
+      "acceptance": [
+        "nenhuma linha excede a largura",
+        "NO_COLOR sem códigos de cor",
+        "pty: criar fase pela TUI e sair com Ctrl+C duplo"
+      ],
+      "tests": [
+        "test/e2e/pty.test.mjs"
       ]
     }
   ]

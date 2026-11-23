@@ -1,6 +1,6 @@
 # ARCHITECTURE — AER
 
-> Situação: PHASE-03. A arquitetura-alvo está no MD mestre §3 e as decisões em `docs/ADRs/`.
+> Situação: PHASE-04. A arquitetura-alvo está no MD mestre §3 e as decisões em `docs/ADRs/`.
 
 ## Visão local
 
@@ -27,8 +27,9 @@ No Windows o transporte é Named Pipe `\\.\pipe\ases-{userHash}-{projectHash}`. 
 | `@aer/ipc` | JSON-RPC 2.0 NDJSON sobre UDS/Named Pipe; servidor com handshake, papéis control/monitor, assinatura sem corrida e backpressure; cliente com timeout (ADR-0003, `docs/API.md`) | contracts, platform-core |
 | `@aer/project-store` | layout `.ases/`, `ases init` não destrutivo, sessão do engine, carregador do adapter do SO atual | contracts, platform-* |
 | `@aer/branding` | marca textual Eureka42: tokens (iguais a `branding/BRAND_TOKENS.json`), modos full/compact/minimal/ascii | — |
-| `apps/ases-cli` (`ases`) | engine embutido (escritor único) + sessão em modo linha + `init`/`doctor` | todos |
-| `apps/ases-tar` (`ases-tar`) | monitor somente leitura: texto ou JSONL, filtros, reconexão sem lacuna/duplicata | branding, ipc, project-store |
+| `@aer/tui-shared` | componentes Ink comuns às duas TUIs (marca, badges, painéis, ajuda, resize, símbolos ASCII, render de teste) — ADR-0011, `docs/TUI-UX.md` | branding, contracts, ink, react |
+| `apps/ases-cli` (`ases`) | engine embutido (escritor único) + TUI Ink (ou modo linha fora de TTY) + `init`/`doctor` | todos |
+| `apps/ases-tar` (`ases-tar`) | monitor somente leitura: TUI Ink com projeção local, texto ou JSONL, filtros, reconexão sem lacuna/duplicata | branding, ipc, project-store, tui-shared |
 | `@aer/platform-macos` / `-windows` / `-linux` | fábricas de adapter por SO; as especializações nativas vêm nas PHASE-06/10/12/15 | platform-core |
 
 Os métodos de processo, notificação e supervisor lançam `NotImplementedError` com a fase prevista. Nenhum finge funcionar.
@@ -45,4 +46,4 @@ Os métodos de processo, notificação e supervisor lançam `NotImplementedError
 O `.ases/` **deste repositório** continua escrito por `scripts/ases-dev.mjs` (ADR-0001 §7). O engine recusa abri-lo (`INTERIM_PROJECT`) até o corte, que depende das tabelas de evidência/test runs (§6.2). Projetos novos criados com `ases init` já usam o engine.
 
 ## Próximas peças
-PHASE-04: TUI Ink nas duas aplicações (home/chat, overview/live/task detail), teclado, resize e marca completa.
+PHASE-05: scheduler/DAG, leases, Git worktrees por tarefa, merge serializado; tabelas de evidência e corte do `.ases/` deste repositório para o engine.

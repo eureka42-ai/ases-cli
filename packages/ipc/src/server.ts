@@ -22,6 +22,8 @@ export interface ServerOptions {
   maxConnections?: number;
   /** Acima disso o assinante lento perde a assinatura e recebe resyncRequired (AER-REQ-077). */
   maxBufferedBytes?: number;
+  /** Notificado quando monitores conectam/desconectam (a TUI do ases mostra a contagem sem polling). */
+  onConnectionsChange?: (count: number) => void;
 }
 
 interface Conn {
@@ -57,7 +59,7 @@ function probe(address: string): Promise<boolean> {
 }
 
 export class IpcServer {
-  private readonly o: Required<Omit<ServerOptions, 'engineInfo'>> & { engineInfo: Record<string, unknown> };
+  private readonly o: Required<Omit<ServerOptions, 'engineInfo' | 'onConnectionsChange'>> & Pick<ServerOptions, 'onConnectionsChange'> & { engineInfo: Record<string, unknown> };
   private readonly server: net.Server;
   private readonly conns = new Set<Conn>();
 
@@ -124,6 +126,7 @@ export class IpcServer {
   private accept(socket: net.Socket): void {
     const c: Conn = { socket, role: undefined, subLastSeq: undefined };
     this.conns.add(c);
+    this.o.onConnectionsChange?.(this.conns.size);
     const decoder = new FrameDecoder(this.o.maxFrameBytes);
     const timer = setTimeout(() => c.role === undefined && socket.destroy(), this.o.handshakeTimeoutMs);
     socket.setEncoding('utf8');
@@ -140,6 +143,7 @@ export class IpcServer {
     socket.on('close', () => {
       clearTimeout(timer);
       this.conns.delete(c);
+      this.o.onConnectionsChange?.(this.conns.size);
     });
     socket.on('error', () => socket.destroy());
   }

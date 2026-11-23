@@ -1,21 +1,23 @@
 import readline from 'node:readline';
 import { parseArgs } from 'node:util';
-import { PHASE_STATES, TASK_STATES, VERSIONS, type PhaseState, type TaskState } from '@aer/contracts';
+import { VERSIONS } from '@aer/contracts';
 import { LOGO_MODES, THEMES, pickLogoMode, renderBrand, type LogoMode, type ThemeName } from '@aer/branding';
 import { sqliteVersion } from '@aer/persistence';
 import { targetStatus } from '@aer/platform-core';
 import { findProjectRoot, initProject, loadPlatformAdapter, readManifest } from '@aer/project-store';
 import { Engine } from './engine.ts';
+import { handleLine } from './commands.ts';
+import { runTui } from './tui.tsx';
 
 const HELP = `Eureka42 · ASES Engineering Runtime — ases ${VERSIONS.app}
 
 Uso:
-  ases [opções]              sessão interativa: engine local + prompt (modo linha; TUI completa na PHASE-04)
+  ases [opções]              sessão interativa: engine local + TUI (fora de TTY ou com --no-tui: modo linha)
   ases init [--name <nome>]  cria .ases/ no diretório atual sem sobrescrever nada
   ases doctor [--json]       diagnóstico local (sem login, sem rede, sem custo)
 
 Opções:
-  --no-color   --no-banner   --theme teal|blue|purple|gold|mono   --logo full|compact|minimal|ascii
+  --no-color   --no-banner   --no-tui   --theme teal|blue|purple|gold|mono   --logo full|compact|minimal|ascii
   --json       saída estritamente JSON (sem banner/ANSI)   --version   --help
 
 Ainda NÃO implementados (resposta explícita, nunca falso sucesso):
@@ -27,30 +29,13 @@ const PLANNED: Record<string, string> = {
   phases: 'PHASE-04', tasks: 'PHASE-04', task: 'PHASE-04', run: 'PHASE-05', resume: 'PHASE-11', checkpoint: 'PHASE-05',
   export: 'PHASE-11', repair: 'PHASE-11', config: 'PHASE-04', logs: 'PHASE-04',
 };
-const PLANNED_SLASH: Record<string, string> = {
-  '/agent': 'PHASE-07', '/auto': 'PHASE-05', '/manual': 'PHASE-05', '/hybrid': 'PHASE-05', '/parallel': 'PHASE-05', '/usage': 'PHASE-11',
-  '/plan': 'PHASE-09', '/skills': 'PHASE-10', '/plugins': 'PHASE-10', '/mcp': 'PHASE-10', '/review': 'PHASE-11', '/diff': 'PHASE-05',
-  '/checkpoint': 'PHASE-05', '/resume': 'PHASE-11', '/approval': 'PHASE-10', '/safe-mode': 'PHASE-10', '/history': 'PHASE-04', '/dependencies': 'PHASE-05',
-};
-
-const SLASH_HELP = `Comandos:
-  /status                         estado do engine e contagem de tarefas
-  /phases                         lista fases
-  /tasks [PHASE-XX]               lista tarefas
-  /task TAR-XXXX                  detalhe de uma tarefa
-  /phase new <título>             cria fase
-  /phase move PHASE-XX <ESTADO> [motivo]
-  /task new PHASE-XX <título>     cria tarefa
-  /task move TAR-XXXX <ESTADO> [motivo]
-  /help   /exit`;
-
 async function main(argv: string[]): Promise<number> {
   const { values, positionals } = parseArgs({
     args: argv,
     allowPositionals: true,
     options: {
       help: { type: 'boolean' }, version: { type: 'boolean' }, json: { type: 'boolean' }, name: { type: 'string' },
-      'no-color': { type: 'boolean' }, 'no-banner': { type: 'boolean' }, theme: { type: 'string' }, logo: { type: 'string' },
+      'no-color': { type: 'boolean' }, 'no-banner': { type: 'boolean' }, 'no-tui': { type: 'boolean' }, theme: { type: 'string' }, logo: { type: 'string' },
     },
   });
   if (values.version) {
@@ -71,6 +56,9 @@ async function main(argv: string[]): Promise<number> {
     banner: caps.isTTY && !values['no-banner'] && !values.json,
     theme: (values.theme ?? 'teal') as ThemeName,
     mode: pickLogoMode(caps, values.logo as LogoMode | undefined),
+    unicode: caps.unicode,
+    logo: values.logo as LogoMode | undefined,
+    tui: !values['no-tui'] && !values.json && caps.isTTY && process.stdin.isTTY === true && process.env.TERM !== 'dumb',
   };
   const [cmd] = positionals;
 
@@ -112,8 +100,16 @@ async function main(argv: string[]): Promise<number> {
 
 class UsageError extends Error {}
 
-async function interactive(root: string, adapter: Awaited<ReturnType<typeof loadPlatformAdapter>>, ui: { color: boolean; banner: boolean; theme: ThemeName; mode: LogoMode }): Promise<number> {
+async function interactive(root: string, adapter: Awaited<ReturnType<typeof loadPlatformAdapter>>, ui: { color: boolean; banner: boolean; theme: ThemeName; mode: LogoMode; unicode: boolean; logo: LogoMode | undefined; tui: boolean }): Promise<number> {
   const engine = await Engine.start(root, adapter);
+  if (ui.tui) {
+    const reason = await runTui(engine, { color: ui.color, unicode: ui.unicode, theme: ui.theme, logo: ui.logo });
+    const seq = engine.info.lastSeq;
+    await engine.stop();
+    // §6.4/AER-REQ-090: impresso depois que o Ink devolveu o terminal
+    console.log(`${reason}: engine encerrado. Nenhuma tarefa estava em execução nesta versão; estado salvo até seq ${seq}.`);
+    return 0;
+  }
   if (ui.banner) console.log(renderBrand({ app: 'ASES CLI', mode: ui.mode, theme: ui.theme, color: ui.color }));
   console.log(`engine ready: ${engine.info.name} (${engine.info.projectId}), seq ${engine.info.lastSeq}, journal ${engine.info.journalMode}`);
   console.log('Abra `ases-tar` em outro terminal, na mesma pasta, para acompanhar. /help para comandos.');
@@ -152,60 +148,6 @@ async function interactive(root: string, adapter: Awaited<ReturnType<typeof load
   await done;
   process.stdin.destroy(); // rl.close() não solta um stdin em pipe; sem isso o processo não termina após /exit
   return 0;
-}
-
-function handleLine(engine: Engine, line: string): string | undefined {
-  if (!line) return undefined;
-  if (!line.startsWith('/')) return 'Chat com agentes ainda não implementado (PHASE-07). Nada foi enviado a nenhum provedor.';
-  const [cmd = '', sub, ...rest] = line.split(/\s+/);
-  const s = engine.store;
-  switch (cmd) {
-    case '/help':
-      return SLASH_HELP;
-    case '/exit':
-      return 'EXIT';
-    case '/doctor':
-      return 'Use `ases doctor` fora da sessão.';
-    case '/status': {
-      const tasks = s.listTasks();
-      const by = tasks.reduce<Record<string, number>>((acc, t) => ({ ...acc, [t.state]: (acc[t.state] ?? 0) + 1 }), {});
-      return `projeto ${engine.info.name} · seq ${engine.info.lastSeq} · monitores ${engine.info.monitors} · fases ${s.listPhases().length} · tarefas ${tasks.length} ${JSON.stringify(by)}${engine.mirrorError ? ` · ESPELHO PENDENTE: ${engine.mirrorError}` : ''}`;
-    }
-    case '/phases':
-      return s.listPhases().map((p) => `${p.id}  ${p.state.padEnd(10)} ${p.title}`).join('\n') || '(nenhuma fase)';
-    case '/tasks':
-      return s.listTasks(sub).map((t) => `${t.id}  ${t.phaseId}  ${t.state.padEnd(16)} ${t.title}`).join('\n') || '(nenhuma tarefa)';
-    case '/phase':
-      if (sub === 'new') return `criada ${engine.mutate((st) => st.createPhase(rest.join(' ')))}`;
-      if (sub === 'move') {
-        const [id = '', to = '', ...why] = rest;
-        if (!(PHASE_STATES as readonly string[]).includes(to)) return `estado inválido; use: ${PHASE_STATES.join(' ')}`;
-        return `${id} → ${to} (versão ${engine.transitionPhase(id, to as PhaseState, why.join(' ') || null)})`;
-      }
-      return 'uso: /phase new <título> | /phase move PHASE-XX <ESTADO> [motivo]';
-    case '/task': {
-      if (sub === 'new') {
-        const [phaseId = '', ...title] = rest;
-        return `criada ${engine.mutate((st) => st.createTask({ phaseId, title: title.join(' ') }))}`;
-      }
-      if (sub === 'move') {
-        const [id = '', to = '', ...why] = rest;
-        if (!(TASK_STATES as readonly string[]).includes(to)) return `estado inválido; use: ${TASK_STATES.join(' ')}`;
-        const t = s.getTask(id);
-        if (!t) return `tarefa ${id} não encontrada`;
-        return `${id} ${t.state} → ${to} (versão ${engine.mutate((st) => st.transitionTask(id, to as TaskState, t.version, why.join(' ') || null))})`;
-      }
-      const t = sub ? s.getTask(sub) : undefined;
-      if (!t) return 'uso: /task TAR-XXXX | /task new PHASE-XX <título> | /task move TAR-XXXX <ESTADO> [motivo]';
-      const history = s.eventsSince(0, 1000).filter((e) => e.taskId === t.id).map((e) => `  #${e.seq} ${e.eventType} ${JSON.stringify(e.payload)}`);
-      // shortcut: varre só os primeiros 1000 eventos; trocar por consulta indexada por task_id quando o histórico crescer
-      return [`${t.id} — ${t.title}`, `  fase ${t.phaseId} · estado ${t.state} · v${t.version} · prioridade ${t.priority} · risco ${t.risk}`,
-        `  requisitos ${t.reqs.join(', ') || '—'} · depende de ${t.dependsOn.join(', ') || '—'}`, '  progresso: indeterminado (sem milestones, AER-REQ-098)', ...history].join('\n');
-    }
-    default:
-      if (cmd in PLANNED_SLASH) return `${cmd}: ainda não implementado (planejado: ${PLANNED_SLASH[cmd]})`;
-      return `comando desconhecido: ${cmd} (/help)`;
-  }
 }
 
 main(process.argv.slice(2)).then(

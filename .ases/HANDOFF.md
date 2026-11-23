@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado por scripts/ases-dev.mjs refresh; não editar) -->
-- Último evento válido: seq 88 em 2026-11-23T00:41:02.714Z
-- Git: branch `main`, HEAD `31f5473`
+- Último evento válido: seq 106 em 2026-11-23T01:02:02.842Z
+- Git: branch `ases/PHASE-04`, HEAD `c7f0bd3`
 - Concluídas: TAR-0001, TAR-0002, TAR-0003, TAR-0004, TAR-0005, TAR-0006, TAR-0007, TAR-0008, TAR-0009, TAR-0010, TAR-0011, TAR-0012, TAR-0013, TAR-0014, TAR-0015
-- Abertas: nenhuma
+- Abertas: TAR-0016 (REVIEW), TAR-0017 (REVIEW), TAR-0018 (REVIEW), TAR-0019 (REVIEW), TAR-0020 (REVIEW)
 - Comando para retomar: `node scripts/ases-dev.mjs refresh` e ler `.ases/NEXT-STEPS.md` (o `ases resume` ainda não existe)
 <!-- AUTO:END -->
 
@@ -45,3 +45,22 @@
 - **Defeitos reais corrigidos:** `ases` não saía após `/exit` com stdin em pipe; pty com 0 colunas.
 - **NÃO executados:** Windows/Linux reais; terminal interativo humano; CI.
 - **Riscos:** Named Pipe sem ACL verificada (Windows); `.ases/` deste repo continua interino (engine recusa abri-lo); espelho JSONL reescrito inteiro a cada mutação.
+
+### Sessão 22/11/2026 — CHANGE-0001/0002 + PHASE-04 (branch `ases/PHASE-04`)
+- **Decisões confirmadas:**
+  - CHANGE-0001: macOS Intel fora do escopo; alvos = darwin-arm64, win32, linux; AER-REQ-003 = N/A.
+  - CHANGE-0002: PNG de marca renomeado (o `:` era inválido no Windows), bytes idênticos.
+  - Instalação de ink/react autorizada.
+- **Feito:**
+  - `@aer/tui-shared`.
+  - TUI do `ases` (sessão + painel + prompt com histórico + ajuda + Ctrl+C duplo; modo linha fora de TTY).
+  - TUI do `ases-tar` (projeção local, eventos ao vivo, detalhe, `r` relê, filtros).
+  - Guarda de alvo suportado.
+  - CI corrigido (build antes dos E2E; Node 22/24; arm64 condicional).
+  - ADR-0011; `docs/TUI-UX.md` com quadros reais.
+- **Testes realmente executados (darwin-arm64, Node 22.19.0):** `npm run verify` → 128/128 PASS (127/127 em 3 execuções seguidas antes dos últimos ajustes). E2E em pty real (macOS `script`): TUI do `ases` cria fase por teclado e sai com Ctrl+C duplo; TUI do `ases-tar` mostra LIVE + evento e sai com `q`; `NO_COLOR` sem códigos de cor.
+- **NÃO executados:** Linux/Windows reais; terminais humanos; CPU em repouso.
+- **Riscos:**
+  - `.npmrc` `legacy-peer-deps` (o peer opcional `react-devtools-core` do Ink não é instalado; só é usado com `DEV=true`).
+  - A reticência `…` do Ink no modo ASCII.
+  - O `.ases/` deste repositório continua interino.

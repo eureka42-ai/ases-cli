@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0016",
+  "phaseId": "PHASE-04",
+  "title": "tui-shared: tema, marca, badges, painéis, ajuda",
+  "state": "REVIEW",
+  "reqs": [
+    "AER-REQ-240",
+    "AER-REQ-243",
+    "AER-REQ-248",
+    "AER-REQ-100"
+  ],
+  "tests": [
+    "packages/tui-shared/test/*.test.tsx"
+  ],
+  "evidence": [
+    ".ases/evidence/PHASE-04-verify.md",
+    "packages/tui-shared/test/tui-shared.test.tsx",
+    "docs/ADRs/ADR-0011.md"
+  ],
+  "notes": []
+}

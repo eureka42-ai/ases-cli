@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "phaseId": "PHASE-04",
+  "title": "TUI utilizável + marca Eureka42",
+  "state": "VERIFYING",
+  "evidence": [
+    ".ases/evidence/PHASE-04-verify.md"
+  ],
+  "notes": [
+    {
+      "at": "2026-11-23T00:44:13.499Z",
+      "text": "worktree .worktrees/PHASE-04; ink 8.0.0 + react 19.3.1 instalados com autorização"
+    },
+    {
+      "at": "2026-11-23T01:02:02.841Z",
+      "text": "gate técnico PASS em darwin-arm64; aguarda revisão e merge de ases/PHASE-04"
+    }
+  ]
+}

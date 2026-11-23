@@ -1,0 +1,19 @@
+{
+  "name": "@aer/tui-shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@aer/branding": "0.0.0",
+    "@aer/contracts": "0.0.0",
+    "ink": "8.0.0",
+    "react": "19.3.1"
+  },
+  "exports": {
+    ".": {
+      "source": "./src/index.tsx",
+      "types": "./src/index.tsx",
+      "default": "./dist/index.js"
+    }
+  }
+}

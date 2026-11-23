@@ -3,13 +3,18 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "bin": { "ases": "bin/ases.js" },
+  "bin": {
+    "ases": "bin/ases.js"
+  },
   "dependencies": {
     "@aer/branding": "0.0.0",
     "@aer/contracts": "0.0.0",
     "@aer/ipc": "0.0.0",
     "@aer/persistence": "0.0.0",
     "@aer/platform-core": "0.0.0",
-    "@aer/project-store": "0.0.0"
+    "@aer/project-store": "0.0.0",
+    "@aer/tui-shared": "0.0.0",
+    "ink": "8.0.0",
+    "react": "19.3.1"
   }
 }

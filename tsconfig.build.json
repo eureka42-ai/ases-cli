@@ -29,6 +29,9 @@
       "path": "packages/project-store/tsconfig.build.json"
     },
     {
+      "path": "packages/tui-shared/tsconfig.build.json"
+    },
+    {
       "path": "apps/ases-cli/tsconfig.build.json"
     },
     {

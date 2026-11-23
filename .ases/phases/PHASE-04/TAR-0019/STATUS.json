@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0019",
+  "phaseId": "PHASE-04",
+  "title": "ases-tar: detalhe da tarefa",
+  "state": "REVIEW",
+  "reqs": [
+    "AER-REQ-085",
+    "AER-REQ-094",
+    "AER-REQ-098"
+  ],
+  "tests": [
+    "apps/ases-tar/test/*.test.tsx"
+  ],
+  "evidence": [
+    ".ases/evidence/PHASE-04-verify.md",
+    "apps/ases-tar/test/tui.test.tsx"
+  ],
+  "notes": []
+}

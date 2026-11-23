@@ -27,6 +27,7 @@ export class Engine {
   private readonly adapter: PlatformAdapter;
   private lastPublished: number;
   mirrorError: string | undefined;
+  private readonly listeners = new Set<() => void>();
 
   private constructor(root: string, adapter: PlatformAdapter, store: ProjectStore, server: IpcServer, name: string) {
     this.root = root;
@@ -48,17 +49,20 @@ export class Engine {
     const tokens = { control: randomBytes(32).toString('hex'), monitor: randomBytes(32).toString('hex') };
     // o servidor escuta antes de o banco abrir (o endpoint é o lock de escritor único); handlers entram depois
     const handlers: Record<string, Handler> = {};
+    let engineRef: Engine | undefined;
     let store: ProjectStore | undefined;
     const server = new IpcServer({
       endpoint, projectId: manifest.projectId, tokens, handlers,
       eventsSince: (after, limit) => store?.eventsSince(after, limit) ?? [],
       engineInfo: { pid: process.pid, appVersion: VERSIONS.app },
+      onConnectionsChange: () => engineRef?.emitChange(),
     });
     await server.listen(); // falha com ENGINE_ALREADY_RUNNING antes de abrir o banco como escritor
     try {
       store = ProjectStore.open(paths(root).db, { id: manifest.projectId, name: manifest.name }, { actor: 'ases' });
       const engine = new Engine(root, adapter, store, server, manifest.name);
       Object.assign(handlers, engine.handlers());
+      engineRef = engine;
       writeSession(adapter, manifest.projectId, {
         pid: process.pid, protocolVersion: VERSIONS.protocol, endpoint, controlToken: tokens.control, monitorToken: tokens.monitor, startedAt: new Date().toISOString(),
       });
@@ -82,6 +86,16 @@ export class Engine {
     return result;
   }
 
+  /** Assinatura de mudanças (novos eventos ou monitores) para a TUI; devolve a função de cancelamento. */
+  onChange(fn: () => void): () => void {
+    this.listeners.add(fn);
+    return () => this.listeners.delete(fn);
+  }
+
+  private emitChange(): void {
+    for (const fn of this.listeners) fn();
+  }
+
   private publish(): void {
     for (let page; (page = this.store.eventsSince(this.lastPublished, 500)).length;) {
       for (const e of page) this.server.notify(e);
@@ -94,6 +108,7 @@ export class Engine {
     } catch (err) {
       this.mirrorError = (err as Error).message; // transação já confirmada; espelho fica pendente (§6.4)
     }
+    this.emitChange();
   }
 
   private handlers(): Record<string, Handler> {

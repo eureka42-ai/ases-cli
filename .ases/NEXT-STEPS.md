@@ -1,21 +1,17 @@
-# Próximos passos (atualizado 22/11/2026, fim da PHASE-03 técnica)
+# Próximos passos (atualizado 22/11/2026, fim da PHASE-04 técnica)
 
-1. **Revisão humana da PHASE-03** (branch `ases/PHASE-03`, worktree `.worktrees/PHASE-03`, tarefas em REVIEW). Aprovado:
-   - `git merge --ff-only ases/PHASE-03` em `main`;
-   - TAR-0011..0015 `APPROVED → MERGING → COMPLETED` e `PHASE-03 COMPLETED` via `scripts/ases-dev.mjs --root <repo>`;
-   - `git worktree remove .worktrees/PHASE-03`.
-2. **Experimentar** (macOS), num projeto qualquer, fora deste repositório:
-   - `npm run build` no repo AER;
-   - no projeto: `node <repo>/apps/ases-cli/bin/ases.js init`, depois `node <repo>/apps/ases-cli/bin/ases.js`;
+1. **Revisão da PHASE-04** (branch `ases/PHASE-04`, worktree `.worktrees/PHASE-04`, tarefas em REVIEW). Aprovado:
+   - `git merge --ff-only ases/PHASE-04` em `main`;
+   - TAR-0016..0020 `APPROVED → MERGING → COMPLETED` e `PHASE-04 COMPLETED` (`scripts/ases-dev.mjs --root <repo>`);
+   - `git worktree remove .worktrees/PHASE-04`.
+2. **Experimentar as TUIs** (Apple Silicon):
+   - `npm run build`;
+   - num projeto de teste: `node <repo>/apps/ases-cli/bin/ases.js init` e depois `node <repo>/apps/ases-cli/bin/ases.js`;
    - noutro terminal, na mesma pasta: `node <repo>/apps/ases-tar/bin/ases-tar.js`.
-   (`npm link` deixaria `ases`/`ases-tar` globais, mas é instalação global e exige aprovação.)
-3. **Decisões pendentes do responsável:**
-   - Renomear o PNG com `:` (inválido no Windows).
-   - Licença.
-   - Remoto Git/CI.
-4. **PHASE-04** (TAR-0016..0020): TUI Ink, que exige aprovar as dependências `ink` + `react`.
-   - `tui-shared`, home/chat do `ases`, live/overview/task detail do `ases-tar`.
-   - Teclado (`Tab`/`?`/`Esc`), resize, 40x16/80x24/120x35, `NO_COLOR`.
-5. **Corte do `.ases/` deste repositório para o engine:** exige tabelas `artifacts`/`test_runs` (evidência no banco). Importar `HISTORY.jsonl` como seed (`docs/DATA.md`) e aposentar `scripts/ases-dev.mjs` como escritor. Propor na PHASE-05.
+3. **Pendências do responsável:**
+   - Licença (bloqueia publicação).
+   - Remoto Git para rodar o CI (macOS arm64, Windows x64/arm64, Ubuntu x64/arm64; Node 22 e 24). É a forma mais barata de transformar os NOT_RUN de Windows/Linux em resultado real.
+4. **PHASE-05** (TAR-0021..0025): DAG com detecção de ciclo, leases com fencing, Git worktree por tarefa/attempt, fila de merge serializada, testes de concorrência.
+   - Incluir aqui as tabelas `artifacts`/`test_runs` e o **corte do `.ases/` deste repositório para o engine**: importar `HISTORY.jsonl` como seed (`docs/DATA.md`) e aposentar `scripts/ases-dev.mjs` como escritor.
 
 Verificação rápida: `npm run verify && node scripts/ases-dev.mjs verify`.

@@ -1,25 +1,25 @@
 import { parseArgs } from 'node:util';
 import { VERSIONS, type EventEnvelope } from '@aer/contracts';
 import { LOGO_MODES, THEMES, pickLogoMode, renderBrand, type LogoMode, type ThemeName } from '@aer/branding';
-import { IpcClient } from '@aer/ipc';
 import type { Snapshot } from '@aer/persistence';
-import type { PlatformAdapter } from '@aer/platform-core';
-import { findProjectRoot, loadPlatformAdapter, readManifest, readSession } from '@aer/project-store';
+import { findProjectRoot, loadPlatformAdapter, readManifest } from '@aer/project-store';
+import { formatEvent } from './format.ts';
+import { Monitor, type LinkStatus, type MonitorHandlers } from './monitor.ts';
+import { runTui } from './tui.tsx';
 
 const HELP = `Eureka42 · ASES-TAR — monitor somente leitura ${VERSIONS.app}
 
 Uso:
-  ases-tar                         acompanha eventos ao vivo (texto)
+  ases-tar                         TUI ao vivo (em terminal interativo); fora de TTY, texto linha a linha
+  ases-tar --no-tui                força o modo texto linha a linha
   ases-tar --follow --format jsonl stream de eventos em JSONL no stdout (estado da conexão no stderr)
   ases-tar --json                  snapshot único em JSON e sai
 Filtros: --task TAR-XXXX  --phase PHASE-XX  --from-seq N
 Opções: --no-color  --no-banner  --theme teal|blue|purple|gold|mono  --logo full|compact|minimal|ascii  --version  --help
-Ainda NÃO implementados: --errors, --history, --live (TUI navegável na PHASE-04)
+Ainda NÃO implementados: --errors, --history (Replay)
 
 O ases-tar nunca altera estado: conecta com o token de monitor, que o engine recusa para qualquer método mutante.
 `;
-
-type Status = 'LIVE' | 'RECONNECTING' | 'OFFLINE';
 
 class UsageError extends Error {}
 
@@ -29,7 +29,7 @@ async function main(argv: string[]): Promise<number> {
     options: {
       help: { type: 'boolean' }, version: { type: 'boolean' }, json: { type: 'boolean' }, follow: { type: 'boolean' },
       format: { type: 'string' }, task: { type: 'string' }, phase: { type: 'string' }, 'from-seq': { type: 'string' },
-      'no-color': { type: 'boolean' }, 'no-banner': { type: 'boolean' }, theme: { type: 'string' }, logo: { type: 'string' },
+      'no-color': { type: 'boolean' }, 'no-banner': { type: 'boolean' }, 'no-tui': { type: 'boolean' }, theme: { type: 'string' }, logo: { type: 'string' },
       errors: { type: 'boolean' }, history: { type: 'boolean' }, live: { type: 'boolean' },
     },
   });
@@ -41,9 +41,9 @@ async function main(argv: string[]): Promise<number> {
     process.stdout.write(HELP);
     return 0;
   }
-  for (const f of ['errors', 'history', 'live'] as const) {
+  for (const f of ['errors', 'history'] as const) {
     if (values[f]) {
-      console.error(`ases-tar --${f}: ainda não implementado (planejado: PHASE-04)`);
+      console.error(`ases-tar --${f}: ainda não implementado (planejado: PHASE-14 Replay)`);
       return 2;
     }
   }
@@ -60,10 +60,10 @@ async function main(argv: string[]): Promise<number> {
     return 2;
   }
   const adapter = await loadPlatformAdapter();
-  const projectId = readManifest(root).projectId;
+  const manifest = readManifest(root);
 
   if (values.json) {
-    const client = await connect(adapter, projectId);
+    const client = await Monitor.connect(adapter, manifest.projectId);
     const snap = await client.call<Snapshot>('project.snapshot');
     client.close();
     console.log(JSON.stringify(snap));
@@ -73,97 +73,48 @@ async function main(argv: string[]): Promise<number> {
   const caps = adapter.getTerminalCapabilities(process.stdout);
   const jsonl = format === 'jsonl';
   const color = caps.color && !values['no-color'] && !jsonl;
-  const ascii = !caps.unicode;
-  const brand = (status: Status) => renderBrand({ app: 'ASES-TAR', mode: pickLogoMode(caps, (values.logo as LogoMode | undefined) ?? 'compact'), theme: (values.theme ?? 'teal') as ThemeName, color, status });
-  const showBanner = caps.isTTY && !values['no-banner'] && !jsonl;
-  // em jsonl o stdout só recebe eventos (AER-REQ-247); o estado da conexão vai para o stderr
-  const status = (s: Status, detail = '') => {
-    if (jsonl) console.error(`status: ${s}${detail ? ` ${detail}` : ''}`);
-    else console.log(showBanner ? `${brand(s)}${detail ? `  ${detail}` : ''}` : `[${s}]${detail ? ` ${detail}` : ''}`);
-  };
-  const keep = (e: EventEnvelope) => (!values.task || e.taskId === values.task) && (!values.phase || e.phaseId === values.phase);
-  const arrow = ascii ? '->' : '→';
-  const print = (e: EventEnvelope) => {
-    if (jsonl) {
-      process.stdout.write(`${JSON.stringify(e)}\n`);
-      return;
-    }
-    const p = e.payload as Record<string, unknown>;
-    const time = new Date(e.occurredAt).toLocaleTimeString('pt-BR', { hour12: false });
-    const what = typeof p.from === 'string' ? `${String(p.from)} ${arrow} ${String(p.to)}${p.reason ? ` (${String(p.reason)})` : ''}` : typeof p.title === 'string' ? `"${p.title}"` : '';
-    console.log(`#${String(e.seq).padStart(4, '0')} ${time} ${e.eventType.padEnd(18)} ${e.taskId ?? e.phaseId ?? ''} ${what}`.trimEnd());
-  };
+  const theme = (values.theme ?? 'teal') as ThemeName;
+  const filter = { task: values.task, phase: values.phase };
+  const keep = (e: EventEnvelope) => (!filter.task || e.taskId === filter.task) && (!filter.phase || e.phaseId === filter.phase);
 
-  let lastSeq = fromSeq ?? -1; // -1: ainda não decidido (texto começa do snapshot)
-  let current: IpcClient | undefined;
-  let stopping = false;
-  let delay = 250;
-  let lastStatus: Status | undefined;
-  let lastLine = '';
-  const setStatus = (s: Status, d = '') => {
-    if (`${s} ${d}` !== lastLine) status(s, d); // imprime só mudanças, não cada nova tentativa
-    lastLine = `${s} ${d}`;
-    lastStatus = s;
-  };
-
-  const session = async (): Promise<void> => {
-    const client = await connect(adapter, projectId);
-    current = client;
-    delay = 250;
-    if (lastSeq < 0) {
-      if (jsonl) lastSeq = 0;
-      else {
-        const snap = await client.call<Snapshot>('project.snapshot');
-        lastSeq = snap.snapshotSeq;
-        const tasks = snap.tasks.filter((t) => (!values.task || t.id === values.task) && (!values.phase || t.phaseId === values.phase));
-        setStatus('LIVE', `snapshot seq ${snap.snapshotSeq}: ${snap.phases.length} fase(s), ${tasks.length} tarefa(s)`);
-        for (const t of tasks) console.log(`  ${t.id} ${t.phaseId} ${t.state.padEnd(16)} ${t.title}  progresso: indeterminado`);
-      }
-    }
-    const closed = new Promise<void>((resolve) => client.onClose(resolve));
-    const subscribe = () => client.call('project.subscribe', { fromSeq: lastSeq });
-    client.onNotification((n) => {
-      if (n.method === 'project.resyncRequired') {
-        void subscribe().catch(() => client.close());
-        return;
-      }
-      if (n.method !== 'project.event') return;
-      const e = n.params.event as EventEnvelope;
-      if (e.seq <= lastSeq) return; // dedupe por seq
-      if (e.seq !== lastSeq + 1) {
-        client.close(); // lacuna: reconecta e relê a partir do último seq confirmado (§10.3)
-        return;
-      }
-      lastSeq = e.seq;
-      if (keep(e)) print(e);
+  const tui = !jsonl && !values['no-tui'] && caps.isTTY && process.stdin.isTTY === true && process.env.TERM !== 'dumb';
+  if (tui) {
+    const target: { h?: MonitorHandlers } = {};
+    const monitor = new Monitor(adapter, manifest.projectId, { fromSeq, snapshot: fromSeq === undefined }, {
+      onStatus: (s, d) => target.h?.onStatus(s, d),
+      onSnapshot: (s, r) => target.h?.onSnapshot?.(s, r),
+      onEvent: (e) => target.h?.onEvent(e),
     });
-    await subscribe();
-    setStatus('LIVE', `desde seq ${lastSeq}`);
-    await closed;
-  };
-
-  process.once('SIGINT', () => {
-    stopping = true;
-    current?.close();
-  });
-  while (!stopping) {
-    try {
-      await session();
-    } catch (err) {
-      const e = err as Error & { code?: unknown };
-      setStatus(e.code === 'ENGINE_NOT_RUNNING' || e.code === 'ENOENT' || e.code === 'ECONNREFUSED' ? 'OFFLINE' : 'RECONNECTING', `(${String(e.code ?? e.message)})`);
-    }
-    if (stopping) break;
-    if (lastStatus === 'LIVE') setStatus('RECONNECTING');
-    await new Promise((r) => setTimeout(r, delay));
-    delay = Math.min(delay * 2, 2000);
+    await runTui(monitor, { color, unicode: caps.unicode, theme, logo: values.logo as LogoMode | undefined }, manifest.name, filter, target);
+    return 0;
   }
-  return 0;
-}
 
-async function connect(adapter: PlatformAdapter, projectId: string): Promise<IpcClient> {
-  const s = readSession(adapter, projectId); // relido a cada tentativa: um engine reiniciado gera tokens novos
-  return IpcClient.connect({ endpoint: s.endpoint, projectId, role: 'monitor', token: s.monitorToken });
+  // modo linha: texto legível ou JSONL estrito (estado no stderr, AER-REQ-247)
+  const showBanner = caps.isTTY && !values['no-banner'] && !jsonl;
+  const brand = (s: LinkStatus) => renderBrand({ app: 'ASES-TAR', mode: pickLogoMode(caps, (values.logo as LogoMode | undefined) ?? 'compact'), theme, color, status: s });
+  let lastLine = '';
+  const status = (s: LinkStatus, d: string) => {
+    if (`${s} ${d}` === lastLine) return; // só mudanças, não cada nova tentativa
+    lastLine = `${s} ${d}`;
+    if (jsonl) console.error(`status: ${s}${d ? ` ${d}` : ''}`);
+    else console.log(showBanner ? `${brand(s)}${d ? `  ${d}` : ''}` : `[${s}]${d ? ` ${d}` : ''}`);
+  };
+  const monitor = new Monitor(adapter, manifest.projectId, { fromSeq: fromSeq ?? (jsonl ? 0 : undefined), snapshot: !jsonl && fromSeq === undefined }, {
+    onStatus: (s, d) => status(s, d ? `(${d})` : ''),
+    onSnapshot: (snap) => {
+      const tasks = snap.tasks.filter((t) => (!filter.task || t.id === filter.task) && (!filter.phase || t.phaseId === filter.phase));
+      status('LIVE', `snapshot seq ${snap.snapshotSeq}: ${snap.phases.length} fase(s), ${tasks.length} tarefa(s)`);
+      for (const t of tasks) console.log(`  ${t.id} ${t.phaseId} ${t.state.padEnd(16)} ${t.title}  progresso: indeterminado`);
+    },
+    onEvent: (e) => {
+      if (!keep(e)) return;
+      if (jsonl) process.stdout.write(`${JSON.stringify(e)}\n`);
+      else console.log(formatEvent(e, caps.unicode));
+    },
+  });
+  process.once('SIGINT', () => monitor.stop());
+  await monitor.run();
+  return 0;
 }
 
 main(process.argv.slice(2)).then(

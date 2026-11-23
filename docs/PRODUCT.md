@@ -20,10 +20,11 @@ Engenheiro individual, líder técnico, colaborador externo e auditor (§1.5).
 ## Fora de escopo (§1.4)
 Web/PWA/Electron, pool de cotas entre assinaturas, reutilização de credenciais, execução irreversível sem aprovação, cluster/SaaS.
 
-## Situação atual (22/11/2026, PHASE-03)
-- Existem `ases` (engine embutido + sessão em modo linha + `init`/`doctor`) e `ases-tar` (monitor somente leitura em texto/JSONL), comunicando por IPC local.
-- Sem TUI Ink ainda (PHASE-04) e sem providers de IA (PHASE-07): texto livre no `ases` responde que o chat não está implementado e nada é enviado.
-- Matriz de SO: macOS arm64 testado localmente (unit, integração, E2E com processos reais); Windows e Linux **NOT_RUN**.
+## Situação atual (22/11/2026, PHASE-04)
+- `ases`: engine embutido + **TUI Ink** (sessão, painel de fases/tarefas, histórico, ajuda, Ctrl+C duplo) ou modo linha fora de TTY; `init`/`doctor`.
+- `ases-tar`: **TUI Ink** somente leitura (fases/tarefas, eventos ao vivo, detalhe da tarefa, estado da conexão) ou texto/JSONL.
+- Ainda sem providers de IA (PHASE-07): texto livre não é enviado a lugar nenhum.
+- Matriz: macOS arm64 testado localmente (unit, integração, E2E com processos reais e pty). Windows/Linux **NOT_RUN** (CI definido, sem remoto). macOS Intel **fora do escopo** (CHANGE-0001).
 
 ## Pendências
 - Licença (bloqueia publicação, AER-REQ-210).
