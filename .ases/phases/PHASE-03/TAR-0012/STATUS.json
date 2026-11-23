@@ -3,7 +3,7 @@
   "taskId": "TAR-0012",
   "phaseId": "PHASE-03",
   "title": "Servidor IPC local (UDS / Named Pipe)",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-014",
     "AER-REQ-071",
@@ -20,5 +20,14 @@
     "packages/ipc/test/ipc.test.ts",
     "docs/ADRs/ADR-0003.md"
   ],
-  "notes": []
+  "notes": [
+    {
+      "at": "2026-11-23T00:41:02.114Z",
+      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
+    },
+    {
+      "at": "2026-11-23T00:41:02.217Z",
+      "text": "fast-forward de ases/PHASE-03 em main (31f5473)"
+    }
+  ]
 }

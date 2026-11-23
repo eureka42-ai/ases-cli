@@ -3,7 +3,7 @@
   "taskId": "TAR-0015",
   "phaseId": "PHASE-03",
   "title": "E2E com dois processos reais",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-090",
     "AER-REQ-091",
@@ -19,5 +19,14 @@
     ".ases/evidence/PHASE-03-verify.md",
     "test/e2e/two-processes.test.mjs"
   ],
-  "notes": []
+  "notes": [
+    {
+      "at": "2026-11-23T00:41:02.572Z",
+      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
+    },
+    {
+      "at": "2026-11-23T00:41:02.668Z",
+      "text": "fast-forward de ases/PHASE-03 em main (31f5473)"
+    }
+  ]
 }

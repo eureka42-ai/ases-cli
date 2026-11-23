@@ -3,7 +3,7 @@
   "taskId": "TAR-0014",
   "phaseId": "PHASE-03",
   "title": "Monitor somente leitura",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-073",
     "AER-REQ-079",
@@ -20,6 +20,14 @@
     {
       "at": "2026-11-23T00:33:45.644Z",
       "text": "Windows: SECURITY_CONTROL_INCOMPLETE até PHASE-15"
+    },
+    {
+      "at": "2026-11-23T00:41:02.429Z",
+      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
+    },
+    {
+      "at": "2026-11-23T00:41:02.523Z",
+      "text": "fast-forward de ases/PHASE-03 em main (31f5473)"
     }
   ]
 }

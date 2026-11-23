@@ -3,7 +3,7 @@
   "taskId": "TAR-0011",
   "phaseId": "PHASE-03",
   "title": "CLI shell ases/ases-tar + build + marca mínima",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-004",
     "AER-REQ-011",
@@ -25,6 +25,14 @@
     {
       "at": "2026-11-23T00:33:45.310Z",
       "text": "util.parseArgs no lugar do Commander (ADR-0003)"
+    },
+    {
+      "at": "2026-11-23T00:41:01.953Z",
+      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
+    },
+    {
+      "at": "2026-11-23T00:41:02.054Z",
+      "text": "fast-forward de ases/PHASE-03 em main (31f5473)"
     }
   ]
 }

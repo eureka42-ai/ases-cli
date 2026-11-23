@@ -3,7 +3,7 @@
   "taskId": "TAR-0013",
   "phaseId": "PHASE-03",
   "title": "Cliente IPC e assinatura de eventos",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-070",
     "AER-REQ-074",
@@ -19,5 +19,14 @@
     "packages/ipc/test/ipc.test.ts",
     "docs/API.md"
   ],
-  "notes": []
+  "notes": [
+    {
+      "at": "2026-11-23T00:41:02.268Z",
+      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
+    },
+    {
+      "at": "2026-11-23T00:41:02.377Z",
+      "text": "fast-forward de ases/PHASE-03 em main (31f5473)"
+    }
+  ]
 }
