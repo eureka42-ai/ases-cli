@@ -1,10 +1,11 @@
+import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { chmodSync, existsSync, lstatSync, mkdirSync, realpathSync, renameSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { NotImplementedError, PlatformError } from './errors.ts';
 import type {
-  LocalIpcEndpoint, PlatformAdapter, PlatformDeps, PlatformId, SecretStore, TerminalCapabilities, TerminalStream,
+  LocalIpcEndpoint, ManagedProcess, PlatformAdapter, SpawnOptions, PlatformDeps, PlatformId, SecretStore, TerminalCapabilities, TerminalStream,
 } from './types.ts';
 
 // sun_path: 104 bytes no macOS, 108 no Linux (incluindo NUL). Usamos o menor para os dois.
@@ -84,9 +85,9 @@ export function createBaseAdapter(id: PlatformId, secretBackend: string, deps: P
     getSecretStore: () => unavailableSecretStore(secretBackend, 'native SecretStore planned for PHASE-10/PHASE-15'),
     getTerminalCapabilities: (stream) => getTerminalCapabilities(id, deps.env, stream),
     ensurePrivateDir: (dir) => ensurePrivateDir(id, dir),
-    spawnManagedProcess: todo('spawnManagedProcess', 'PHASE-06'),
-    getProcessTree: todo('getProcessTree', 'PHASE-06'),
-    terminateProcessTree: todo('terminateProcessTree', 'PHASE-06/PHASE-15'),
+    spawnManagedProcess: (command, args, options) => spawnManagedProcess(id, command, args, options),
+    getProcessTree: todo('getProcessTree', 'PHASE-12'),
+    terminateProcessTree: (pid, options) => terminateProcessTree(id, pid, options),
     getUserNotifier: todo('getUserNotifier', 'PHASE-12'),
     getBackgroundSupervisor: todo('getBackgroundSupervisor', 'PHASE-12'),
   };
@@ -153,4 +154,69 @@ export function syncedFolderHint(id: PlatformId, deps: PlatformDeps, dir: string
   if (parts.some((s) => s === 'Dropbox')) return 'Dropbox';
   if (parts.some((s) => s === 'Google Drive' || s === 'My Drive' || s.startsWith('GoogleDrive-'))) return 'Google Drive';
   return undefined;
+}
+
+/**
+ * Subprocesso com argumentos em vetor e shell:false (AER-REQ-109). POSIX: `detached` cria um grupo de processos com
+ * pgid = pid, o que permite encerrar netos que o agente tenha criado. Windows: sem detached (abriria console novo);
+ * a árvore é encerrada por `taskkill /T`.
+ */
+export function spawnManagedProcess(id: PlatformId, command: string, args: readonly string[], options: SpawnOptions): ManagedProcess {
+  const child = spawn(command, [...args], {
+    cwd: options.cwd, env: { ...(options.env ?? process.env) }, shell: false, detached: id !== 'win32', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  const exited = new Promise<{ exitCode: number | null; signal: string | null }>((resolve, reject) => {
+    child.once('error', reject);
+    child.once('close', (exitCode, signal) => resolve({ exitCode, signal }));
+  });
+  if (child.pid === undefined) {
+    exited.catch(() => undefined);
+    throw new PlatformError('SPAWN_FAILED', `could not start ${command}`);
+  }
+  return { pid: child.pid, child, exited };
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** true enquanto existir algum processo no grupo (POSIX) ou o próprio pid (Windows). EPERM = existe, de outro dono. */
+function treeAlive(id: PlatformId, pid: number): boolean {
+  try {
+    process.kill(id === 'win32' ? pid : -pid, 0);
+    return true;
+  } catch (err) {
+    return (err as NodeJS.ErrnoException).code === 'EPERM';
+  }
+}
+
+async function waitGone(id: PlatformId, pid: number, ms: number): Promise<boolean> {
+  for (const end = Date.now() + ms; Date.now() < end; await sleep(25)) if (!treeAlive(id, pid)) return true;
+  return !treeAlive(id, pid);
+}
+
+/**
+ * SIGTERM no grupo, espera `graceMs`, depois SIGKILL; confirma que o grupo sumiu (AER-REQ-106).
+ * shortcut: no Windows só o pid raiz é confirmado após `taskkill /T /F`; verificar descendentes com a API de Job Objects na PHASE-15.
+ */
+export async function terminateProcessTree(id: PlatformId, pid: number, options: { graceMs?: number } = {}): Promise<{ terminated: boolean; forced: boolean }> {
+  if (!Number.isInteger(pid) || pid <= 1) throw new PlatformError('INVALID_PID', `refusing to terminate pid ${pid}`);
+  if (!treeAlive(id, pid)) return { terminated: true, forced: false };
+  if (id === 'win32') {
+    await new Promise<void>((resolve) => {
+      const k = spawn('taskkill', ['/PID', String(pid), '/T', '/F'], { shell: false, windowsHide: true, stdio: 'ignore' });
+      k.once('error', () => resolve());
+      k.once('close', () => resolve());
+    });
+    return { terminated: await waitGone(id, pid, 5000), forced: true };
+  }
+  const signal = (s: NodeJS.Signals) => {
+    try {
+      process.kill(-pid, s);
+    } catch {
+      // grupo já terminou entre a verificação e o sinal
+    }
+  };
+  signal('SIGTERM');
+  if (await waitGone(id, pid, options.graceMs ?? 2000)) return { terminated: true, forced: false };
+  signal('SIGKILL');
+  return { terminated: await waitGone(id, pid, 5000), forced: true };
 }

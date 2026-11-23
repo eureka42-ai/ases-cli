@@ -136,16 +136,17 @@ async function main(argv: string[]): Promise<number> {
 
 class UsageError extends Error {}
 
+const exitNote = (n: number) => (n ? `${n} tarefa(s) em execução cancelada(s), árvore de processos encerrada` : 'Nenhuma tarefa estava em execução');
+
 async function interactive(root: string, adapter: Awaited<ReturnType<typeof loadPlatformAdapter>>, ui: { color: boolean; banner: boolean; theme: ThemeName; mode: LogoMode; unicode: boolean; logo: LogoMode | undefined; tui: boolean }): Promise<number> {
   const synced = syncedFolderHint(adapter.id, defaultDeps(), root);
   if (synced) console.error(`AVISO: o projeto está numa pasta sincronizada (${synced}). O sync pode copiar o banco SQLite no meio de uma escrita e corrompê-lo; mova o projeto para uma pasta não sincronizada.`);
   const engine = await Engine.start(root, adapter);
   if (ui.tui) {
     const reason = await runTui(engine, { color: ui.color, unicode: ui.unicode, theme: ui.theme, logo: ui.logo });
-    const seq = engine.info.lastSeq;
-    await engine.stop();
+    const r = await engine.stop();
     // §6.4/AER-REQ-090: impresso depois que o Ink devolveu o terminal
-    console.log(`${reason}: engine encerrado. Nenhuma tarefa estava em execução nesta versão; estado salvo até seq ${seq}.`);
+    console.log(`${reason}: engine encerrado. ${exitNote(r.cancelled)}; estado salvo até seq ${r.lastSeq}.`);
     return 0;
   }
   if (ui.banner) console.log(renderBrand({ app: 'ASES CLI', mode: ui.mode, theme: ui.theme, color: ui.color }));
@@ -157,31 +158,41 @@ async function interactive(root: string, adapter: Awaited<ReturnType<typeof load
   const stop = async (why: string) => {
     if (stopping) return;
     stopping = true;
-    // §6.4/AER-REQ-090: diz claramente o que acontece com o motor ao sair
-    console.log(`${why}: encerrando engine. Nenhuma tarefa está em execução nesta versão; estado salvo até seq ${engine.info.lastSeq}.`);
     rl.close();
-    await engine.stop();
+    const r = await engine.stop();
+    // §6.4/AER-REQ-090: diz claramente o que aconteceu com o motor e com as tarefas ao sair
+    console.log(`${why}: engine encerrado. ${exitNote(r.cancelled)}; estado salvo até seq ${r.lastSeq}.`);
   };
+  // comandos em fila: /run termina antes do próximo (um script `/run` + `/exit` espera o run acabar)
+  let queue: Promise<void> = Promise.resolve();
   const done = new Promise<void>((resolve) => {
-    rl.on('close', () => void stop('fim da entrada').then(resolve));
+    rl.on('close', () => void queue.then(() => stop('fim da entrada')).then(resolve));
     process.once('SIGTERM', () => void stop('SIGTERM').then(resolve));
     rl.on('SIGINT', () => void stop('Ctrl+C').then(resolve));
     process.once('SIGINT', () => void stop('SIGINT').then(resolve));
   });
   if (process.stdin.isTTY) rl.prompt();
+  const report = (err: unknown) => {
+    const e = err as Error & { code?: string };
+    console.log(`erro${e.code ? ` ${e.code}` : ''}: ${e.message}`);
+  };
   rl.on('line', (line) => {
-    try {
-      const out = handleLine(engine, line.trim());
-      if (out === 'EXIT') {
-        void stop('/exit');
-        return;
+    queue = queue.then(async () => {
+      if (stopping) return;
+      try {
+        const out = handleLine(engine, line.trim());
+        if (out === 'EXIT') {
+          await stop('/exit');
+          return;
+        }
+        if (out instanceof Promise) console.log('executando... (acompanhe no ases-tar)');
+        const text = await out;
+        if (text) console.log(text);
+      } catch (err) {
+        report(err);
       }
-      if (out) console.log(out);
-    } catch (err) {
-      const e = err as Error & { code?: string };
-      console.log(`erro${e.code ? ` ${e.code}` : ''}: ${e.message}`);
-    }
-    if (!stopping && process.stdin.isTTY) rl.prompt();
+      if (!stopping && process.stdin.isTTY) rl.prompt();
+    });
   });
   await done;
   process.stdin.destroy(); // rl.close() não solta um stdin em pipe; sem isso o processo não termina após /exit

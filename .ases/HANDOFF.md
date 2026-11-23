@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
-- Último evento válido: seq 158 em 2026-11-23T01:40:15.604Z
-- Git: branch `main`, HEAD `a9a8efa`
-- Concluídas: 26 de 26
-- Abertas: nenhuma
+- Último evento válido: seq 197 em 2026-11-23T14:02:39.004Z
+- Git: branch `ases/PHASE-06`, HEAD `0913aa0`
+- Concluídas: 26 de 31
+- Abertas: TAR-0027 (REVIEW), TAR-0028 (REVIEW), TAR-0029 (REVIEW), TAR-0030 (REVIEW), TAR-0031 (REVIEW)
 - Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
 <!-- AUTO:END -->
 
@@ -76,3 +76,20 @@
 - **PHASE-05** (scheduler, leases com fencing, worktrees, fila de merge, gate de evidência, corte): CI 8/8 verde (run 45095195993). Windows com 6 testes NOT_RUN (pty e só-POSIX).
 - **Corte do `.ases/`:** `ases migrate-interim` importou 157 eventos (prefixo byte a byte preservado), 5 fases, 26 tarefas e 56 evidências. A partir do seq 159 o engine é o escritor.
 - **Achado operacional:** `~/Desktop` sincronizado pelo iCloud gerou 15 cópias de conflito (" 2") de arquivos do `.ases/`; estavam desatualizadas e foram apagadas. O projeto foi clonado em `~/Projetos/eureka42/ases-cli`, e o `doctor` e o início do `ases` agora avisam sobre pastas sincronizadas.
+
+### Sessão 23/11/2026 — PHASE-06 (branch `ases/PHASE-06`, sem commit)
+- **Feito:**
+  - `@aer/provider-sdk`: contrato `AgentProvider` v1, NDJSON incremental, normalização estrita e redação.
+  - `@aer/provider-simulator`: processo Node real com cenários, sempre SIMULATED.
+  - `spawnManagedProcess`/`terminateProcessTree` no PlatformAdapter.
+  - `runAttempt`/`runQueue` no scheduler.
+  - `/run`, `/cancel` e `/task new --reqs/--provider/--resources` no `ases`; saída cancela e reconcilia.
+  - ADR-0012.
+- **Testes realmente executados (darwin-arm64, Node 22.19.0):** `npm run verify` → 188/188 PASS, e mais 3 rodadas → 188/188. `ases-dev verify` → 0 problemas.
+- **NÃO executados:** CI (Windows/Linux); providers reais.
+- **Estado:** TAR-0027..0031 em REVIEW. Esperam revisão humana e CI; não foram autoaprovadas.
+- **Riscos:**
+  - Engine morto com SIGKILL deixa o agente órfão (supervisor na PHASE-12).
+  - No Windows, só o pid raiz é confirmado após `taskkill`.
+  - Pedido de aprovação = BLOCKED até `/approval` (PHASE-10).
+- **Próxima operação segura:** revisar o diff, commitar na branch, enviar para o CI e, com CI verde, `/task move … APPROVED`, merge e COMPLETED.

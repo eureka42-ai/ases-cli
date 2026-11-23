@@ -4,6 +4,9 @@ import { VERSIONS, type PhaseState, type TaskState } from '@aer/contracts';
 import { IpcServer, type Handler } from '@aer/ipc';
 import { ProjectStore, exportHistory, type CreateTaskInput, type Risk } from '@aer/persistence';
 import type { PlatformAdapter } from '@aer/platform-core';
+import type { AgentProvider } from '@aer/provider-sdk';
+import { SimulatorProvider } from '@aer/provider-simulator';
+import { runQueue, type AttemptOutcome } from '@aer/scheduler';
 import { ProjectError, historyState, isInterimProject, paths, readManifest, sessionFile, writeSession } from '@aer/project-store';
 import { writeReports } from './reports.ts';
 
@@ -29,6 +32,11 @@ export class Engine {
   private lastPublished: number;
   mirrorError: string | undefined;
   private readonly listeners = new Set<() => void>();
+  readonly providers: Record<string, AgentProvider>;
+  /** tarefas em execução neste processo → cancelamento individual (/cancel) */
+  private readonly controllers = new Map<string, AbortController>();
+  private runAbort: AbortController | undefined;
+  private current: Promise<unknown> | undefined;
 
   private constructor(root: string, adapter: PlatformAdapter, store: ProjectStore, server: IpcServer, name: string) {
     this.root = root;
@@ -37,6 +45,7 @@ export class Engine {
     this.server = server;
     this.projectName = name;
     this.lastPublished = store.lastSeq();
+    this.providers = { simulator: new SimulatorProvider(adapter) };
   }
 
   static async start(root: string, adapter: PlatformAdapter): Promise<Engine> {
@@ -152,9 +161,51 @@ export class Engine {
     });
   }
 
-  async stop(): Promise<void> {
+  /** Tarefas com worker ativo neste engine. */
+  get runningTasks(): string[] {
+    return [...this.controllers.keys()];
+  }
+
+  get isRunning(): boolean {
+    return this.current !== undefined;
+  }
+
+  /**
+   * /run: scheduler + workers até não haver nada elegível (§5.3). Um run por vez; as tarefas reservadas por este engine
+   * usam leases com o pid no dono, então outro processo nunca as executa em duplicidade.
+   */
+  async run(o: { phaseId?: string; maxParallel: number; timeoutMs: number; onOutcome?: (x: AttemptOutcome) => void }): Promise<{ outcomes: AttemptOutcome[]; waiting: { taskId: string; reason: string }[] }> {
+    if (this.current) throw Object.assign(new Error('a /run is already in progress (use /cancel TAR-XXXX or wait)'), { code: 'RUN_IN_PROGRESS' });
+    this.runAbort = new AbortController();
+    const p = runQueue(
+      { root: this.root, mutate: (fn) => this.mutate(fn), read: (fn) => fn(this.store), providers: this.providers, ttlMs: 30_000, timeoutMs: o.timeoutMs },
+      { ownerId: `ases:${process.pid}`, maxParallel: o.maxParallel, signal: this.runAbort.signal, controllers: this.controllers, ...(o.phaseId ? { phaseId: o.phaseId } : {}), ...(o.onOutcome ? { onOutcome: o.onOutcome } : {}) },
+    );
+    this.current = p;
+    try {
+      return await p;
+    } finally {
+      this.current = undefined;
+      this.runAbort = undefined;
+    }
+  }
+
+  /** Cancela uma tarefa em execução; o worker reconcilia a árvore de processos antes de marcar CANCELLED. */
+  cancelTask(taskId: string): boolean {
+    const c = this.controllers.get(taskId);
+    c?.abort();
+    return c !== undefined;
+  }
+
+  /** Encerra: cancela e reconcilia o que estiver rodando, depois fecha IPC e banco. */
+  async stop(): Promise<{ cancelled: number; lastSeq: number }> {
+    const cancelled = this.controllers.size;
+    this.runAbort?.abort();
+    await this.current?.catch(() => undefined);
+    const lastSeq = this.store.lastSeq();
     await this.server.close();
     rmSync(sessionFile(this.adapter, this.store.projectId), { force: true });
     this.store.close();
+    return { cancelled, lastSeq };
   }
 }

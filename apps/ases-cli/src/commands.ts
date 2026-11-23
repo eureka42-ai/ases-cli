@@ -6,7 +6,7 @@ import { plan } from '@aer/scheduler';
 import type { Engine } from './engine.ts';
 
 export const PLANNED_SLASH: Record<string, string> = {
-  '/agent': 'PHASE-07', '/auto': 'PHASE-06', '/manual': 'PHASE-06', '/hybrid': 'PHASE-06', '/parallel': 'PHASE-06', '/usage': 'PHASE-11',
+  '/agent': 'PHASE-07', '/auto': 'PHASE-09', '/manual': 'PHASE-09', '/hybrid': 'PHASE-09', '/parallel': 'PHASE-09 (use /run --parallel N)', '/usage': 'PHASE-11',
   '/plan': 'PHASE-09', '/skills': 'PHASE-10', '/plugins': 'PHASE-10', '/mcp': 'PHASE-10', '/review': 'PHASE-11', '/diff': 'PHASE-05',
   '/checkpoint': 'PHASE-05', '/resume': 'PHASE-11', '/approval': 'PHASE-10', '/safe-mode': 'PHASE-10', '/history': 'PHASE-04', '/dependencies': 'PHASE-06',
 };
@@ -18,15 +18,17 @@ export const SLASH_HELP = `Comandos:
   /task TAR-XXXX                  detalhe de uma tarefa
   /phase new <título>             cria fase
   /phase move PHASE-XX <ESTADO> [motivo]
-  /task new PHASE-XX <título>     cria tarefa
+  /task new PHASE-XX <título> [--reqs AER-REQ-1,AER-REQ-2] [--provider simulator[:cenário]] [--resources r1,r2]
   /task move TAR-XXXX <ESTADO> [motivo]
   /dep add TAR-A TAR-B            TAR-A passa a depender de TAR-B (ciclo é recusado)
   /evidence add TAR-XXXX <arquivo> [nota]   registra evidência (caminho dentro do projeto + SHA-256)
   /schedule                       mostra a ordem do scheduler e por quê (não reserva nada)
+  /run [PHASE-XX] [--parallel N] [--timeout S]   executa as tarefas READY (provider da tarefa; hoje só simulator, SIMULATED)
+  /cancel TAR-XXXX                cancela uma tarefa em execução (encerra a árvore de processos do agente)
   /help   /exit`;
 
-/** Executa um comando da sessão; mesmo código no modo linha e na TUI. 'EXIT' pede encerramento. */
-export function handleLine(engine: Engine, line: string, unicode = true): string | undefined {
+/** Executa um comando da sessão; mesmo código no modo linha e na TUI. 'EXIT' pede encerramento; /run devolve Promise. */
+export function handleLine(engine: Engine, line: string, unicode = true): string | Promise<string> | undefined {
   const arrow = unicode ? '→' : '->';
   if (!line) return undefined;
   if (!line.startsWith('/')) return 'Chat com agentes ainda não implementado (PHASE-07). Nada foi enviado a nenhum provedor.';
@@ -42,7 +44,8 @@ export function handleLine(engine: Engine, line: string, unicode = true): string
     case '/status': {
       const tasks = s.listTasks();
       const by = tasks.reduce<Record<string, number>>((acc, t) => ({ ...acc, [t.state]: (acc[t.state] ?? 0) + 1 }), {});
-      return `projeto ${engine.info.name} · seq ${engine.info.lastSeq} · monitores ${engine.info.monitors} · fases ${s.listPhases().length} · tarefas ${tasks.length} ${JSON.stringify(by)}${engine.mirrorError ? ` · ESPELHO PENDENTE: ${engine.mirrorError}` : ''}`;
+      const busy = engine.runningTasks;
+      return `projeto ${engine.info.name} · seq ${engine.info.lastSeq} · monitores ${engine.info.monitors} · fases ${s.listPhases().length} · tarefas ${tasks.length} ${JSON.stringify(by)}${busy.length ? ` · em execução ${busy.join(', ')}` : ''}${engine.mirrorError ? ` · ESPELHO PENDENTE: ${engine.mirrorError}` : ''}`;
     }
     case '/phases':
       return s.listPhases().map((p) => `${p.id}  ${p.state.padEnd(10)} ${p.title}`).join('\n') || '(nenhuma fase)';
@@ -58,8 +61,18 @@ export function handleLine(engine: Engine, line: string, unicode = true): string
       return 'uso: /phase new <título> | /phase move PHASE-XX <ESTADO> [motivo]';
     case '/task': {
       if (sub === 'new') {
-        const [phaseId = '', ...title] = rest;
-        return `criada ${engine.mutate((st) => st.createTask({ phaseId, title: title.join(' ') }))}`;
+        const [phaseId = '', ...words] = rest;
+        const opt = (flag: string) => {
+          const i = words.indexOf(flag);
+          return i < 0 ? undefined : words.splice(i, 2)[1];
+        };
+        const reqs = opt('--reqs');
+        const provider = opt('--provider');
+        const resources = opt('--resources');
+        return `criada ${engine.mutate((st) => st.createTask({
+          phaseId, title: words.join(' '),
+          ...(reqs ? { reqs: reqs.split(',') } : {}), ...(provider ? { provider } : {}), ...(resources ? { resources: resources.split(',') } : {}),
+        }))}`;
       }
       if (sub === 'move') {
         const [id = '', to = '', ...why] = rest;
@@ -102,6 +115,31 @@ export function handleLine(engine: Engine, line: string, unicode = true): string
       ];
       return lines.length ? lines.join('\n') : 'nenhuma tarefa READY (use /task move TAR-XXXX READY)';
     }
+    case '/run': {
+      const args = [sub, ...rest].filter((x): x is string => Boolean(x));
+      const num = (flag: string, def: number, min: number, max: number) => {
+        const i = args.indexOf(flag);
+        if (i < 0) return def;
+        const v = Number(args.splice(i, 2)[1]);
+        if (!Number.isInteger(v) || v < min || v > max) throw Object.assign(new Error(`${flag} must be an integer ${min}..${max}`), { code: 'INVALID_INPUT' });
+        return v;
+      };
+      const maxParallel = num('--parallel', 2, 1, 16);
+      const timeoutS = num('--timeout', 600, 1, 24 * 3600);
+      const [phaseId, extra] = args;
+      if (extra || (phaseId && !/^PHASE-\d{2,}$/.test(phaseId))) return 'uso: /run [PHASE-XX] [--parallel N] [--timeout S]';
+      return engine.run({ ...(phaseId ? { phaseId } : {}), maxParallel, timeoutMs: timeoutS * 1000 }).then((r) => {
+        if (!r.outcomes.length) return `nada para executar${phaseId ? ` em ${phaseId}` : ''}${r.waiting.length ? `:\n${r.waiting.map((w) => `   ${w.taskId} espera: ${w.reason}`).join('\n')}` : ' (nenhuma tarefa READY elegível)'}`;
+        return [
+          `run concluído (${r.outcomes.length} tentativa(s), paralelismo ${maxParallel}):`,
+          ...r.outcomes.map((o) => `  ${o.taskId} ${o.attemptId ?? '-'} ${o.providerId ?? '-'}${o.simulated ? ' [SIMULATED]' : ''} ${arrow} ${o.state}: ${o.reason}`),
+          ...r.waiting.map((w) => `  ${w.taskId} espera: ${w.reason}`),
+        ].join('\n');
+      });
+    }
+    case '/cancel':
+      if (!sub) return 'uso: /cancel TAR-XXXX';
+      return engine.cancelTask(sub) ? `${sub}: cancelamento pedido; o resultado aparece quando a árvore de processos for encerrada` : `${sub} não está em execução neste engine`;
     default:
       if (cmd in PLANNED_SLASH) return `${cmd}: ainda não implementado (planejado: ${PLANNED_SLASH[cmd]})`;
       return `comando desconhecido: ${cmd} (/help)`;

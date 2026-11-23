@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0031",
+  "phaseId": "PHASE-06",
+  "title": "/run e /cancel ponta a ponta com ases-tar",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-043",
+    "AER-REQ-101",
+    "AER-REQ-105"
+  ],
+  "dependsOn": [
+    "TAR-0028",
+    "TAR-0029",
+    "TAR-0030"
+  ],
+  "evidence": [
+    {
+      "path": "test/e2e/run.test.mjs",
+      "sha256": "11bef7fd7974ecf8cd6edc5139323ebddcc983aef90aabb81c8b8b774dc6afcd"
+    },
+    {
+      "path": ".ases/evidence/PHASE-06-verify.md",
+      "sha256": "c7f8fd9b2424f94334505eb2aaf722ed7d150190ffed0597683e601054f260f6"
+    }
+  ],
+  "lastTest": null
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@aer/provider-simulator",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "files": ["dist", "agent"],
+  "dependencies": { "@aer/platform-core": "0.0.0", "@aer/provider-sdk": "0.0.0" },
+  "exports": {
+    ".": { "source": "./src/index.ts", "types": "./src/index.ts", "default": "./dist/index.js" }
+  }
+}

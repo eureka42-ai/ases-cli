@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0030",
+  "phaseId": "PHASE-06",
+  "title": "Ciclo de vida do worker: spawn, timeout, cancelamento e árvore de processos",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-105",
+    "AER-REQ-106",
+    "AER-REQ-109"
+  ],
+  "dependsOn": [
+    "TAR-0027"
+  ],
+  "evidence": [
+    {
+      "path": "packages/scheduler/test/worker.test.ts",
+      "sha256": "5aca1a5015aef2558f6fe063a635262501eb763d8b84829cd143e84013e49001"
+    },
+    {
+      "path": "packages/platform-core/test/process.test.ts",
+      "sha256": "47a8b8d36f661965b193c8d15f01e035e1f8067a0e1b827418fd5c67aa397f6a"
+    },
+    {
+      "path": ".ases/evidence/PHASE-06-verify.md",
+      "sha256": "c7f8fd9b2424f94334505eb2aaf722ed7d150190ffed0597683e601054f260f6"
+    }
+  ],
+  "lastTest": null
+}

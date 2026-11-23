@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0028",
+  "phaseId": "PHASE-06",
+  "title": "Simulador determinístico SIMULATED",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-102",
+    "AER-REQ-103",
+    "AER-REQ-108"
+  ],
+  "dependsOn": [
+    "TAR-0027"
+  ],
+  "evidence": [
+    {
+      "path": "packages/provider-simulator/test/simulator.test.ts",
+      "sha256": "43f683785cef717d7db606ccc7dfd091661e3031e7a6f635a395c3c514a0a84f"
+    },
+    {
+      "path": ".ases/evidence/PHASE-06-verify.md",
+      "sha256": "c7f8fd9b2424f94334505eb2aaf722ed7d150190ffed0597683e601054f260f6"
+    }
+  ],
+  "lastTest": null
+}

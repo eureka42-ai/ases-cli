@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0029",
+  "phaseId": "PHASE-06",
+  "title": "Normalização de streams NDJSON",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-104",
+    "AER-REQ-107"
+  ],
+  "dependsOn": [
+    "TAR-0027"
+  ],
+  "evidence": [
+    {
+      "path": "packages/provider-sdk/test/stream.test.ts",
+      "sha256": "3b14e2277125494e00d0dd260aa69cf059e509ff51148cd49686d7945b8960b3"
+    },
+    {
+      "path": ".ases/evidence/PHASE-06-verify.md",
+      "sha256": "c7f8fd9b2424f94334505eb2aaf722ed7d150190ffed0597683e601054f260f6"
+    }
+  ],
+  "lastTest": null
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0027",
+  "phaseId": "PHASE-06",
+  "title": "Contratos do provider-sdk (AgentProvider v1)",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-101",
+    "AER-REQ-110"
+  ],
+  "dependsOn": [],
+  "evidence": [
+    {
+      "path": "docs/ADRs/ADR-0012.md",
+      "sha256": "60877ac93391dd788a4c1e9476638dc5b5e0f70f66868e3d896dda854437d8e5"
+    },
+    {
+      "path": ".ases/evidence/PHASE-06-verify.md",
+      "sha256": "c7f8fd9b2424f94334505eb2aaf722ed7d150190ffed0597683e601054f260f6"
+    }
+  ],
+  "lastTest": null
+}

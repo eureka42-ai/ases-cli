@@ -5,7 +5,7 @@ import { handleLine } from './commands.ts';
 import type { Engine } from './engine.ts';
 
 /** O que a TUI precisa do engine; o Engine real satisfaz isto e os testes usam o mesmo Engine sobre um projeto temporário. */
-type EngineLike = Pick<Engine, 'info' | 'store' | 'onChange' | 'mirrorError'> & Parameters<typeof handleLine>[0];
+type EngineLike = Pick<Engine, 'info' | 'store' | 'onChange' | 'mirrorError' | 'runningTasks'> & Parameters<typeof handleLine>[0];
 
 const MAX_LOG = 1000;
 const KEYS: [string, string][] = [
@@ -16,7 +16,7 @@ const KEYS: [string, string][] = [
   ['Ctrl+L', 'limpa a área da sessão (não apaga histórico persistido)'],
   ['?', 'esta ajuda (com prompt vazio)'],
   ['Esc', 'fecha a ajuda / volta ao prompt'],
-  ['Ctrl+C ×2', 'sai: o engine é encerrado (nenhuma tarefa em execução nesta versão)'],
+  ['Ctrl+C ×2', 'sai: tarefas em execução são canceladas (árvore de processos encerrada) e o engine é encerrado'],
 ];
 
 export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reason: string) => void }): ReactElement {
@@ -46,7 +46,10 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
     try {
       const out = handleLine(engine, line, ui.unicode);
       if (out === 'EXIT') return exit('/exit');
-      if (out) push(out);
+      if (out instanceof Promise) {
+        push(`executando${y.more} (acompanhe no ases-tar; /cancel TAR-XXXX para cancelar)`);
+        out.then(push, (err: Error & { code?: string }) => push(`erro${err.code ? ` ${err.code}` : ''}: ${err.message}`));
+      } else if (out) push(out);
     } catch (err) {
       const e = err as Error & { code?: string };
       push(`erro${e.code ? ` ${e.code}` : ''}: ${e.message}`);
@@ -58,7 +61,8 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
     if (key.ctrl && ch === 'c') {
       // §6.4: primeiro Ctrl+C avisa; o segundo (em até 2 s) encerra
       if (armed.current) return exit('Ctrl+C');
-      push('Ctrl+C de novo em 2 s para sair: o engine será encerrado (nenhuma tarefa está em execução nesta versão).');
+      const busy = engine.runningTasks;
+      push(`Ctrl+C de novo em 2 s para sair: ${busy.length ? `${busy.join(', ')} será(ão) cancelada(s) e ` : ''}o engine será encerrado.`);
       armed.current = setTimeout(() => {
         armed.current = undefined;
       }, 2000);

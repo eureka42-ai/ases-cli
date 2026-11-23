@@ -124,3 +124,15 @@ export async function mergeBranch(root: string, branch: string, target: string, 
     return { status: 'CONFLICT', files };
   }
 }
+
+/**
+ * Confirma tudo o que o agente deixou na worktree (inclusive arquivos novos) como checkpoint da tentativa.
+ * Sem alterações devolve undefined. A identidade do commit é a do agente, nunca a do humano; hooks do repositório
+ * não rodam aqui (--no-verify): o checkpoint só guarda o trabalho, a verificação é o gate de revisão/merge.
+ */
+export async function commitAll(wt: string, message: string, author: { name: string; email: string }): Promise<string | undefined> {
+  if (await isClean(wt)) return undefined;
+  await git(wt, ['add', '-A']);
+  await git(wt, ['-c', `user.name=${author.name}`, '-c', `user.email=${author.email}`, '-c', 'commit.gpgsign=false', 'commit', '-q', '--no-verify', '-m', message]);
+  return headCommit(wt);
+}

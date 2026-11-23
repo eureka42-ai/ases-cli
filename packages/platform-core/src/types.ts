@@ -1,3 +1,6 @@
+import type { ChildProcessByStdio } from 'node:child_process';
+import type { Readable } from 'node:stream';
+
 export type PlatformId = 'darwin' | 'win32' | 'linux';
 
 export interface TerminalCapabilities {
@@ -38,9 +41,11 @@ export interface PlatformAdapter {
   getSecretStore(): SecretStore;
   getTerminalCapabilities(stream: TerminalStream): TerminalCapabilities;
   ensurePrivateDir(dir: string): void;
-  spawnManagedProcess(command: string, args: readonly string[], options: { cwd: string }): never;
+  /** subprocesso sem shell (AER-REQ-109), em grupo próprio no POSIX para que a árvore inteira possa ser encerrada */
+  spawnManagedProcess(command: string, args: readonly string[], options: SpawnOptions): ManagedProcess;
   getProcessTree(pid: number): never;
-  terminateProcessTree(pid: number): never;
+  /** encerra o processo e todos os descendentes; `terminated` só é true depois de confirmar que nada sobrou */
+  terminateProcessTree(pid: number, options?: { graceMs?: number }): Promise<{ terminated: boolean; forced: boolean }>;
   getUserNotifier(): never;
   getBackgroundSupervisor(): never;
 }
@@ -57,4 +62,15 @@ export interface PlatformDeps {
   tmpdir: string;
   homedir: string;
   username: string;
+}
+
+export interface SpawnOptions {
+  cwd: string;
+  env?: Readonly<Record<string, string | undefined>>;
+}
+
+export interface ManagedProcess {
+  pid: number;
+  child: ChildProcessByStdio<null, Readable, Readable>;
+  exited: Promise<{ exitCode: number | null; signal: string | null }>;
 }

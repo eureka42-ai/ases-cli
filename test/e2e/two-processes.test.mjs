@@ -76,7 +76,7 @@ describe('ases + ases-tar in separate real processes (TAR-0015, C02, AER-REQ-091
     // saída limpa informa o destino do engine (AER-REQ-090)
     ases.send('/exit');
     expect(await ases.exited).toEqual({ code: 0, signal: null });
-    expect(ases.out.stdout).toMatch(/encerrando engine.*estado salvo até seq 6/);
+    expect(ases.out.stdout).toMatch(/engine encerrado.*estado salvo até seq 6/);
   }, 60_000);
 
   it('the monitor cannot mutate: the engine rejects it (C20)', async () => {

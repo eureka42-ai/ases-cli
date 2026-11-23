@@ -101,7 +101,7 @@ describe('base adapter', () => {
   });
 
   it('reports unimplemented capabilities honestly', () => {
-    expect(() => adapter.terminateProcessTree(1)).toThrow(NotImplementedError);
+    expect(() => adapter.getProcessTree(1)).toThrow(NotImplementedError);
   });
 });
 
