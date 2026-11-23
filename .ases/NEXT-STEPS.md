@@ -34,6 +34,6 @@
    - **Termos dos providers:** o responsável declarou que todos os vendors autorizaram a orquestração. A declaração está registrada; os documentos de autorização não estão no repositório.
    - **Pasta antiga do Desktop:** o responsável vai apagar.
    - **Pendente:** conferir o limite de gasto/cota de Actions da organização `eureka42-ai`, porque os jobs macOS ficam na fila sem máquina.
-9. **Restauração a partir do espelho** (clone novo sem banco → `DB_MISSING`): planejada no Project Passport (PHASE-11). Até lá, este Mac é o dono do banco.
+9. **Restauração a partir do espelho** (clone novo sem banco → `DB_MISSING`): sem fase alocada (Project Passport, §14.12, pós-MVP); a PHASE-11 não cobriu isso. Até lá, este Mac é o dono do banco.
 
 Verificação rápida: `npm run verify && node scripts/ases-dev.mjs verify`.
