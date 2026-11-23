@@ -3,7 +3,7 @@
   "taskId": "TAR-0009",
   "phaseId": "PHASE-02",
   "title": "Exportação JSONL e recuperação",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-036",
     "AER-REQ-067",
@@ -18,5 +18,14 @@
     "packages/persistence/test/export.test.ts",
     "docs/DATA.md"
   ],
-  "notes": []
+  "notes": [
+    {
+      "at": "2026-11-23T00:19:34.861Z",
+      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
+    },
+    {
+      "at": "2026-11-23T00:19:35.001Z",
+      "text": "fast-forward de ases/PHASE-02 em main (9e4fa8b)"
+    }
+  ]
 }

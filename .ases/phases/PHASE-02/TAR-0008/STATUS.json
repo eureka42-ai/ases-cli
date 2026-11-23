@@ -3,7 +3,7 @@
   "taskId": "TAR-0008",
   "phaseId": "PHASE-02",
   "title": "Máquina de estados de tarefa e fase",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-022",
     "AER-REQ-031",
@@ -19,5 +19,14 @@
     "packages/contracts/test/state-machine.test.ts",
     "packages/persistence/test/store.test.ts"
   ],
-  "notes": []
+  "notes": [
+    {
+      "at": "2026-11-23T00:19:34.699Z",
+      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
+    },
+    {
+      "at": "2026-11-23T00:19:34.810Z",
+      "text": "fast-forward de ases/PHASE-02 em main (9e4fa8b)"
+    }
+  ]
 }

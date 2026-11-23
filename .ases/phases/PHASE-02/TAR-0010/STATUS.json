@@ -3,7 +3,7 @@
   "taskId": "TAR-0010",
   "phaseId": "PHASE-02",
   "title": "Suíte transacional multiprocesso",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-045",
     "AER-REQ-062",
@@ -21,6 +21,14 @@
     {
       "at": "2026-11-23T00:17:05.370Z",
       "text": "8 processos reais; Win/Linux NOT_RUN"
+    },
+    {
+      "at": "2026-11-23T00:19:35.050Z",
+      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
+    },
+    {
+      "at": "2026-11-23T00:19:35.154Z",
+      "text": "fast-forward de ases/PHASE-02 em main (9e4fa8b)"
     }
   ]
 }

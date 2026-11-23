@@ -3,7 +3,7 @@
   "taskId": "TAR-0007",
   "phaseId": "PHASE-02",
   "title": "Event store transacional",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-061",
     "AER-REQ-062",
@@ -24,6 +24,14 @@
     {
       "at": "2026-11-23T00:17:05.073Z",
       "text": "corrigida lacuna de seq por ON CONFLICT DO NOTHING + AUTOINCREMENT"
+    },
+    {
+      "at": "2026-11-23T00:19:34.534Z",
+      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
+    },
+    {
+      "at": "2026-11-23T00:19:34.653Z",
+      "text": "fast-forward de ases/PHASE-02 em main (9e4fa8b)"
     }
   ]
 }

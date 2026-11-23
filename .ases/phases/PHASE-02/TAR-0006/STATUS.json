@@ -3,7 +3,7 @@
   "taskId": "TAR-0006",
   "phaseId": "PHASE-02",
   "title": "Schema SQLite e migrações",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-010",
     "AER-REQ-018",
@@ -17,5 +17,14 @@
     "docs/ADRs/ADR-0002.md",
     "packages/persistence/test/migrations.test.ts"
   ],
-  "notes": []
+  "notes": [
+    {
+      "at": "2026-11-23T00:19:34.378Z",
+      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
+    },
+    {
+      "at": "2026-11-23T00:19:34.479Z",
+      "text": "fast-forward de ases/PHASE-02 em main (9e4fa8b)"
+    }
+  ]
 }
