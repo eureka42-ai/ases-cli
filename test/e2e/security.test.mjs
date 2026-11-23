@@ -24,7 +24,8 @@ const env = {
 };
 const session = (lines) => {
   const r = spawnSync(process.execPath, [BIN.ases, '--no-tui'], { cwd: p.dir, encoding: 'utf8', input: [...lines, '/exit', ''].join('\n'), timeout: 60_000, env });
-  expect(r.status).toBe(0);
+  // diagnóstico: em falha (timeout = status null), mostra o que a sessão chegou a imprimir
+  expect(r.status, `${lines.join(' | ')}\n--- stdout ---\n${r.stdout?.slice(-3000)}\n--- stderr ---\n${r.stderr?.slice(-2000)}\n--- error --- ${r.error?.message ?? ''}`).toBe(0);
   return r.stdout;
 };
 const filesUnder = (d) => readdirSync(d).flatMap((n) => (statSync(path.join(d, n)).isDirectory() ? filesUnder(path.join(d, n)) : [path.join(d, n)]));
@@ -76,8 +77,10 @@ describe('PHASE-10 gate: unsafe extension rejected, Claude-only never runs elsew
     out = session([`/ext install ${echo}`, `/ext approve ${echo}`]);
     expect(out).toMatch(/requires approval for this exact operation/);
     const apr = /(APR-\d{4}) PENDING/.exec(out)[1];
-    out = session([`/approval grant ${apr} 5 responsável`, `/ext install ${echo}`, `/ext install ${echo}`]);
+    out = session([`/approval grant ${apr} 5 responsável`]);
     expect(out).toMatch(new RegExp(`${apr} GRANTED até`));
+    out = session([`/ext install ${echo}`]);
+    out += session([`/ext install ${echo}`]);
     expect(out).toMatch(new RegExp(`${echo} VERIFIED: echo 1\\.0\\.0 · ferramentas mcp::echo::echo, mcp::echo::sum`));
     expect(out).toMatch(/requires approval for this exact operation/); // uso único: a segunda instalação pede de novo
 

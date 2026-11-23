@@ -108,17 +108,23 @@ describe.runIf(hasScript)('TUIs in a real pseudo-terminal (TAR-0020)', () => {
     await t.waitFor((s) => s.includes('ASES CLI') && s.includes('ases>'));
     expect(t.raw()).not.toMatch(/\u001b\[(3[0-9]|9[0-7]|38;)/);
     // um Ctrl+C por vez: enviados juntos chegam num único bloco (\x03\x03) em runners lentos e não são Ctrl+C
-    // o Ink liga o raw mode num effect depois do 1º desenho; um Ctrl+C nessa janela vira SIGINT do tty (eco "^C"). Reenvia até a dica aparecer.
+    // O Ink liga o raw mode num effect depois do 1º desenho; um Ctrl+C antes disso vira SIGINT do tty (eco "^C") e inicia o
+    // encerramento (runs 45217682603, 45252718578). Sinal de raw mode ativo: "?" com prompt vazio abre a ajuda, coisa que
+    // em modo cooked não acontece (o terminal só ecoaria o "?").
     for (let i = 0; ; i++) {
-      await t.keys('\u0003');
+      await t.keys('?');
       try {
-        await t.waitFor((s) => s.includes('Ctrl+C de novo em 2 s') || s.includes('engine encerrado'), 1500);
+        await t.waitFor((s) => s.includes('esta ajuda'), 1500);
         break;
       } catch (e) {
         if (i >= 5) throw e;
       }
     }
-    if (!t.raw().includes('engine encerrado')) await t.keys('\u0003');
+    await t.keys('\u001b'); // Esc: fecha a ajuda se aberta ("?" a mais poderia reabrir)
+    await new Promise((r) => setTimeout(r, 300)); // Esc colado no \x03 seguinte vira Alt+Ctrl+C para o Ink
+    await t.keys('\u0003');
+    await t.waitFor((s) => s.includes('Ctrl+C de novo em 2 s'));
+    await t.keys('\u0003');
     await t.waitFor((s) => s.includes('engine encerrado'));
     t.end();
     expect(await t.exited).toBe(0);
