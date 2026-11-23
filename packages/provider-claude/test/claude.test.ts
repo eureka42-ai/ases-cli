@@ -12,7 +12,8 @@ const fixtures = fileURLToPath(new URL('./fixtures/', import.meta.url));
 const fake = path.join(fixtures, 'fake-claude.mjs');
 const adapter = createBaseAdapter(detectPlatform(), 'test');
 const dir = mkdtempSync(path.join(os.tmpdir(), 'aer claude ç '));
-afterAll(() => rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
+// Windows: taskkill /T termina de forma assíncrona e a pasta pode seguir ocupada por alguns segundos (EBUSY, run 45219403006)
+afterAll(() => rmSync(dir, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 }), 30_000);
 const log = path.join(dir, 'calls.jsonl');
 const env = (x: Record<string, string> = {}) => ({ PATH: process.env.PATH, HOME: process.env.HOME, SystemRoot: process.env.SystemRoot, FAKE_LOG: log, OPENAI_API_KEY: 'sk-nao-deve-chegar-no-claude-0000', GEMINI_API_KEY: 'x', ...x });
 const provider = (x: Record<string, string> = {}) => new ClaudeCodeProvider(adapter, { executable: process.execPath, prefixArgs: [fake], env: env(x), graceMs: 200 });

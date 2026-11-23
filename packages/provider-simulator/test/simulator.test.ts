@@ -8,7 +8,8 @@ import { SimulatorProvider } from '../src/index.ts';
 
 const adapter = createBaseAdapter(detectPlatform(), 'test');
 const dir = mkdtempSync(path.join(os.tmpdir(), 'aer sim ç '));
-afterAll(() => rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
+// Windows: taskkill /T termina de forma assíncrona e a pasta pode seguir ocupada por alguns segundos (EBUSY, run 45219403006)
+afterAll(() => rmSync(dir, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 }), 30_000);
 
 async function run(sim: SimulatorProvider, scenario: string, o: { timeoutMs?: number; signal?: AbortSignal } = {}): Promise<AgentStreamEvent[]> {
   const instructionsFile = path.join(dir, 'INSTR.md');
