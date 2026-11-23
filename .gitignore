@@ -7,3 +7,6 @@ dist/
 .ases/runtime/
 .ases/locks/
 .ases/ipc/
+
+# worktrees locais de fase/tarefa (CLAUDE.md)
+.worktrees/
