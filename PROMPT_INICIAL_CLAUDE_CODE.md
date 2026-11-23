@@ -1,0 +1,16 @@
+# PROMPT INICIAL — CLAUDE CODE — ASES Engineering Runtime
+
+Leia integralmente `ASES_CLI_MD_MESTRE.md`. Leia as referências locais em `fontes/`, preservando os arquivos originais byte a byte e registrando os hashes. Consulte `docs/REQUISITOS_AER.csv` e não confunda a série `AER-REQ-001+` com os 300 requisitos gerais do ASES-300. O ASES-500 encontrado é consolidação para validação, não fonte original homologada.
+
+Desenvolva o **ASES Engineering Runtime (AER)** como aplicação local **multiplataforma para os terminais de macOS, Windows e Linux, sem web/painel web** (desenvolvimento inicial no macOS), com **dois executáveis** no mesmo pacote:
+
+- `ases`: interface única com chat, planejamento, gestão de fases e tarefas, seleção e orquestração de Claude Code, Codex, Kimi, Google e OpenCode por adaptadores oficiais e autorizados.
+- `ases-tar`: outra TUI em segunda janela de Terminal, somente leitura por padrão, monitorando passo a passo eventos persistidos e tarefas paralelas.
+
+Requisitos centrais: `.ases/` automática em cada projeto; `PHASE-01`, `PHASE-02`, etc.; `TAR-0001`, `TAR-0002`, etc., com IDs globais; SQLite transacional + exportação JSONL; Git Worktrees; DAG e scheduler; checkpoints; `HANDOFF.md` e `NEXT-STEPS.md`; plugins/Skills/MCP com classificação de compatibilidade; segurança deny-by-default, SecretStore nativo (Keychain/WinCred/Secret Service) apenas para secrets explicitamente administrados, aprovações e logs redigidos; testes e gates de evidência desde o início.
+
+**Incorpore desde a PHASE-01 o PlatformAdapter e a identidade Eureka42.** O mesmo pacote npm deve disponibilizar `ases` e `ases-tar` nos três sistemas, respeitando paths, processos, ACLs, cofre de segredos e terminais específicos. Implementar marca textual `⌘ Eureka42`, quatro paletas TEAL/BLUE/PURPLE/GOLD, modos full/compact/minimal/ascii, `NO_COLOR`, sem ASCII art em JSON/pipe; conferir referências `branding/references/` e docs. Incluir `docs/PLATAFORMAS_COMPATIBILIDADE.md` e `docs/BRANDING_EUREKA42.md` no plano. A fase 15 verifica Windows/Linux; a fase 16 finaliza identidade/acessibilidade. Não anunciar suporte multiplataforma estável antes de testes E2E reais em cada OS.
+
+**Comece a programar nesta sessão**. Primeiro detecte o ambiente e preserve alterações existentes. Faça `PHASE-01`, crie o bootstrap `.ases/` e o monorepo modular TypeScript. Desenvolva a menor fatia funcional com `ases` e `ases-tar`, persistindo um evento em SQLite e exibindo-o no segundo terminal via IPC local abstrato — Unix Domain Socket em macOS/Linux e Windows Named Pipe. Use simulador local explicitamente marcado para provar o funcionamento antes de qualquer integração real. Registre tarefas, evidências, testes e estado; não faça login ou chamadas tarifáveis sem autorização. Não afirme nada que não testou.
+
+Depois prossiga de maneira incremental, seguindo as fases e gates do MD mestre, sem abandonar a documentação nem o estado operacional. Ao interromper a sessão, produza handoff suficiente para continuar com outra IA ou colaborador. Pergunte ao usuário **somente** por aprovação de ações realmente sensíveis ou decisões indispensáveis não resolvidas; não pergunte novamente o escopo já confirmado.

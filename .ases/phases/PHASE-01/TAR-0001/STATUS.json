@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0001",
+  "phaseId": "PHASE-01",
+  "title": "Auditar ambiente local",
+  "state": "REVIEW",
+  "reqs": [
+    "AER-REQ-001",
+    "AER-REQ-002",
+    "AER-REQ-003",
+    "AER-REQ-204"
+  ],
+  "tests": [
+    "T-AER-001: evidência .ases/evidence/TAR-0001-environment.md"
+  ],
+  "evidence": [
+    ".ases/evidence/TAR-0001-environment.md"
+  ],
+  "notes": [
+    {
+      "at": "2026-11-23T00:08:43.146Z",
+      "text": "auditoria read-only; pnpm ausente; npm workspaces escolhido"
+    }
+  ]
+}

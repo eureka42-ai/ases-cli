@@ -1,0 +1,20 @@
+EUREKA42 — LOGOTIPO ADAPTADO AO TERMINAL
+
+FULL (largura ampla)
+
+           ⌘   E U R E K A  42
+               ASES ENGINEERING RUNTIME
+               Local · Multi-Agent · ASES-300/500
+
+COMPACT
+  ⌘ Eureka42 | ASES CLI
+  ⌘ Eureka42 | ASES-TAR [LIVE]
+
+MINIMAL
+  ⌘ E42
+
+ASCII FALLBACK
+  [E42] Eureka42 | ASES CLI
+  [E42] Eureka42 | ASES-TAR
+
+Fonte de referência não é obrigatória para executar. Em terminais a fonte monoespaçada já instalada controla a forma do glifo e letras. Usar ANSI com temas TEAL/BLUE/PURPLE/GOLD, sob política NO_COLOR e fallback ASCII.

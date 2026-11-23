@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0005",
+  "phaseId": "PHASE-01",
+  "title": "Testes/CI e esqueleto PlatformAdapter",
+  "state": "REVIEW",
+  "reqs": [
+    "AER-REQ-190",
+    "AER-REQ-195",
+    "AER-REQ-225",
+    "AER-REQ-226",
+    "AER-REQ-227",
+    "AER-REQ-228",
+    "AER-REQ-229",
+    "AER-REQ-233"
+  ],
+  "tests": [
+    "packages/platform-*/test/*.test.ts",
+    ".github/workflows/ci.yml"
+  ],
+  "evidence": [
+    ".ases/evidence/PHASE-01-verify.md",
+    "packages/platform-core/test/platform.test.ts",
+    ".github/workflows/ci.yml"
+  ],
+  "notes": [
+    {
+      "at": "2026-11-23T00:08:43.332Z",
+      "text": "Win/Linux só via fakes; CI NOT_RUN"
+    }
+  ]
+}

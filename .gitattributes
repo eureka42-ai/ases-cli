@@ -1,0 +1,5 @@
+# Fontes normativas e referências de marca preservadas byte a byte (MD mestre §22.2, AER-REQ-151/250).
+fontes/** -text
+branding/references/** binary
+MANIFESTO_FONTES_SHA256.txt -text
+branding/MANIFESTO_IMAGENS_SHA256.txt -text

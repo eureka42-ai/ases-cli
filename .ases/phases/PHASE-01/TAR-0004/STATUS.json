@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0004",
+  "phaseId": "PHASE-01",
+  "title": "Bootstrap de .ases/",
+  "state": "REVIEW",
+  "reqs": [
+    "AER-REQ-011",
+    "AER-REQ-016",
+    "AER-REQ-151",
+    "AER-REQ-181"
+  ],
+  "tests": [
+    "test/ases-dev.test.mjs",
+    "node scripts/ases-dev.mjs verify"
+  ],
+  "evidence": [
+    ".ases/evidence/PHASE-01-verify.md",
+    "test/ases-dev.test.mjs"
+  ],
+  "notes": [
+    {
+      "at": "2026-11-23T00:08:43.287Z",
+      "text": "init idempotente comprovado; JSONL interino até PHASE-02"
+    }
+  ]
+}

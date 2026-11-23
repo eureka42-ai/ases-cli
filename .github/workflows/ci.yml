@@ -1,0 +1,29 @@
+# Matriz mínima §3.7 / AER-REQ-233. Estado: NOT_RUN até o primeiro push para um remoto com Actions.
+name: ci
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        node: ['22.x']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: node -p "process.platform + ' ' + process.arch + ' ' + process.version"
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - name: verificar hashes das fontes ASES (AER-REQ-151)
+        if: runner.os != 'Windows'
+        run: shasum -a 256 -c MANIFESTO_FONTES_SHA256.txt

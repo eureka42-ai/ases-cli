@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "projectId": "prj_9b627b2384c7",
+  "name": "ASES Engineering Runtime (AER)",
+  "createdAt": "2026-11-23T00:07:45.965Z",
+  "versions": {
+    "projectSchema": 1,
+    "dbSchema": 0
+  },
+  "sources": [
+    {
+      "path": "fontes/ASES-300_DOCUMENTACAO_INTEGRAL.md",
+      "sha256": "22e439ea514e1f365d3611a8644aac861f8c739054f8c35084a0e94e30302314"
+    },
+    {
+      "path": "fontes/ASES-500_GPT_ESPECIFICADOR_INTERATIVO_TRABALHO.md",
+      "sha256": "d3ba609a5aeef064256f6e232d07347009d583d95d71f3c6520d4eed81b4df72"
+    },
+    {
+      "path": "fontes/ASES-500_METODOLOGIA_CONSOLIDADA_PARA_VALIDACAO.md",
+      "sha256": "1a2b4619825233f6107e74d05d7171454c16d5841b476e4086e3d9287c7aa78c"
+    },
+    {
+      "path": "branding/references/Estudo de Marca Eureka42: Quatro Variações.png",
+      "sha256": "4f01e8d7ff4a95905b4b8c68d29bdc41fd8014a9398a576604526201945c8c3d"
+    },
+    {
+      "path": "branding/references/Emblema Tecnológico Eureka42 AI Framework.png",
+      "sha256": "6c5240faa52a97ceae4158a3af9ed4c58a0f29cc2cf15e5ac71360b1d2f9831e"
+    }
+  ]
+}

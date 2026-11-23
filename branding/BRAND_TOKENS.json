@@ -1,0 +1,54 @@
+{
+  "_notice": "PROPOSED palette approximation from Eureka42 four-variant visual study; not authoritative brand hex specification; font in terminal cannot be forced.",
+  "brand": "Eureka42",
+  "glyph": "⌘",
+  "glyphCodepoint": "U+2318",
+  "glyphFallback": "[E42]",
+  "referenceFonts": {
+    "glyph": "Noto Sans Symbols 2",
+    "eureka": "Inter",
+    "42": "Montserrat ExtraBold"
+  },
+  "defaultTheme": "teal",
+  "availableModes": [
+    "full",
+    "compact",
+    "minimal",
+    "ascii"
+  ],
+  "themes": {
+    "teal": {
+      "accent": "#009688",
+      "accent2": "#0B817A"
+    },
+    "blue": {
+      "accent": "#184BC8",
+      "accent2": "#1040A4"
+    },
+    "purple": {
+      "accent": "#8239B6",
+      "accent2": "#60259B"
+    },
+    "gold": {
+      "accent": "#D79516",
+      "accent2": "#AC730D"
+    },
+    "mono": {
+      "accent": null,
+      "accent2": null
+    }
+  },
+  "accessibility": {
+    "supportsNoColor": true,
+    "asciiFallback": true,
+    "reducedMotion": true,
+    "responsiveWidths": [
+      40,
+      50,
+      80,
+      120
+    ]
+  },
+  "showLogoOnPipedStdout": false,
+  "showLogoOnJsonStdout": false
+}

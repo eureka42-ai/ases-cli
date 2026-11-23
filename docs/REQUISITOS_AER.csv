@@ -1,0 +1,251 @@
+id,domain,priority,title,requirement,acceptance,test_id,status,source
+AER-REQ-001,FOUNDATION / INSTALAÇÃO,P0,Projeto multiplataforma,O produto deve operar nos terminais nativos de macOS Windows e Linux sem serviço remoto de coordenação,Smoke local por OS com estados PASS/NOT_RUN,T-AER-001,PROPOSED,AER-MASTER-001
+AER-REQ-002,FOUNDATION / INSTALAÇÃO,P0,Apple Silicon,O binário deve funcionar em macOS arm64 suportado,Smoke `ases --help` e `ases-tar --help` em arm64,T-AER-002,PROPOSED,AER-MASTER-001
+AER-REQ-003,FOUNDATION / INSTALAÇÃO,P0,Mac Intel,O binário deve funcionar em macOS x86_64 suportado,Smoke equivalente em host x86_64; se não executado marcar NOT_RUN,T-AER-003,PROPOSED,AER-MASTER-001
+AER-REQ-004,FOUNDATION / INSTALAÇÃO,P0,Dois executáveis,O mesmo pacote deve fornecer os comandos `ases` e `ases-tar`,`which` identifica ambos após instalação local,T-AER-004,PROPOSED,AER-MASTER-001
+AER-REQ-005,FOUNDATION / INSTALAÇÃO,P0,Node LTS,Versão Node suportada deve constar em engines e CI,Build rejeita versão abaixo do limite documentado,T-AER-005,PROPOSED,AER-MASTER-001
+AER-REQ-006,FOUNDATION / INSTALAÇÃO,P0,Workspace,Dependências entre pacotes devem respeitar direção de imports,Teste de dependências rejeita import de UI em core,T-AER-006,PROPOSED,AER-MASTER-001
+AER-REQ-007,FOUNDATION / INSTALAÇÃO,P0,Tipagem estrita,Código TS principal deve compilar com strict e verificações extras,`pnpm typecheck` passa sem ignorar erros,T-AER-007,PROPOSED,AER-MASTER-001
+AER-REQ-008,FOUNDATION / INSTALAÇÃO,P0,Instalação reversível,O usuário deve conseguir desinstalar o AER sem excluir projetos,Teste install/uninstall preserva `.ases/` do projeto,T-AER-008,PROPOSED,AER-MASTER-001
+AER-REQ-009,FOUNDATION / INSTALAÇÃO,P0,Sem painel web,AER não deve iniciar servidor HTTP público nem exigir navegador para operação principal,Scan de portas e E2E CLI sem navegador,T-AER-009,PROPOSED,AER-MASTER-001
+AER-REQ-010,FOUNDATION / INSTALAÇÃO,P0,Versões separadas,"App, schema SQLite, `.ases/` e IPC devem ter versões independentes",Teste de incompatibilidade apresenta erro controlado,T-AER-010,PROPOSED,AER-MASTER-001
+AER-REQ-011,PROJECT,P0,Inicialização idempotente,`ases init` deve criar `.ases/` sem apagar conteúdo preexistente,Rodar duas vezes e comparar hashes dos arquivos,T-AER-011,PROPOSED,AER-MASTER-001
+AER-REQ-012,PROJECT,P0,Raiz canônica,AER deve localizar e validar a raiz do projeto e a raiz Git,Teste em subdiretório e symlink,T-AER-012,PROPOSED,AER-MASTER-001
+AER-REQ-013,PROJECT,P0,Manifesto,Cada projeto deve possuir MANIFEST.json schema-validado e versão,Teste valida schema e checksums,T-AER-013,PROPOSED,AER-MASTER-001
+AER-REQ-014,PROJECT,P0,Permissões locais,Diretórios privados devem ter owner e permissões restritivas nativas por plataforma,Teste POSIX stat (macOS/Linux) e Windows DACL para state/IPC,T-AER-014,PROPOSED,AER-MASTER-001
+AER-REQ-015,PROJECT,P0,Configuração sem segredos,CONFIG.json deve referenciar secrets por ID sem conter valores,Scanner não localiza chave fixture,T-AER-015,PROPOSED,AER-MASTER-001
+AER-REQ-016,PROJECT,P0,Portabilidade de docs,Arquivos Markdown e JSON essenciais devem funcionar sem o AER instalado,Abrir export e reconstruir checklist manual,T-AER-016,PROPOSED,AER-MASTER-001
+AER-REQ-017,PROJECT,P0,Projeto existente,"Init deve respeitar arquivos Git, package e docs existentes",Fixture com repo sujo permanece íntegra,T-AER-017,PROPOSED,AER-MASTER-001
+AER-REQ-018,PROJECT,P0,Upgrade seguro,Migração deve fazer backup antes de modificar estrutura existente,"Inject crash, verificar backup e reparo",T-AER-018,PROPOSED,AER-MASTER-001
+AER-REQ-019,PROJECT,P0,Nomes estáveis,Identificadores de projeto não devem mudar pela renomeação da pasta,Mover projeto e validar ID,T-AER-019,PROPOSED,AER-MASTER-001
+AER-REQ-020,PROJECT,P0,Config hierárquica,"Config global, projeto e execução devem seguir precedência documentada",Teste três níveis e valor final esperado,T-AER-020,PROPOSED,AER-MASTER-001
+AER-REQ-021,PHASES,P0,IDs de fase,Fases devem ter IDs PHASE-01 e sequenciamento monotônico,Criar 101 fases sem colisão,T-AER-021,PROPOSED,AER-MASTER-001
+AER-REQ-022,PHASES,P0,Estado da fase,Estados de fase devem seguir máquina validada,Transição ilegal rejeitada,T-AER-022,PROPOSED,AER-MASTER-001
+AER-REQ-023,PHASES,P0,Plano por fase,"PHASE.md deve conter escopo, metas, critérios e dependências",Validador de template identifica ausência,T-AER-023,PROPOSED,AER-MASTER-001
+AER-REQ-024,PHASES,P0,Gate de fase,Fase não conclui com tarefa obrigatória pendente,Teste de bloqueio com uma task FAILED,T-AER-024,PROPOSED,AER-MASTER-001
+AER-REQ-025,PHASES,P0,Bloqueio conhecido,Fase bloqueada deve explicitar motivo e task dependente,Monitor exibe razão do bloqueio,T-AER-025,PROPOSED,AER-MASTER-001
+AER-REQ-026,PHASES,P0,Criação da fase,Novo plano deve gerar evento e arquivo consistente,Verificar seq + arquivo após criação,T-AER-026,PROPOSED,AER-MASTER-001
+AER-REQ-027,PHASES,P0,Ordem explícita,Fases podem ser ordenadas sem renumerar IDs históricos,Teste reordenação preserva ID,T-AER-027,PROPOSED,AER-MASTER-001
+AER-REQ-028,PHASES,P0,Rastreabilidade de fase,Fases devem referenciar requisitos relevantes,Traceability report mostra IDs ligados,T-AER-028,PROPOSED,AER-MASTER-001
+AER-REQ-029,PHASES,P0,Replanejamento,Mudança de fase não pode alterar tasks aprovadas sem registro,Gerar CHANGE e diff de plano,T-AER-029,PROPOSED,AER-MASTER-001
+AER-REQ-030,PHASES,P0,Resumo da fase,Concluir fase produz relatório de evidências e decisões,Relatório apresenta testes reais e exceções,T-AER-030,PROPOSED,AER-MASTER-001
+AER-REQ-031,TASKS,P0,TAR sequencial,IDs TAR-0001+ devem ser globais ao projeto e imutáveis,Criar em 2 fases e verificar unicidade,T-AER-031,PROPOSED,AER-MASTER-001
+AER-REQ-032,TASKS,P0,Template task,"TASK.md deve registrar objetivo, escopo, critérios e dependências",Schema/validator rejeita campos essenciais ausentes,T-AER-032,PROPOSED,AER-MASTER-001
+AER-REQ-033,TASKS,P0,Estados task,Transições devem passar por máquina de estados,Testes de 20 saltos inválidos,T-AER-033,PROPOSED,AER-MASTER-001
+AER-REQ-034,TASKS,P0,Tentativas distintas,Nova tentativa não deve sobrescrever histórico anterior,ATT-0001 e ATT-0002 permanecem,T-AER-034,PROPOSED,AER-MASTER-001
+AER-REQ-035,TASKS,P0,Agente atribuído,Task deve indicar provider responsável por attempt,Task detail exibe provider e versão,T-AER-035,PROPOSED,AER-MASTER-001
+AER-REQ-036,TASKS,P0,Histórico task,Cada task deve ter histórico cronológico exportado,HISTORY.jsonl reconstitui eventos,T-AER-036,PROPOSED,AER-MASTER-001
+AER-REQ-037,TASKS,P0,Tarefas bloqueadas,Task sem pré-condição fica BLOCKED com justificativa,Scheduler não inicia task bloqueada,T-AER-037,PROPOSED,AER-MASTER-001
+AER-REQ-038,TASKS,P0,Reabertura,Task concluída só reabre por mudança explícita com auditoria,CHANGE e nova attempt registrados,T-AER-038,PROPOSED,AER-MASTER-001
+AER-REQ-039,TASKS,P0,Prioridade,Prioridade deve ser normalizada e validar intervalo,Entrada fora de 0-100 falha,T-AER-039,PROPOSED,AER-MASTER-001
+AER-REQ-040,TASKS,P0,Cancelamento,Cancelamento deve reconciliar processo e worktree,TASK CANCELLED somente após confirmação/recovery,T-AER-040,PROPOSED,AER-MASTER-001
+AER-REQ-041,DAG / SCHEDULER,P0,DAG,Dependências devem formar grafo acíclico,Teste A→B→C→A rejeitado com caminho,T-AER-041,PROPOSED,AER-MASTER-001
+AER-REQ-042,DAG / SCHEDULER,P0,Dependência satisfeita,Task dependente inicia somente quando condição formal for atendida,Teste paralelo mantém bloqueio,T-AER-042,PROPOSED,AER-MASTER-001
+AER-REQ-043,DAG / SCHEDULER,P0,Concorrência global,Scheduler deve respeitar max_parallel_tasks,Com limite 2 nunca há 3 RUNNING,T-AER-043,PROPOSED,AER-MASTER-001
+AER-REQ-044,DAG / SCHEDULER,P0,Concorrência provider,Scheduler deve respeitar limites por provider,Simulador com limite 1 não duplica,T-AER-044,PROPOSED,AER-MASTER-001
+AER-REQ-045,DAG / SCHEDULER,P0,Lease atômico,Task não pode ser reservada por dois schedulers simultâneos,Corrida de 20 processos produz um vencedor,T-AER-045,PROPOSED,AER-MASTER-001
+AER-REQ-046,DAG / SCHEDULER,P0,Fencing,Owner vencido não deve publicar evento de conclusão tardio,Teste lease vencido rejeita old token,T-AER-046,PROPOSED,AER-MASTER-001
+AER-REQ-047,DAG / SCHEDULER,P0,Heartbeat,Processos ativos devem renovar leases observáveis,Monitor exibe timestamp válido,T-AER-047,PROPOSED,AER-MASTER-001
+AER-REQ-048,DAG / SCHEDULER,P0,Cooldown,Rate limit deve adiar novas tentativas do provider,429 de fixture cria cooldown sem loop,T-AER-048,PROPOSED,AER-MASTER-001
+AER-REQ-049,DAG / SCHEDULER,P0,Retry finito,Retry deve respeitar max attempts e backoff,Fixture 10 erros para após limite,T-AER-049,PROPOSED,AER-MASTER-001
+AER-REQ-050,DAG / SCHEDULER,P0,Explicação,Decisão automática deve ter rationale persistido,Evento registra critérios e alternativas,T-AER-050,PROPOSED,AER-MASTER-001
+AER-REQ-051,GIT,P0,Worktree por tarefa,Task que escreve deve ter worktree isolada,Duas tasks alteram arquivos separados sem colidir,T-AER-051,PROPOSED,AER-MASTER-001
+AER-REQ-052,GIT,P0,Branch nomeada,Branches devem identificar TAR e ATT,Nome aparece no manifest de tentativa,T-AER-052,PROPOSED,AER-MASTER-001
+AER-REQ-053,GIT,P0,Base explícita,Toda tentativa deve registrar base commit,Git rev-parse compara com registro,T-AER-053,PROPOSED,AER-MASTER-001
+AER-REQ-054,GIT,P0,Proteção checkout principal,Escrita em checkout principal exige aprovação distinta,Provider fake tenta alteração e é bloqueado,T-AER-054,PROPOSED,AER-MASTER-001
+AER-REQ-055,GIT,P0,Dirty tree,AER não deve sobrescrever alterações humanas não commitadas,E2E dirty tree conserva bytes,T-AER-055,PROPOSED,AER-MASTER-001
+AER-REQ-056,GIT,P0,Merge serializado,Merges no branch-alvo devem ser serializados,Dois merges não ocorrem simultaneamente,T-AER-056,PROPOSED,AER-MASTER-001
+AER-REQ-057,GIT,P0,Conflito Git,Conflito não deve ser auto-descartado,Fixture conflitante termina em CONFLICT,T-AER-057,PROPOSED,AER-MASTER-001
+AER-REQ-058,GIT,P0,Checkpoint reversível,Checkpoint deve criar refs e metadados verificáveis,Checkout em nova worktree reproduz commit,T-AER-058,PROPOSED,AER-MASTER-001
+AER-REQ-059,GIT,P0,Sem destructive Git,AER não deve executar hard reset/force push sem aprovação,Policy intercepta comando,T-AER-059,PROPOSED,AER-MASTER-001
+AER-REQ-060,GIT,P0,Symlink externo,Escrita fora do worktree via symlink deve ser bloqueada,Teste link para /tmp ou diretório externo,T-AER-060,PROPOSED,AER-MASTER-001
+AER-REQ-061,EVENTS,P0,Log append-only,Eventos devem ser acrescentados sem UPDATE de payload histórico,Teste DB rejeita mutation não autorizada,T-AER-061,PROPOSED,AER-MASTER-001
+AER-REQ-062,EVENTS,P0,Seq monotônica,Eventos por projeto devem ter ordem consistente,Paralelismo não duplica seq,T-AER-062,PROPOSED,AER-MASTER-001
+AER-REQ-063,EVENTS,P0,Evento transacional,Mudança de task e evento devem confirmar atomicamente,Crash before commit deixa ambos intactos,T-AER-063,PROPOSED,AER-MASTER-001
+AER-REQ-064,EVENTS,P0,ID único,eventId deve evitar dupla inserção em retry,Repetir eventId altera zero linhas,T-AER-064,PROPOSED,AER-MASTER-001
+AER-REQ-065,EVENTS,P0,Payload validado,Eventos críticos devem passar schema Zod,Campo inválido gera erro,T-AER-065,PROPOSED,AER-MASTER-001
+AER-REQ-066,EVENTS,P0,Redaction,Logs não devem revelar API keys e passwords,Fixture vazamento não aparece na exportação,T-AER-066,PROPOSED,AER-MASTER-001
+AER-REQ-067,EVENTS,P0,Export JSONL,Espelho deve ser derivado por seq do banco,Rebuild produz ordem idêntica,T-AER-067,PROPOSED,AER-MASTER-001
+AER-REQ-068,EVENTS,P0,Integridade,Tampering em export deve ser detectado por hash/seq,Alterar linha gera alerta,T-AER-068,PROPOSED,AER-MASTER-001
+AER-REQ-069,EVENTS,P0,Consulta paginada,Histórico extenso deve ser lido em páginas,10k eventos sem carregar tudo na UI,T-AER-069,PROPOSED,AER-MASTER-001
+AER-REQ-070,EVENTS,P0,Backfill,Monitor deve buscar eventos perdidos depois de desconectar,Gap recuperado sem duplicidade,T-AER-070,PROPOSED,AER-MASTER-001
+AER-REQ-071,IPC,P0,Socket local,Comunicação entre processos deve usar UDS privado,Netstat não mostra listener público do motor,T-AER-071,PROPOSED,AER-MASTER-001
+AER-REQ-072,IPC,P0,Protocolo versionado,Handshake deve rejeitar versão incompatível,Cliente antigo recebe VERSION_MISMATCH,T-AER-072,PROPOSED,AER-MASTER-001
+AER-REQ-073,IPC,P0,Autenticação IPC,Cliente não autorizado não deve mutar nem ler dados sensíveis,Teste com socket injetado rejeitado,T-AER-073,PROPOSED,AER-MASTER-001
+AER-REQ-074,IPC,P0,Snapshot consistente,Snapshot deve carregar cursor seq correspondente,Reprodução não perde evento durante snapshot,T-AER-074,PROPOSED,AER-MASTER-001
+AER-REQ-075,IPC,P0,Subscrição,Monitor deve assinar stream a partir de fromSeq,Evento enviado aparece 1 vez,T-AER-075,PROPOSED,AER-MASTER-001
+AER-REQ-076,IPC,P0,Reconexão,Queda de socket deve mostrar RECONNECTING e tentar resync,Reiniciar motor durante live stream,T-AER-076,PROPOSED,AER-MASTER-001
+AER-REQ-077,IPC,P0,Backpressure,Cliente lento não deve travar scheduler,10k eventos e consumidor lento preservam motor,T-AER-077,PROPOSED,AER-MASTER-001
+AER-REQ-078,IPC,P0,Payload máximo,Mensagens acima do limite devem ser negadas,Fuzz com frames gigantes,T-AER-078,PROPOSED,AER-MASTER-001
+AER-REQ-079,IPC,P0,Read-only monitor,ases-tar não deve possuir RPC mutante utilizável,RPC mutante via token do monitor é negado,T-AER-079,PROPOSED,AER-MASTER-001
+AER-REQ-080,IPC,P0,Timeouts,Cada operação IPC deve ter timeout e erro tipado,Servidor mudo não trava TUI indefinidamente,T-AER-080,PROPOSED,AER-MASTER-001
+AER-REQ-081,TUI ASES,P0,Prompt único,`ases` deve permitir digitar instruções em um único prompt,Teste TUI render e input,T-AER-081,PROPOSED,AER-MASTER-001
+AER-REQ-082,TUI ASES,P0,Seletor manual,Usuário deve poder selecionar provider por comando,/agent codex reflete seleção,T-AER-082,PROPOSED,AER-MASTER-001
+AER-REQ-083,TUI ASES,P0,Modo automático,Usuário deve alternar auto/manual/hybrid por comando,Status exibe modo correto,T-AER-083,PROPOSED,AER-MASTER-001
+AER-REQ-084,TUI ASES,P0,Fases listáveis,Usuário deve listar fases sem sair da TUI,/phases apresenta dados SQLite,T-AER-084,PROPOSED,AER-MASTER-001
+AER-REQ-085,TUI ASES,P0,Tarefas navegáveis,/task TAR-XXXX deve abrir detalhe,Evento da task exibe dados reais,T-AER-085,PROPOSED,AER-MASTER-001
+AER-REQ-086,TUI ASES,P0,Aprovação visível,Operação pendente deve aparecer com risco e efeito,Testar approval modal,T-AER-086,PROPOSED,AER-MASTER-001
+AER-REQ-087,TUI ASES,P0,Configuração validada,Opções inválidas devem ser rejeitadas com orientação,/config não escreve JSON inválido,T-AER-087,PROPOSED,AER-MASTER-001
+AER-REQ-088,TUI ASES,P0,Terminal pequeno,TUI deve continuar utilizável em 80x24,Snapshot tests de layout,T-AER-088,PROPOSED,AER-MASTER-001
+AER-REQ-089,TUI ASES,P0,Sem cor,NO_COLOR deve produzir texto legível,E2E no-color,T-AER-089,PROPOSED,AER-MASTER-001
+AER-REQ-090,TUI ASES,P0,Exit seguro,Fechar UI deve informar destino do motor em execução,E2E Ctrl-C preserva status,T-AER-090,PROPOSED,AER-MASTER-001
+AER-REQ-091,TUI ASES-TAR,P0,Comando separado,`ases-tar` deve abrir em outra aba/janela,Dois processos simultâneos no E2E,T-AER-091,PROPOSED,AER-MASTER-001
+AER-REQ-092,TUI ASES-TAR,P0,Live overview,Exibir tasks ativas e bloqueadas com identificação,Simulator produz status visível,T-AER-092,PROPOSED,AER-MASTER-001
+AER-REQ-093,TUI ASES-TAR,P0,Filtro phase,--phase deve mostrar apenas eventos/fases pertinentes,Fixture com 2 fases,T-AER-093,PROPOSED,AER-MASTER-001
+AER-REQ-094,TUI ASES-TAR,P0,Filtro task,--task TAR-XXXX deve mostrar somente task solicitada,Fixture com IDs distintos,T-AER-094,PROPOSED,AER-MASTER-001
+AER-REQ-095,TUI ASES-TAR,P0,Filtro erros,--errors deve exibir eventos severidade error/critical,Fixture varia severidades,T-AER-095,PROPOSED,AER-MASTER-001
+AER-REQ-096,TUI ASES-TAR,P0,Replay eventos,Timeline deve navegar histórico salvo por seq,Replay offline 100 eventos,T-AER-096,PROPOSED,AER-MASTER-001
+AER-REQ-097,TUI ASES-TAR,P0,Diff readonly,Visualizar diff não deve modificar worktree,Hash antes/depois igual,T-AER-097,PROPOSED,AER-MASTER-001
+AER-REQ-098,TUI ASES-TAR,P0,Progresso honesto,Sem milestones não deve mostrar porcentagem fictícia,Tarefa nova exibe indeterminado,T-AER-098,PROPOSED,AER-MASTER-001
+AER-REQ-099,TUI ASES-TAR,P0,Estado de conexão,Exibir LIVE/STALE/OFFLINE/RECONNECTING corretamente,Teste disconnect/reconnect,T-AER-099,PROPOSED,AER-MASTER-001
+AER-REQ-100,TUI ASES-TAR,P0,Atalhos básicos,Teclas de filtro/navegação devem ter help acessível,TUI test ?/Esc/Tab,T-AER-100,PROPOSED,AER-MASTER-001
+AER-REQ-101,PROVIDER CORE,P1,Contrato comum,Todos adapters devem implementar AgentProvider versionado,Teste de contrato por adapter,T-AER-101,PROPOSED,AER-MASTER-001
+AER-REQ-102,PROVIDER CORE,P1,Probe seguro,Probe não deve alterar conta ou instalar software,Falso binário detecta exec ilegal,T-AER-102,PROPOSED,AER-MASTER-001
+AER-REQ-103,PROVIDER CORE,P1,Flags versionadas,Adapter deve verificar CLI versão antes de invocar argumentos,Version mismatch bloqueia execução,T-AER-103,PROPOSED,AER-MASTER-001
+AER-REQ-104,PROVIDER CORE,P1,Streaming parcial,Parser deve aceitar chunks JSON fragmentados,Fixture divide eventos em bytes,T-AER-104,PROPOSED,AER-MASTER-001
+AER-REQ-105,PROVIDER CORE,P1,Process exit,Attempt deve registrar exit code real e cancel status,Fixture code 1 não vira success,T-AER-105,PROPOSED,AER-MASTER-001
+AER-REQ-106,PROVIDER CORE,P1,Time-out provider,Provider pendurado deve ser interrompido e reconciliado,Fixture sleep > timeout,T-AER-106,PROPOSED,AER-MASTER-001
+AER-REQ-107,PROVIDER CORE,P1,Erro de autenticação,Auth expirada vira estado distinto,Fixture unauthorized não marca rate limit,T-AER-107,PROPOSED,AER-MASTER-001
+AER-REQ-108,PROVIDER CORE,P1,Desconexão,Provider indisponível deve degradar sem derrubar AER,Desligar simulator e consultar status,T-AER-108,PROPOSED,AER-MASTER-001
+AER-REQ-109,PROVIDER CORE,P1,Sem shell interpolation,Subprocessos devem receber args em vetor com shell false,Teste entrada `; rm` não executa,T-AER-109,PROPOSED,AER-MASTER-001
+AER-REQ-110,PROVIDER CORE,P1,Capacidades dinâmicas,"Adaptador deve declarar capacidade confirmada, condicional ou desconhecida",Doctor apresenta fontes e datas,T-AER-110,PROPOSED,AER-MASTER-001
+AER-REQ-111,INTEGRAÇÕES,P1,Claude oficial,Executar através de CLI/SDK oficialmente permitido conforme modo de autenticação,Smoke read-only com user consent e transcript redigido,T-AER-111,PROPOSED,AER-MASTER-001
+AER-REQ-112,INTEGRAÇÕES,P1,Codex oficial,Integrar app-server ou exec conforme documentação vigente,Smoke com eventos reais e aprovação simulada,T-AER-112,PROPOSED,AER-MASTER-001
+AER-REQ-113,INTEGRAÇÕES,P1,Kimi official,Usar CLI/documentação atual sem inventar flags,Probe versionado e teste opt-in,T-AER-113,PROPOSED,AER-MASTER-001
+AER-REQ-114,INTEGRAÇÕES,P1,OpenCode SDK,Integrar por SDK/server oficial local com escopo controlado,Sessão de teste com event stream,T-AER-114,PROPOSED,AER-MASTER-001
+AER-REQ-115,INTEGRAÇÕES,P1,Google autorizado,Selecionar CLI/SDK Google vigente e autorização realmente disponível,Sem suporte marca NOT_SUPPORTED; não falsificar,T-AER-115,PROPOSED,AER-MASTER-001
+AER-REQ-116,INTEGRAÇÕES,P1,Provider optional,Ausência de qualquer um dos cinco não impede uso dos demais,Remover provider do PATH e abrir TUI,T-AER-116,PROPOSED,AER-MASTER-001
+AER-REQ-117,INTEGRAÇÕES,P1,Sessão isolada,Uma task não deve herdar token/sessão de outro usuário/provider,Fixture multi-provider com contextos,T-AER-117,PROPOSED,AER-MASTER-001
+AER-REQ-118,INTEGRAÇÕES,P1,Cancel real,"Se adapter não suporta cancel, reportar limitações e fallback seguro",Cancel status UNKNOWN sem false positive,T-AER-118,PROPOSED,AER-MASTER-001
+AER-REQ-119,INTEGRAÇÕES,P1,Compatibilidade real,Toda integração exibirá status de testes reais/fakes,Doctor diferencia VERIFIED/SIMULATED/UNKNOWN,T-AER-119,PROPOSED,AER-MASTER-001
+AER-REQ-120,INTEGRAÇÕES,P1,Política comercial,Provider deve documentar condições e não extrair OAuth privado,Scanner e code review sem uso de secrets de terceiros,T-AER-120,PROPOSED,AER-MASTER-001
+AER-REQ-121,AUTENTICAÇÃO,P0,Delegação auth,"Assinatura oficial deve autenticar no respectivo cliente, não no AER",Fluxo login orientado não lê token,T-AER-121,PROPOSED,AER-MASTER-001
+AER-REQ-122,AUTENTICAÇÃO,P0,SecretStore nativo,Chaves API explícitas administradas pelo AER devem usar SecretStore nativo seguro,Fixture secret não aparece em arquivo e indisponibilidade falha fechado,T-AER-122,PROPOSED,AER-MASTER-001
+AER-REQ-123,AUTENTICAÇÃO,P0,Consentimento API,Uso cobrado por API exige aviso e aceite explícito,Sem aceite nenhuma chamada tarifável,T-AER-123,PROPOSED,AER-MASTER-001
+AER-REQ-124,AUTENTICAÇÃO,P0,Redaction credentials,CLI logs/usage não devem incluir tokens nem email privado desnecessário,Scan de export,T-AER-124,PROPOSED,AER-MASTER-001
+AER-REQ-125,AUTENTICAÇÃO,P0,Expiração,Credencial expirada deve produzir estado claro e guia de reauth,Fixture expire,T-AER-125,PROPOSED,AER-MASTER-001
+AER-REQ-126,AUTENTICAÇÃO,P0,Sem cookies,AER não deve vasculhar cookies/armazenamento secreto dos CLIs,Auditoria estática de adapter,T-AER-126,PROPOSED,AER-MASTER-001
+AER-REQ-127,AUTENTICAÇÃO,P0,Credencial por provider,Credenciais nunca devem transitar para adapter diferente,Teste de environment scoped,T-AER-127,PROPOSED,AER-MASTER-001
+AER-REQ-128,AUTENTICAÇÃO,P0,Scopes mínimos,MCP e providers devem operar só com scopes aprovados,MCP pede escopo extra e é negado,T-AER-128,PROPOSED,AER-MASTER-001
+AER-REQ-129,AUTENTICAÇÃO,P0,Logout independente,Logout de AER não deve destruir sessão de CLI oficial sem confirmação,Teste isolado,T-AER-129,PROPOSED,AER-MASTER-001
+AER-REQ-130,AUTENTICAÇÃO,P0,Modo não autenticado,Projeto e simulator devem funcionar sem login externo,E2E offline,T-AER-130,PROPOSED,AER-MASTER-001
+AER-REQ-131,EXTENSÕES,P2,Discovery Skills,AER deve listar Skills com paths e hashes,Fixture SKILL.md detectada,T-AER-131,PROPOSED,AER-MASTER-001
+AER-REQ-132,EXTENSÕES,P2,Parsing seguro,Frontmatter inválido não deve executar scripts,Fixture malicioso rejeitado,T-AER-132,PROPOSED,AER-MASTER-001
+AER-REQ-133,EXTENSÕES,P2,Compatibilidade classificada,Cada plugin/provider deve registrar NATIVE/PORTABLE/ADAPTED/CLAUDE_ONLY/UNKNOWN/UNSUPPORTED,Matriz visível na TUI,T-AER-133,PROPOSED,AER-MASTER-001
+AER-REQ-134,EXTENSÕES,P2,Delegação plugin,Plugins Claude devem ser instalados pelo mecanismo oficial,Mock do CLI recebe comando oficial; sem escrita interna,T-AER-134,PROPOSED,AER-MASTER-001
+AER-REQ-135,EXTENSÕES,P2,MCP stdio,Servidor MCP confiável pode ser iniciado sob timeout,Fixture echo MCP,T-AER-135,PROPOSED,AER-MASTER-001
+AER-REQ-136,EXTENSÕES,P2,MCP HTTP,Endpoint externo exige aprovação de rede e credenciais,Deny por padrão,T-AER-136,PROPOSED,AER-MASTER-001
+AER-REQ-137,EXTENSÕES,P2,Hooks AER,Eventos de hooks devem executar sob policy e timeout,Hook security fail fecha operação,T-AER-137,PROPOSED,AER-MASTER-001
+AER-REQ-138,EXTENSÕES,P2,Plugin versionado,Atualização exige inspeção de novas permissões,Fixture mudança de hash bloqueia auto enable,T-AER-138,PROPOSED,AER-MASTER-001
+AER-REQ-139,EXTENSÕES,P2,Instalação segura,Script postinstall não revisado não roda automaticamente,Fixture simula postinstall perigoso,T-AER-139,PROPOSED,AER-MASTER-001
+AER-REQ-140,EXTENSÕES,P2,Sem compartilhamento indevido,Compatibilidade Claude-only não é anunciada como universal,TUI e logs marcam Claude-only,T-AER-140,PROPOSED,AER-MASTER-001
+AER-REQ-141,USAGE,P1,Token metrics,Tokens só devem ser exibidos se provedor trouxer número real,Sem dados mostra não disponível,T-AER-141,PROPOSED,AER-MASTER-001
+AER-REQ-142,USAGE,P1,Cotas assinatura,Quota por plano deve vir de fonte oficial com timestamp,Fixture sem quota renderiza N/D,T-AER-142,PROPOSED,AER-MASTER-001
+AER-REQ-143,USAGE,P1,Janela consumo,Métrica deve indicar janela/unidade/observedAt,`usage --json` inclui metadata,T-AER-143,PROPOSED,AER-MASTER-001
+AER-REQ-144,USAGE,P1,Rate limit,Retry-after conhecido deve ser respeitado,Fixture 429 atrasa tentativa,T-AER-144,PROPOSED,AER-MASTER-001
+AER-REQ-145,USAGE,P1,Custo API,Custo deve ser identificado como API e moeda,Sem preço conhecido valor unknown,T-AER-145,PROPOSED,AER-MASTER-001
+AER-REQ-146,USAGE,P1,Teto custo,Budget explícito deve bloquear chamadas superiores ao limite,Fixture cost ceiling,T-AER-146,PROPOSED,AER-MASTER-001
+AER-REQ-147,USAGE,P1,Não somar quotas,Tela não deve mostrar soma falsa entre assinaturas,Teste snapshot multi-provider,T-AER-147,PROPOSED,AER-MASTER-001
+AER-REQ-148,USAGE,P1,Tokens x progresso,Token usage não deve alimentar progresso de task,Task 0 milestones ainda indeterminado,T-AER-148,PROPOSED,AER-MASTER-001
+AER-REQ-149,USAGE,P1,Métrica stale,Métrica antiga deve receber etiqueta STALE,Test TTL expirado,T-AER-149,PROPOSED,AER-MASTER-001
+AER-REQ-150,USAGE,P1,Provider sem uso,Widget deve distinguir 0 comprovado de desconhecido,Test EMPTY vs UNKNOWN,T-AER-150,PROPOSED,AER-MASTER-001
+AER-REQ-151,ASES METHODS,P2,Fontes intactas,Três fontes ASES incluídas devem manter hashes conhecidos,CI sha256 compara ao manifest,T-AER-151,PROPOSED,AER-MASTER-001
+AER-REQ-152,ASES METHODS,P2,300 base geral,Matriz deve suportar e preservar textos REQ-001..REQ-300,Contar IDs sem renumerar,T-AER-152,PROPOSED,AER-MASTER-001
+AER-REQ-153,ASES METHODS,P2,Fonte ASES500,Documento consolidado deve manter selo para validação,README não chama homologado,T-AER-153,PROPOSED,AER-MASTER-001
+AER-REQ-154,ASES METHODS,P2,Entrevista adaptativa,Especificador não deve repetir questões já respondidas,Fixture conversa com resposta conhecida,T-AER-154,PROPOSED,AER-MASTER-001
+AER-REQ-155,ASES METHODS,P2,Decisão status,CONFIRMED/PROPOSED/PENDING/N-A devem aparecer claramente,Template validado,T-AER-155,PROPOSED,AER-MASTER-001
+AER-REQ-156,ASES METHODS,P2,Requisitos de domínio,IDs do produto não devem colidir com núcleo ASES-300,AER-REQ separado,T-AER-156,PROPOSED,AER-MASTER-001
+AER-REQ-157,ASES METHODS,P2,Rastreabilidade,Todo task funcional deve apontar a pelo menos um requisito,Check traceability para task criada,T-AER-157,PROPOSED,AER-MASTER-001
+AER-REQ-158,ASES METHODS,P2,Gate qualidade,Tarefa sem teste exigido não fecha sem exceção aprovada,Fixture test missing,T-AER-158,PROPOSED,AER-MASTER-001
+AER-REQ-159,ASES METHODS,P2,Impacto mudanças,Alterar requisito aprovado exige CHANGE e impacto,Mudança bloqueada sem CHANGE,T-AER-159,PROPOSED,AER-MASTER-001
+AER-REQ-160,ASES METHODS,P2,Handoff metodológico,Retomada deve incluir estado decisões e critérios de aceite,Nova sessão não depende de chat anterior,T-AER-160,PROPOSED,AER-MASTER-001
+AER-REQ-161,SEGURANÇA,P0,Policy deny default,Operação não classificada deve ser negada,Teste operação unknown,T-AER-161,PROPOSED,AER-MASTER-001
+AER-REQ-162,SEGURANÇA,P0,Aprovação por hash,Aprovação deve vincular-se ao conteúdo exato do comando,Alterar args invalida aprovação,T-AER-162,PROPOSED,AER-MASTER-001
+AER-REQ-163,SEGURANÇA,P0,Sem auto bypass,AER não deve ativar flags de permissões irrestritas,Test denylist de flags,T-AER-163,PROPOSED,AER-MASTER-001
+AER-REQ-164,SEGURANÇA,P0,Escopo path,Escrita fora das pastas permitidas deve ser negada,Teste ../ e symlink,T-AER-164,PROPOSED,AER-MASTER-001
+AER-REQ-165,SEGURANÇA,P0,Exec segura,Comando shell deve ser executado sem interpolação,Injection fixture,T-AER-165,PROPOSED,AER-MASTER-001
+AER-REQ-166,SEGURANÇA,P0,Segredos fora de logs,Scanner deve redigir secrets em todo sink,"Scan JSONL, stdout, crash report",T-AER-166,PROPOSED,AER-MASTER-001
+AER-REQ-167,SEGURANÇA,P0,Prompt injection,Texto de ferramenta não deve elevar nível de instrução,Fixture MALICIOUS.md,T-AER-167,PROPOSED,AER-MASTER-001
+AER-REQ-168,SEGURANÇA,P0,Plugin supply chain,Instalação de extensão sem revisão de source e scripts deve exigir approval,Fixture npm plugin malicioso,T-AER-168,PROPOSED,AER-MASTER-001
+AER-REQ-169,SEGURANÇA,P0,Operação destrutiva,Delete/push/publish deve exigir confirmação específica,Teste operação sem approval não roda,T-AER-169,PROPOSED,AER-MASTER-001
+AER-REQ-170,SEGURANÇA,P0,Segurança IPC,Outro usuário não deve conseguir ler/alterar socket,Teste permissões/peer id,T-AER-170,PROPOSED,AER-MASTER-001
+AER-REQ-171,SEGURANÇA,P0,Limites de recursos,Task deve respeitar timeouts e limites de bytes observados,Fixture flood stdout,T-AER-171,PROPOSED,AER-MASTER-001
+AER-REQ-172,SEGURANÇA,P0,Segurança de atualização,Update nunca deve sobrescrever dados sem backup/migração,Teste crash update,T-AER-172,PROPOSED,AER-MASTER-001
+AER-REQ-173,SEGURANÇA,P0,Exceções registradas,Bypass permitido por dono deve ter validade/escopo e audit trail,Approval record completo,T-AER-173,PROPOSED,AER-MASTER-001
+AER-REQ-174,SEGURANÇA,P0,Mínima rede,Configuração padrão não deve exfiltrar dados locais a terceiros além do provider escolhido,Network integration test com endpoint fake,T-AER-174,PROPOSED,AER-MASTER-001
+AER-REQ-175,SEGURANÇA,P0,Dados pessoais,Exportação de logs deve permitir preview e redaction,Fixture PII não sai em default,T-AER-175,PROPOSED,AER-MASTER-001
+AER-REQ-176,HANDOFF,P2,Handoff por task,Toda troca de provider deve gerar HANDOFF.md com estado confirmado,Simulação Claude→Codex com diff e next steps,T-AER-176,PROPOSED,AER-MASTER-001
+AER-REQ-177,HANDOFF,P2,Contexto seletivo,Agent recebe documentos necessários e não todo histórico indiscriminadamente,Test prompt pack sem task alheia,T-AER-177,PROPOSED,AER-MASTER-001
+AER-REQ-178,HANDOFF,P2,Resumo referenciado,Compressão deve manter ponteiros para fontes/eventos originais,Arquivo summary contém seq IDs,T-AER-178,PROPOSED,AER-MASTER-001
+AER-REQ-179,HANDOFF,P2,Limite contexto,Pacote deve respeitar budget de caracteres/tokens estimados,Teste contra limite definido,T-AER-179,PROPOSED,AER-MASTER-001
+AER-REQ-180,HANDOFF,P2,Checkpoint remoto,Sem storage remoto runtime deve preservar checkpoint local,Smoke offline,T-AER-180,PROPOSED,AER-MASTER-001
+AER-REQ-181,HANDOFF,P2,Handoff ao fechar,Sessão encerrada produz STATUS/NEXT-STEPS/HANDOFF,E2E exit,T-AER-181,PROPOSED,AER-MASTER-001
+AER-REQ-182,HANDOFF,P2,Retomar idempotente,Reexecutar resume não deve duplicar attempt já ativo,Double resume test,T-AER-182,PROPOSED,AER-MASTER-001
+AER-REQ-183,HANDOFF,P2,Migração machine,"Export deve excluir credenciais dos cofres nativos, tokens e endpoints IPC",Archive scanner,T-AER-183,PROPOSED,AER-MASTER-001
+AER-REQ-184,HANDOFF,P2,Review pendente,Handoff deve indicar claramente validação não concluída,Teste output status,T-AER-184,PROPOSED,AER-MASTER-001
+AER-REQ-185,HANDOFF,P2,Fonte de conhecimento,Lições aprendidas devem ser distintas de decisões aprovadas,Knowledge file tem source and confidence,T-AER-185,PROPOSED,AER-MASTER-001
+AER-REQ-186,QUALITY,P1,Teste por task,Task deve registrar test runs reais com exit e timestamp,STATUS aponta test run evidência,T-AER-186,PROPOSED,AER-MASTER-001
+AER-REQ-187,QUALITY,P1,Code review independente,Reviewer deve ter modo read-only e relatório,Fixture revisor tenta escrita e é negado,T-AER-187,PROPOSED,AER-MASTER-001
+AER-REQ-188,QUALITY,P1,Gate merge,Merge exige testes/approvals configurados,Sem test run merge negado,T-AER-188,PROPOSED,AER-MASTER-001
+AER-REQ-189,QUALITY,P1,Output não é prova,Texto 'tests passed' não encerra task se não houver test run,Test fake agent output,T-AER-189,PROPOSED,AER-MASTER-001
+AER-REQ-190,QUALITY,P1,CI,"Repo deve ter lint, typecheck e test automatizados",Workflow execute em CI compatível,T-AER-190,PROPOSED,AER-MASTER-001
+AER-REQ-191,QUALITY,P1,E2E duas janelas,Testar `ases` e `ases-tar` em processos separados,PIDs distintos no teste,T-AER-191,PROPOSED,AER-MASTER-001
+AER-REQ-192,QUALITY,P1,Crash recovery,Matar processo entre commit e export recupera estado,Fault injection,T-AER-192,PROPOSED,AER-MASTER-001
+AER-REQ-193,QUALITY,P1,Provider mismatch,Schema de evento desconhecido gera diagnóstico e fallback,Fixture unknown payload,T-AER-193,PROPOSED,AER-MASTER-001
+AER-REQ-194,QUALITY,P1,Timeout tests,Testes pendurados são encerrados sem bloquear CI indefinidamente,Fixture timeout,T-AER-194,PROPOSED,AER-MASTER-001
+AER-REQ-195,QUALITY,P1,Coverage honesto,"Relatório deve diferenciar testado, não testado e ignorado",CI report distingue NOT_RUN,T-AER-195,PROPOSED,AER-MASTER-001
+AER-REQ-196,MACOS,P2,Cofre nativo,Armazenar API key gerenciada somente com API oficial segura no SO,Teste fake SecretStore e integração opt-in,T-AER-196,PROPOSED,AER-MASTER-001
+AER-REQ-197,MACOS,P2,launchd opcional,Daemon só registra launch agent após consentimento explícito,Install não cria serviço automaticamente,T-AER-197,PROPOSED,AER-MASTER-001
+AER-REQ-198,MACOS,P2,Heartbeat daemon,Runtime deve indicar estado independente da UI,Fechar UI e verificar heartbeat,T-AER-198,PROPOSED,AER-MASTER-001
+AER-REQ-199,MACOS,P2,Notificações opcionais,Aviso de tarefa/approval pode usar notificações macOS opt-in,Desabilitado por padrão em teste,T-AER-199,PROPOSED,AER-MASTER-001
+AER-REQ-200,MACOS,P2,Terminais múltiplos,Terminal.app e outros terminais suportados devem respeitar TTY,smoke em terminals disponíveis,T-AER-200,PROPOSED,AER-MASTER-001
+AER-REQ-201,MACOS,P2,Resizing,SIGWINCH deve reflow layout sem stack trace,Teste resize,T-AER-201,PROPOSED,AER-MASTER-001
+AER-REQ-202,MACOS,P2,Permissões por OS,IPC e DB devem respeitar POSIX mode no macOS/Linux e DACL no Windows,POSIX stat e Windows ACL validados,T-AER-202,PROPOSED,AER-MASTER-001
+AER-REQ-203,MACOS,P2,Energy friendly,Monitor deve ter refresh adaptativo sem polling intensivo,Benchmark idle CPU documentado,T-AER-203,PROPOSED,AER-MASTER-001
+AER-REQ-204,MACOS,P2,Architecture detection,Doctor deve identificar arm64/x86_64 com precisão,Test arch stubs,T-AER-204,PROPOSED,AER-MASTER-001
+AER-REQ-205,RELEASE,P3,Versionamento,SemVer e changelog devem acompanhar releases,Package e tag coincidem,T-AER-205,PROPOSED,AER-MASTER-001
+AER-REQ-206,RELEASE,P3,Empacotamento,npm package deve conter bin e arquivos necessários,`npm pack --dry-run` verificado,T-AER-206,PROPOSED,AER-MASTER-001
+AER-REQ-207,RELEASE,P3,Homebrew posterior,Tap Homebrew não é pré-requisito de MVP,Release docs distinguem planned vs done,T-AER-207,PROPOSED,AER-MASTER-001
+AER-REQ-208,RELEASE,P3,Checksum release,Artefatos publicados têm SHA-256 para verificação,Manifest checksums confere,T-AER-208,PROPOSED,AER-MASTER-001
+AER-REQ-209,RELEASE,P3,SBOM,Release público deve acompanhar inventário de dependências,Gerar SBOM e arquivar,T-AER-209,PROPOSED,AER-MASTER-001
+AER-REQ-210,RELEASE,P3,Licença,Nenhuma publicação pública sem licença decidida pelo responsável,Gate release exige LICENSE válido,T-AER-210,PROPOSED,AER-MASTER-001
+AER-REQ-211,RELEASE,P3,Security policy,SECURITY.md deve indicar disclosure e versões suportadas,Arquivo validado,T-AER-211,PROPOSED,AER-MASTER-001
+AER-REQ-212,RELEASE,P3,Documentação,README deve mostrar instalação/doctor/primeiro projeto,Smoke roteiro usuário,T-AER-212,PROPOSED,AER-MASTER-001
+AER-REQ-213,RELEASE,P3,Compatibilidade de schema,Upgrade deve manter projetos antigos ou bloquear com instrução,Migration fixtures n-1,T-AER-213,PROPOSED,AER-MASTER-001
+AER-REQ-214,RELEASE,P3,Proveniência,Relatório final deve citar links oficiais de integração e data de verificação,docs/PROVIDERS.md inclui fontes,T-AER-214,PROPOSED,AER-MASTER-001
+AER-REQ-215,ADVANCED,P4,Brain explicável,Escolha de IA deve registrar rationale e incerteza,Route report apresenta scoring/constraints,T-AER-215,PROPOSED,AER-MASTER-001
+AER-REQ-216,ADVANCED,P4,Swarm limitado,Subagentes não podem spawnar indefinidamente,Depth/spawn limit test,T-AER-216,PROPOSED,AER-MASTER-001
+AER-REQ-217,ADVANCED,P4,Arena opt-in,Dupla implementação requer aceite de custo extra,Sem aceite só 1 executor,T-AER-217,PROPOSED,AER-MASTER-001
+AER-REQ-218,ADVANCED,P4,Replay offline,Replay dos eventos deve funcionar sem acesso a provedor,Modo offline 100 eventos,T-AER-218,PROPOSED,AER-MASTER-001
+AER-REQ-219,ADVANCED,P4,Time machine segura,Recuperação deve criar branch isolada sem hard reset,HEAD principal inalterado,T-AER-219,PROPOSED,AER-MASTER-001
+AER-REQ-220,ADVANCED,P4,Digital Twin rotulado,Simulação deve ter marca `SIMULATED` em todas as telas,Assertion de label,T-AER-220,PROPOSED,AER-MASTER-001
+AER-REQ-221,ADVANCED,P4,Learning local,Métricas agregadas não transmitem dados sem consentimento,Mock network sem outbound,T-AER-221,PROPOSED,AER-MASTER-001
+AER-REQ-222,ADVANCED,P4,Auto-heal limitado,Autocorreção respeita limite de tentativas e revisão,Fixture loop pára no limite,T-AER-222,PROPOSED,AER-MASTER-001
+AER-REQ-223,ADVANCED,P4,Project Passport,Import/export devem recuperar docs sem credenciais,Roundtrip redigido,T-AER-223,PROPOSED,AER-MASTER-001
+AER-REQ-224,ADVANCED,P4,Failure Radar,Erros repetidos devem agrupar por assinatura verificável,Fixture com 3 falhas iguais gera 1 grupo,T-AER-224,PROPOSED,AER-MASTER-001
+AER-REQ-225,CROSS-PLATFORM,P0,3 sistemas suportados,"O produto terá macOS, Windows e Linux como três plataformas oficiais de destino com matriz de suporte publicada","Smoke real em macOS, Windows e Linux antes da etiqueta multiplataforma estável",T-AER-225,PROPOSED,AER-MASTER-001
+AER-REQ-226,CROSS-PLATFORM,P0,Abstração de SO,Core deverá usar PlatformAdapter sem importar diretamente APIs exclusivas de sistemas operacionais,Teste de fronteiras de imports e fake darwin/win32/linux,T-AER-226,PROPOSED,AER-MASTER-001
+AER-REQ-227,CROSS-PLATFORM,P0,IPC Windows,Windows deverá usar Named Pipe local autenticado por identidade do usuário e ACL apropriada,E2E dois processos PowerShell e teste de negação para identidade diferente,T-AER-227,PROPOSED,AER-MASTER-001
+AER-REQ-228,CROSS-PLATFORM,P0,IPC POSIX,macOS/Linux deverão usar Unix Domain Socket em runtime dir privado,E2E de protocolo e isolamento Unix em ambos os sistemas,T-AER-228,PROPOSED,AER-MASTER-001
+AER-REQ-229,CROSS-PLATFORM,P0,Segredos nativos,"Chaves gerenciadas usarão Keychain no Mac, WinCred no Windows e Secret Service no Linux quando disponíveis",Testes de integração e negação de persistência quando cofre indisponível,T-AER-229,PROPOSED,AER-MASTER-001
+AER-REQ-230,CROSS-PLATFORM,P0,Caminhos universais,Todas as operações suportarão caminhos Windows/POSIX com espaços Unicode e diretórios com ACLs,"Fixtures com UNC, C:, acentos, symlinks/junctions e project root",T-AER-230,PROPOSED,AER-MASTER-001
+AER-REQ-231,CROSS-PLATFORM,P0,Subprocessos e cancelamento,O lifecycle de agentes deverá gerenciar árvores de processos de forma segura por SO,Teste de cancelamento sem processos órfãos em macOS Windows Linux,T-AER-231,PROPOSED,AER-MASTER-001
+AER-REQ-232,CROSS-PLATFORM,P0,Distribuição npm,Um único pacote npm deverá disponibilizar ases e ases-tar em macOS Windows Linux,npm pack install smoke de dois bins em bash zsh e PowerShell,T-AER-232,PROPOSED,AER-MASTER-001
+AER-REQ-233,CROSS-PLATFORM,P0,Matriz CI,CI deverá executar testes independentes por SO com estados PASS FAIL NOT_RUN,Pipeline com macOS Windows Ubuntu e publicação de matriz,T-AER-233,PROPOSED,AER-MASTER-001
+AER-REQ-234,CROSS-PLATFORM,P0,Terminal nativo,TUI deverá operar sem navegador em Terminal.app Windows Terminal/PowerShell e terminais Linux,PTY/ConPTY E2E e testes sem TTY com fallback legível,T-AER-234,PROPOSED,AER-MASTER-001
+AER-REQ-235,CROSS-PLATFORM,P1,Supervisor por SO,Persistência de jobs após saída da TUI usará supervisor adequado e nunca exigirá admin por padrão,Testes launchd systemd-user e Windows por sessão ou marcar UNSUPPORTED,T-AER-235,PROPOSED,AER-MASTER-001
+AER-REQ-236,CROSS-PLATFORM,P0,SQLite portátil,Driver SQLite deverá operar nos três sistemas e arquiteturas anunciados,Migração transacional e recuperação E2E em três SO,T-AER-236,PROPOSED,AER-MASTER-001
+AER-REQ-237,CROSS-PLATFORM,P1,Shell seguro,Execução de provider não interpolará argumentos em shell e lidará com executáveis .cmd no Windows,Testes de injeção e quoting no PowerShell POSIX,T-AER-237,PROPOSED,AER-MASTER-001
+AER-REQ-238,CROSS-PLATFORM,P0,Doctor por plataforma,"ases doctor deverá reportar suporte efetivo, permissões, store, IPC e terminal por SO",Fixtures com recursos ausentes e relatório acionável em Win Linux Mac,T-AER-238,PROPOSED,AER-MASTER-001
+AER-REQ-239,CROSS-PLATFORM,P1,Arquiteturas e distros,Windows arm64/Linux arm64 ou distros não validadas não serão declarados suportados sem testes,Matriz do release apresenta suportado pendente ou não suportado,T-AER-239,PROPOSED,AER-MASTER-001
+AER-REQ-240,EUREKA42-BRANDING,P0,Marca principal,Telas ases e ases-tar identificarão o produto como Eureka42 ASES Engineering Runtime,Screenshots texto snapshot de welcome e monitor exibem Eureka42 sem omissão,T-AER-240,PROPOSED,AER-MASTER-001
+AER-REQ-241,EUREKA42-BRANDING,P0,Símbolo escolhido,Logo de terminal usará glifo Unicode ⌘ U+2318 com alternativa ASCII E42,Golden tests da variante Unicode e fallback ASCII,T-AER-241,PROPOSED,AER-MASTER-001
+AER-REQ-242,EUREKA42-BRANDING,P1,Tipografia de referência,"Documentação reconhecerá Noto Sans Symbols 2 para ⌘, Inter para Eureka e Montserrat ExtraBold para 42 no estudo de marca",Arquivo branding cita fontes de referência sem afirmar controle da fonte do terminal,T-AER-242,PROPOSED,AER-MASTER-001
+AER-REQ-243,EUREKA42-BRANDING,P0,Quatro paletas,O terminal disponibilizará temas teal blue purple gold e mono com contrastes adequados,Snapshot de cores e contraste em dark/light,T-AER-243,PROPOSED,AER-MASTER-001
+AER-REQ-244,EUREKA42-BRANDING,P0,Modos de logo,Logo terá versões full compact minimal ascii selecionadas conforme viewport e opção CLI,Snapshots 40 50 80 120 colunas sem overflow,T-AER-244,PROPOSED,AER-MASTER-001
+AER-REQ-245,EUREKA42-BRANDING,P0,NO_COLOR,NO_COLOR e --no-color deverão desativar escapes ANSI e conservar informação textual,stdout sem sequências ANSI em smoke,T-AER-245,PROPOSED,AER-MASTER-001
+AER-REQ-246,EUREKA42-BRANDING,P1,Sem animações forçadas,Animação será opcional e desligada em CI redirect TERM dumb e reduced motion,Testes de redirecionamento e --no-animation,T-AER-246,PROPOSED,AER-MASTER-001
+AER-REQ-247,EUREKA42-BRANDING,P0,Sem logo no JSON,Saídas --json e logs JSONL nunca receberão ASCII art ou cores,Parser JSONL e JSON aceitam stdout puro,T-AER-247,PROPOSED,AER-MASTER-001
+AER-REQ-248,EUREKA42-BRANDING,P1,Temas compartilhados,Ambas TUIs usarão mesma fonte de configuração de cores e tokens sem divergência,Snapshot ases comparado ao ases-tar por tokens,T-AER-248,PROPOSED,AER-MASTER-001
+AER-REQ-249,EUREKA42-BRANDING,P1,Configuração visual,Usuário poderá definir theme e logo por CLI projeto e configuração global,Testes de precedência CLI > projeto > global > default,T-AER-249,PROPOSED,AER-MASTER-001
+AER-REQ-250,EUREKA42-BRANDING,P0,Marca de referência,Kit deve preservar imagem original de estudo de marca e não incluir fontes tipográficas proprietárias,SHA-256 da imagem e auditoria do pacote sem arquivos de fontes,T-AER-250,PROPOSED,AER-MASTER-001

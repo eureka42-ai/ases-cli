@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.DS_Store
+# estado operacional privado do .ases (spec §4.3)
+.ases/db/
+.ases/runtime/
+.ases/locks/
+.ases/ipc/

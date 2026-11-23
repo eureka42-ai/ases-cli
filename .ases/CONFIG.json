@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "name": "ASES Engineering Runtime (AER)",
+    "locale": "pt-BR"
+  },
+  "scheduler": {
+    "mode": "manual",
+    "maxParallelTasks": 1,
+    "maxAttempts": 3,
+    "taskTimeoutMinutes": 60
+  },
+  "security": {
+    "defaultPolicy": "deny-unclassified",
+    "requireApprovalFor": [
+      "package-install",
+      "network-external",
+      "git-push",
+      "publish",
+      "destructive"
+    ],
+    "storeRawPrompts": false,
+    "allowOutsideRepo": false
+  },
+  "usage": {
+    "displayUnknownAs": "N/D",
+    "apiBudgetEnabled": false
+  },
+  "extensions": {
+    "autoInstall": false,
+    "autoUpdate": false
+  },
+  "branding": {
+    "theme": "teal",
+    "logo": "auto"
+  }
+}

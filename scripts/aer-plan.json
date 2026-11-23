@@ -1,0 +1,66 @@
+{
+  "_notice": "Plano de bootstrap do próprio AER (MD mestre §16). Lido por scripts/ases-dev.mjs init; arquivos já existentes em .ases/ nunca são sobrescritos.",
+  "project": { "name": "ASES Engineering Runtime (AER)", "brand": "Eureka42 · ASES Engineering Runtime" },
+  "sources": [
+    "fontes/ASES-300_DOCUMENTACAO_INTEGRAL.md",
+    "fontes/ASES-500_GPT_ESPECIFICADOR_INTERATIVO_TRABALHO.md",
+    "fontes/ASES-500_METODOLOGIA_CONSOLIDADA_PARA_VALIDACAO.md",
+    "branding/references/Estudo de Marca Eureka42: Quatro Variações.png",
+    "branding/references/Emblema Tecnológico Eureka42 AI Framework.png"
+  ],
+  "phases": [
+    { "id": "PHASE-01", "title": "Repositório e bootstrap seguro", "gate": "npm install autorizado; lint, typecheck e testes básicos passando" },
+    { "id": "PHASE-02", "title": "SQLite + eventos + estados" },
+    { "id": "PHASE-03", "title": "Dois executáveis e IPC" },
+    { "id": "PHASE-04", "title": "TUI utilizável + marca Eureka42" },
+    { "id": "PHASE-05", "title": "Scheduler, DAG e isolamento Git" },
+    { "id": "PHASE-06", "title": "Motor de provider e simulador determinístico" },
+    { "id": "PHASE-07", "title": "Claude Code oficial e Codex oficial" },
+    { "id": "PHASE-08", "title": "Kimi, OpenCode e Google" },
+    { "id": "PHASE-09", "title": "ASES-300/500 e rastreabilidade" },
+    { "id": "PHASE-10", "title": "Segurança e registry de extensões" },
+    { "id": "PHASE-11", "title": "Continuidade, métricas e review" },
+    { "id": "PHASE-12", "title": "Daemon local, portabilidade final e release multiplataforma" },
+    { "id": "PHASE-13", "title": "Brain, Swarm, Arena e recursos avançados (pós-MVP)" },
+    { "id": "PHASE-14", "title": "Time Machine, Digital Twin e Learning Engine" },
+    { "id": "PHASE-15", "title": "Portabilidade Windows e Linux verificada" },
+    { "id": "PHASE-16", "title": "Eureka42 Branding, UX portátil e release estável" }
+  ],
+  "tasks": [
+    {
+      "id": "TAR-0001", "phase": "PHASE-01", "title": "Auditar ambiente local", "priority": 100, "risk": "LOW", "dependencies": [],
+      "reqs": ["AER-REQ-001", "AER-REQ-002", "AER-REQ-003", "AER-REQ-204"],
+      "scope": "Detectar SO, arquitetura, Node, gerenciadores, Git e CLIs de provedores sem alterar o ambiente",
+      "acceptance": ["Sistema e arquitetura detectados", "Ferramentas com versões registradas", "Ausências marcadas sem instalação automática"],
+      "tests": ["T-AER-001: evidência .ases/evidence/TAR-0001-environment.md"]
+    },
+    {
+      "id": "TAR-0002", "phase": "PHASE-01", "title": "Monorepo TypeScript (npm workspaces)", "priority": 95, "risk": "LOW", "dependencies": ["TAR-0001"],
+      "reqs": ["AER-REQ-005", "AER-REQ-006", "AER-REQ-007"],
+      "scope": "package.json com workspaces, engines e lockfile; tsconfig strict; lint de fronteiras; vitest",
+      "acceptance": ["engines.node fixado", "tsc strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes passa", "lint de fronteiras passa e detecta violações em fixture", "package-lock.json versionado"],
+      "tests": ["npm run lint", "npm run typecheck", "test/boundaries.test.mjs"]
+    },
+    {
+      "id": "TAR-0003", "phase": "PHASE-01", "title": "Contratos de projeto", "priority": 90, "risk": "LOW", "dependencies": ["TAR-0002"],
+      "reqs": ["AER-REQ-010", "AER-REQ-013", "AER-REQ-021", "AER-REQ-031"],
+      "scope": "packages/contracts: IDs PHASE/TAR/ATT, versões independentes, estados, schema Zod do MANIFEST.json",
+      "acceptance": ["IDs formatam/expandem sem colisão (101 fases)", "Manifest rejeita paths absolutos e campos desconhecidos", "Versões app/protocol/schema separadas"],
+      "tests": ["packages/contracts/test/contracts.test.ts"]
+    },
+    {
+      "id": "TAR-0004", "phase": "PHASE-01", "title": "Bootstrap de .ases/", "priority": 90, "risk": "LOW", "dependencies": ["TAR-0002"],
+      "reqs": ["AER-REQ-011", "AER-REQ-016", "AER-REQ-151", "AER-REQ-181"],
+      "scope": "scripts/ases-dev.mjs (interino até o motor): init não destrutivo, eventos JSONL com seq e sha256, STATUS/HANDOFF/TRACEABILITY gerados",
+      "acceptance": ["init duas vezes não altera hashes", "MANIFEST com SHA-256 das fontes", "STATUS.md, HANDOFF.md, NEXT-STEPS.md presentes", "histórico com seq contínua e hash verificável"],
+      "tests": ["test/ases-dev.test.mjs", "node scripts/ases-dev.mjs verify"]
+    },
+    {
+      "id": "TAR-0005", "phase": "PHASE-01", "title": "Testes/CI e esqueleto PlatformAdapter", "priority": 85, "risk": "MODERATE", "dependencies": ["TAR-0002"],
+      "reqs": ["AER-REQ-190", "AER-REQ-195", "AER-REQ-225", "AER-REQ-226", "AER-REQ-227", "AER-REQ-228", "AER-REQ-229", "AER-REQ-233"],
+      "scope": "platform-core + platform-macos/windows/linux; fakes darwin/win32/linux; workflow CI macOS/Windows/Ubuntu",
+      "acceptance": ["Contrato PlatformAdapter com métodos §3.6", "UDS em darwin/linux e Named Pipe em win32 (fake)", "SecretStore indisponível recusa persistir", "Workflow CI com matriz de 3 SO (NOT_RUN até execução real)"],
+      "tests": ["packages/platform-*/test/*.test.ts", ".github/workflows/ci.yml"]
+    }
+  ]
+}
