@@ -70,13 +70,18 @@ describe('prompt pack (AER-REQ-177/179)', () => {
 
 describe('recovery (TAR-0057, AER-REQ-180/182)', () => {
   it('interrupted attempt: leftovers saved as recovery checkpoint, task READY; resume is idempotent', async () => {
-    const { root, s, id } = await setup();
-    const { fencingToken } = s.reserveTask(id, { ownerId: 'morto', ttlMs: 400, explanation: 'test', maxActive: 1 });
+    // relógio controlado: o lease vence quando o teste manda, não pela velocidade do disco (Windows CI, run 45256994485)
+    let clock = Date.parse('2026-11-23T12:00:00.000Z');
+    const root = await tempRepo();
+    const s = ProjectStore.open(':memory:', P, { now: () => new Date(clock).toISOString() });
+    const id = s.createTask({ phaseId: s.createPhase('P'), title: 'continuar', provider: 'simulator' });
+    s.transitionTask(id, 'READY', s.getTask(id)!.version);
+    const { fencingToken } = s.reserveTask(id, { ownerId: 'morto', ttlMs: 30_000, explanation: 'test', maxActive: 1 });
     s.transitionTaskFenced(id, 'RUNNING', fencingToken, 'rodando');
     const wt = await createWorktree(root, id, 'ATT-0001');
     s.startAttempt(id, fencingToken, { providerId: 'simulator', worktreePath: wt.path, branch: wt.branch, baseCommit: wt.baseCommit });
     writeFileSync(path.join(wt.path, 'meio-feito.md'), 'trabalho em andamento\n');
-    await new Promise((r) => setTimeout(r, 450));
+    clock += 60_000; // o dono "morreu": passa do TTL
     const out = await recoverInterrupted(root, (fn) => fn(s), agentAuthor);
     expect(out[0]).toBe(`${id}: lease vencido → BLOCKED`);
     expect(out[1]).toMatch(new RegExp(`${id}: ATT-0001 interrompida \\(LEASE_EXPIRED\\) → READY; sobras salvas em [0-9a-f]{12} \\(NÃO verificadas\\)`));
