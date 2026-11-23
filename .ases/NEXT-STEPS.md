@@ -13,11 +13,10 @@
    - Contratos VERIFIED com smoke real: Kimi 1.50.0, OpenCode 2.4.1 e Google via Antigravity CLI 1.5.13 (`.ases/evidence/TAR-0041-smoke-real.md`, ADR-0013).
    - CI Linux/Windows 6/6 (run 45232756904). macOS só local, 234/234.
 
-4. **PHASE-09: em andamento** (branch `ases/PHASE-09`). TAR-0043..0047 estão em REVIEW, aguardando aprovação.
-   - Metodologia executável: `/ases import`, `/spec`, `/req`, `/reqs`, `/change`, `/gate G0|G1` (`docs/METODOLOGIA.md`, ADR-0014).
-   - Gate da fase verificado no e2e (`.ases/evidence/PHASE-09-verify.md`).
-   - No próprio AER: G0 PASS; os 300 REQ gerais estão PENDING, sem avaliação de aplicabilidade.
-   - **Próximo:** aprovação; merge; PHASE-10 (segurança: `/approval`, registry de extensões, SecretStore).
+4. **PHASE-09: COMPLETED** (23/11/2026). Aprovada pelo responsável e integrada em `main` (`b0e753b`).
+   - ASES-300/500 executável (ADR-0014, `docs/METODOLOGIA.md`); o gate da fase foi verificado no e2e.
+   - CI Linux/Windows 6/6 (run 45245602246); o macOS foi cancelado pelo GitHub sem runner (só local, 248/248).
+   - **Próximo:** PHASE-10 (segurança: `/approval`, registry de Skills/MCP/plugins, SecretStore nativo).
 5. **Decisões do responsável (23/11/2026):**
    - **Licença:** CC BY-NC-ND 4.0, Open Access (`LICENSE`; `package.json` com `CC-BY-NC-ND-4.0`). AER-REQ-210 atendido.
    - **Termos dos providers:** o responsável declarou que todos os vendors autorizaram a orquestração. A declaração está registrada; os documentos de autorização não estão no repositório.

@@ -4,8 +4,8 @@
   "taskId": "TAR-0045",
   "phaseId": "PHASE-09",
   "title": "Matriz de requisitos (aplicabilidade, estado, evidência, N/A justificado)",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-152",
     "AER-REQ-158"

@@ -4,8 +4,8 @@
   "taskId": "TAR-0044",
   "phaseId": "PHASE-09",
   "title": "Fluxo de especificação ASES-500 (entrevista por lacunas, decisões)",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-154",
     "AER-REQ-155",

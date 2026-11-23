@@ -37,3 +37,9 @@ boundaries: OK
  Test Files  40 passed (40)
       Tests  248 passed (248)
 ```
+
+## Fechamento (23/11/2026)
+- **CI do commit `b0e753b`** (run 45245602246):
+  - Linux e Windows: 6/6.
+  - **macOS 22.x/24.x: NOT_RUN.** O GitHub cancelou os jobs depois de 15 min na fila, sem runner atribuído.
+- **Aprovação:** feita pelo responsável. `main` avançou por fast-forward para `b0e753b`.

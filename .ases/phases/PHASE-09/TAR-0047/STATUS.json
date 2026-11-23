@@ -4,8 +4,8 @@
   "taskId": "TAR-0047",
   "phaseId": "PHASE-09",
   "title": "QA: projeto de exemplo da entrevista a 2 fases e 3 tarefas rastreáveis",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-157",
     "AER-REQ-158"

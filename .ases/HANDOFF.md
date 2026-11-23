@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
-- Último evento válido: seq 376 em 2026-11-23T19:07:16.629Z
-- Git: branch `ases/PHASE-09`, HEAD `bbbd0c0`
-- Concluídas: 42 de 47
-- Abertas: TAR-0043 (REVIEW), TAR-0044 (REVIEW), TAR-0045 (REVIEW), TAR-0046 (REVIEW), TAR-0047 (REVIEW)
+- Último evento válido: seq 393 em 2026-11-23T19:24:20.081Z
+- Git: branch `main`, HEAD `b0e753b`
+- Concluídas: 47 de 47
+- Abertas: nenhuma
 - Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
 <!-- AUTO:END -->
 
@@ -135,6 +135,6 @@
   - Comandos `/ases import`, `/spec`, `/req`, `/reqs`, `/change` e `/gate`; relatórios `REQUIREMENTS-MATRIX.csv` e `DECISIONS.md`.
   - Repositório público, por decisão do responsável; o CI macOS voltou a rodar.
 - **Testes:** `npm run verify` 248/248. O e2e do gate da fase passou.
-- **Pendente:** revisão humana das TAR-0043..0047.
-- **Próxima operação segura:** CI da branch; aprovação; merge.
+- **Fechamento:** aprovado pelo responsável. Fast-forward de `main` para `b0e753b`; TAR-0043..0047 e PHASE-09 COMPLETED. CI Linux/Windows 6/6; o macOS foi cancelado sem runner (15 min na fila).
+- **Próxima operação segura:** iniciar a PHASE-10 numa branch `ases/PHASE-10`.
 

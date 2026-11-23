@@ -4,8 +4,8 @@
   "taskId": "TAR-0046",
   "phaseId": "PHASE-09",
   "title": "Rastreabilidade, gates G0/G1 e mudança controlada (CHANGE)",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-157",
     "AER-REQ-159"
