@@ -17,11 +17,14 @@ const proj = mkdtempSync(path.join(os.tmpdir(), 'aer-proj ç '));
 const win = process.platform === 'win32';
 const binDir = win ? prefix : path.join(prefix, 'bin');
 const npm = (...a) => execFileSync(process.execPath, [npmCli(), ...a, '--prefix', prefix, '--no-audit', '--no-fund', '--offline'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
-// no Windows os atalhos são .cmd: roda pelo cmd.exe com argumentos fixos (sem interpolar entrada do usuário)
+// os comandos são chamados PELO NOME, com o prefixo no PATH, como o usuário roda (no Windows, via cmd.exe → ases.cmd);
+// os argumentos são fixos deste script, nunca entrada externa
+const PATHV = `${binDir}${path.delimiter}${process.env.PATH ?? process.env.Path ?? ''}`;
+const env = { ...process.env, PATH: PATHV, Path: PATHV, NO_COLOR: '1' };
 const run = (bin, args, input) => {
   const r = win
-    ? spawnSync(process.env.ComSpec ?? 'cmd.exe', ['/d', '/s', '/c', path.join(binDir, `${bin}.cmd`), ...args], { cwd: proj, encoding: 'utf8', input: input ?? '', env: { ...process.env, NO_COLOR: '1' } })
-    : spawnSync(path.join(binDir, bin), args, { cwd: proj, encoding: 'utf8', input: input ?? '', env: { ...process.env, NO_COLOR: '1' } });
+    ? spawnSync(process.env.ComSpec ?? 'cmd.exe', ['/d', '/c', [bin, ...args].join(' ')], { cwd: proj, encoding: 'utf8', input: input ?? '', env })
+    : spawnSync(path.join(binDir, bin), args, { cwd: proj, encoding: 'utf8', input: input ?? '', env });
   if (r.status !== 0) throw new Error(`${bin} ${args.join(' ')} → exit ${r.status}\n${r.stdout}\n${r.stderr}`);
   return r.stdout;
 };
@@ -36,11 +39,10 @@ try {
   check(/^ases \d/.test(run('ases', ['--version'])), 'ases --version');
   check(/^ases-tar \d/.test(run('ases-tar', ['--version'])), 'ases-tar --version');
   // C-OS-05: os comandos respondem pelo PATH em cada shell disponível nesta máquina (bash, zsh, PowerShell)
-  const PATHV = `${binDir}${path.delimiter}${process.env.PATH ?? process.env.Path ?? ''}`;
   const shells = win ? [['pwsh', ['-NoProfile', '-Command']], ['powershell', ['-NoProfile', '-Command']], ['cmd', ['/d', '/c']]] : [['bash', ['-c']], ['zsh', ['-c']], ['pwsh', ['-NoProfile', '-Command']]];
   let tested = 0;
   for (const [sh, flags] of shells) {
-    const probe = spawnSync(sh, [...flags, win && sh === 'cmd' ? 'ases --version && ases-tar --version' : 'ases --version; ases-tar --version'], { encoding: 'utf8', env: { ...process.env, PATH: PATHV, Path: PATHV, NO_COLOR: '1' } });
+    const probe = spawnSync(sh, [...flags, win && sh === 'cmd' ? 'ases --version && ases-tar --version' : 'ases --version; ases-tar --version'], { encoding: 'utf8', env });
     if (probe.error && probe.error.code === 'ENOENT') {
       console.log(`--  ${sh}: não instalado nesta máquina (NOT_RUN)`);
       continue;
