@@ -34,3 +34,7 @@ boundaries: OK
  Test Files  45 passed (45)
       Tests  268 passed (268)
 ```
+
+## CI
+- **Commit `c5f47eb`** (run 45257726923): Linux 3/3, Windows 3/3 e macOS 24.x passaram. O macOS 22.x ainda estava na fila quando isto foi escrito.
+- **Defeito de teste encontrado pelo CI** (run 45256994485, Windows 22.x): o teste de recovery dependia de um TTL real de 400 ms, e a criação da worktree no Windows foi mais lenta que isso. Ele passou a usar um relógio controlado no store.
