@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
-- Último evento válido: seq 271 em 2026-11-23T16:57:19.032Z
-- Git: branch `main`, HEAD `ca47806`
-- Concluídas: 36 de 36
-- Abertas: nenhuma
+- Último evento válido: seq 311 em 2026-11-23T17:07:33.310Z
+- Git: branch `ases/PHASE-08`, HEAD `a9a6f83`
+- Concluídas: 36 de 42
+- Abertas: TAR-0037 (REVIEW), TAR-0038 (REVIEW), TAR-0039 (REVIEW), TAR-0040 (REVIEW), TAR-0041 (BLOCKED), TAR-0042 (REVIEW)
 - Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
 <!-- AUTO:END -->
 
@@ -107,3 +107,14 @@
 - **Atualização (mesma data):** o responsável deu todos os consentimentos (cota e termos, para uso local). TAR-0035 feita: 6 chamadas reais mínimas + smoke pelo motor (`claude` e `codex` → REVIEW, com commit na worktree). Fixtures reais redigidas versionadas. Contrato VERIFIED só em claude 2.1.330 e codex 0.170.0. `rate_limit_event` mapeado. Achado: o Codex pode editar via shell sem emitir `file_change`; o diff da worktree é a fonte autoritativa. Evidência: `.ases/evidence/TAR-0035-smoke-real.md`. `npm run verify` 215/215.
 - **Fechamento:** o responsável aprovou e autorizou a integração. Fast-forward de `main` para `ca47806`; TAR-0032..0036 e PHASE-07 COMPLETED. CI Linux/Windows 6/6 (run 45220306651), depois de corrigir dois flakes de teste: Ctrl+C no pty antes do raw mode do Ink, e EBUSY na limpeza de temp no Windows. macOS sem runner no CI; verificado só localmente (215/215).
 - **Próxima operação segura:** iniciar a PHASE-08 numa branch `ases/PHASE-08`.
+
+### Sessão 23/11/2026 — PHASE-08 parcial (branch `ases/PHASE-08`)
+- **Feito:**
+  - TAR-0037: pesquisa (`docs/PROVIDERS_PESQUISA_PHASE08.md`). O `kimi --print` aprova tudo sozinho, e por isso o AER usa ACP.
+  - TAR-0038/39/40: `@aer/provider-acp` (cliente ACP v1, política de permissão, adapters kimi/opencode/google), contrato UNVERIFIED. `spawnManagedProcess` e `runAgentProcess` ganharam stdin em pipe, opcional.
+  - TAR-0042: matriz de paridade (`docs/PROVIDERS.md`) e ADR-0013.
+- **Real, sem prompt:** versões, ajuda e handshake ACP (`initialize` + `session/new`) de kimi 1.50.0 e opencode 1.19.6. Os dois saem com 0 no fim do stdin.
+- **Testes:** `npm run verify` 226/226 (darwin-arm64).
+- **Bloqueio:** TAR-0041 BLOCKED (CONSENT_REQUIRED). O consentimento anterior valia para Claude/Codex, e o controle de permissões bloqueou o prompt real ao Kimi/OpenCode. O Gemini CLI não está instalado.
+- **Próxima operação segura:** CI da branch; com aceite, smoke real ACP; depois, aprovação e merge.
+

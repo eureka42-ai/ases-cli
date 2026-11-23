@@ -9,10 +9,15 @@
 2. **PHASE-07: COMPLETED** (23/11/2026). Aprovada pelo responsável e integrada em `main` (`ca47806`).
    - CI Linux/Windows 6/6 (run 45220306651). macOS não rodou no CI (os jobs ficaram na fila sem máquina); verificado só localmente, darwin-arm64, 215/215.
    - Claude 2.1.330 e Codex 0.170.0 VERIFIED com smoke real (`.ases/evidence/TAR-0035-smoke-real.md`). Termos para **distribuição** ainda não confirmados com os vendors.
-   - **Próximo:** PHASE-08 (kimi, google, opencode), conforme o `ASES_CLI_MD_MESTRE.md`.
-3. **Pendências do responsável:**
+3. **PHASE-08: em andamento** (branch `ases/PHASE-08`). TAR-0037/38/39/40/42 estão em REVIEW; **TAR-0041 está BLOCKED (CONSENT_REQUIRED)**.
+   - `@aer/provider-acp`: cliente ACP v1 com a política de permissão do AER, mais os adapters kimi, opencode e google (ADR-0013, `docs/PROVIDERS.md`).
+   - **Para destravar a TAR-0041:**
+     - aceite explícito do responsável para uma chamada real mínima ao Kimi (conta Kimi) e ao OpenCode (credenciais OpenCode/Go);
+     - decisão sobre instalar o Gemini CLI (dependência nova).
+   - **Smoke previsto:** 1 prompt "crie hello.txt" por provider numa pasta temporária; captura do stream ACP como fixture redigida; confirmação de que o `OPENCODE_CONFIG_CONTENT` faz o OpenCode pedir permissão.
+4. **Pendências do responsável:**
    - Licença (bloqueia publicação).
    - Excluir/apagar a pasta antiga do Desktop quando quiser (tudo está no GitHub; o único arquivo não versionado lá era `.Rhistory`, que não é do projeto).
-4. **Restauração a partir do espelho** (clone novo sem banco → `DB_MISSING`): planejada no Project Passport (PHASE-11). Até lá, este Mac é o dono do banco.
+5. **Restauração a partir do espelho** (clone novo sem banco → `DB_MISSING`): planejada no Project Passport (PHASE-11). Até lá, este Mac é o dono do banco.
 
 Verificação rápida: `npm run verify && node scripts/ases-dev.mjs verify`.

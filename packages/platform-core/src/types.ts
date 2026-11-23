@@ -1,5 +1,5 @@
 import type { ChildProcessByStdio } from 'node:child_process';
-import type { Readable } from 'node:stream';
+import type { Readable, Writable } from 'node:stream';
 
 export type PlatformId = 'darwin' | 'win32' | 'linux';
 
@@ -67,10 +67,12 @@ export interface PlatformDeps {
 export interface SpawnOptions {
   cwd: string;
   env?: Readonly<Record<string, string | undefined>>;
+  /** 'pipe' só para protocolos bidirecionais (ACP); o padrão continua 'ignore' */
+  stdin?: 'ignore' | 'pipe';
 }
 
 export interface ManagedProcess {
   pid: number;
-  child: ChildProcessByStdio<null, Readable, Readable>;
+  child: ChildProcessByStdio<Writable | null, Readable, Readable>;
   exited: Promise<{ exitCode: number | null; signal: string | null }>;
 }

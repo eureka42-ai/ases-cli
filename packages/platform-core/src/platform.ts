@@ -163,8 +163,8 @@ export function syncedFolderHint(id: PlatformId, deps: PlatformDeps, dir: string
  */
 export function spawnManagedProcess(id: PlatformId, command: string, args: readonly string[], options: SpawnOptions): ManagedProcess {
   const child = spawn(command, [...args], {
-    cwd: options.cwd, env: { ...(options.env ?? process.env) }, shell: false, detached: id !== 'win32', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'],
-  });
+    cwd: options.cwd, env: { ...(options.env ?? process.env) }, shell: false, detached: id !== 'win32', windowsHide: true, stdio: [options.stdin ?? 'ignore', 'pipe', 'pipe'],
+  }) as ManagedProcess['child'];
   const exited = new Promise<{ exitCode: number | null; signal: string | null }>((resolve, reject) => {
     child.once('error', reject);
     child.once('close', (exitCode, signal) => resolve({ exitCode, signal }));

@@ -7,6 +7,7 @@ import type { PlatformAdapter } from '@aer/platform-core';
 import type { AgentProvider } from '@aer/provider-sdk';
 import { ClaudeCodeProvider } from '@aer/provider-claude';
 import { CodexProvider } from '@aer/provider-codex';
+import { createGeminiProvider, createKimiProvider, createOpenCodeProvider } from '@aer/provider-acp';
 import { SimulatorProvider } from '@aer/provider-simulator';
 import { runQueue, type AttemptOutcome } from '@aer/scheduler';
 import { ProjectError, historyState, isInterimProject, paths, readManifest, sessionFile, writeSession } from '@aer/project-store';
@@ -47,7 +48,10 @@ export class Engine {
     this.server = server;
     this.projectName = name;
     this.lastPublished = store.lastSeq();
-    this.providers = { simulator: new SimulatorProvider(adapter), claude: new ClaudeCodeProvider(adapter), codex: new CodexProvider(adapter) };
+    this.providers = {
+      simulator: new SimulatorProvider(adapter), claude: new ClaudeCodeProvider(adapter), codex: new CodexProvider(adapter),
+      kimi: createKimiProvider(adapter), opencode: createOpenCodeProvider(adapter), google: createGeminiProvider(adapter),
+    };
   }
 
   static async start(root: string, adapter: PlatformAdapter): Promise<Engine> {
@@ -187,7 +191,7 @@ export class Engine {
     const p = runQueue(
       { root: this.root, mutate: (fn) => this.mutate(fn), read: (fn) => fn(this.store), providers: this.providers, ttlMs: 30_000, timeoutMs: o.timeoutMs, consented: new Set(consent) },
       // paralelismo 1 por provider real: termos de uso individual (docs/PROVIDERS_PESQUISA.md)
-      { ownerId: `ases:${process.pid}`, maxParallel: o.maxParallel, maxPerProvider: { claude: 1, codex: 1 }, signal: this.runAbort.signal, controllers: this.controllers, ...(o.phaseId ? { phaseId: o.phaseId } : {}), ...(o.onOutcome ? { onOutcome: o.onOutcome } : {}) },
+      { ownerId: `ases:${process.pid}`, maxParallel: o.maxParallel, maxPerProvider: { claude: 1, codex: 1, kimi: 1, opencode: 1, google: 1 }, signal: this.runAbort.signal, controllers: this.controllers, ...(o.phaseId ? { phaseId: o.phaseId } : {}), ...(o.onOutcome ? { onOutcome: o.onOutcome } : {}) },
     );
     this.current = p;
     try {

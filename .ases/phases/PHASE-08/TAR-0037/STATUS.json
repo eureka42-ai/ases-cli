@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0037",
+  "phaseId": "PHASE-08",
+  "title": "Pesquisa de flags, ACP e termos (Kimi, OpenCode, Google)",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-101",
+    "AER-REQ-103",
+    "AER-REQ-118"
+  ],
+  "dependsOn": [],
+  "evidence": [
+    {
+      "path": "docs/PROVIDERS_PESQUISA_PHASE08.md",
+      "sha256": "4fb0ad0b786eec1f3f9041cfd7c5ff2463ef5479556492b1d364a6930616c7c3"
+    }
+  ],
+  "lastTest": null
+}

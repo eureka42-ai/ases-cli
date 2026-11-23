@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0041",
+  "phaseId": "PHASE-08",
+  "title": "Fixtures de teste e smoke opt-in",
+  "state": "BLOCKED",
+  "version": 2,
+  "reqs": [
+    "AER-REQ-123",
+    "AER-REQ-125"
+  ],
+  "dependsOn": [
+    "TAR-0039"
+  ],
+  "evidence": [],
+  "lastTest": null
+}

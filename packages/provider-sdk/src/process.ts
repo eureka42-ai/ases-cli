@@ -20,6 +20,11 @@ export interface AgentProcessOptions {
   /** eventos extras depois que o stdout fecha (p.ex. "faltou o resultado final"), com o fim do stderr redigido */
   finish?: (ctx: { exitCode: number | null; stderrTail: string }) => AgentStreamEvent[];
   onSpawn?: (pid: number) => void;
+  /**
+   * Protocolos bidirecionais (ACP): recebe o canal de escrita no stdin do agente. `end()` fecha o stdin e, se o agente
+   * não sair sozinho em `graceMs` (padrão 3 s), encerra a árvore — isso conta como fim normal, não como cancelamento.
+   */
+  stdin?: (io: { write: (line: string) => void; end: () => void }) => void;
 }
 
 const STDERR_TAIL = 2000;
@@ -30,8 +35,9 @@ const STDERR_TAIL = 2000;
  * confirmação de que nenhum processo do grupo sobrou (AER-REQ-105/106).
  */
 export async function* runAgentProcess(platform: ProcessPlatform, o: AgentProcessOptions): AsyncGenerator<AgentStreamEvent> {
-  const p = platform.spawnManagedProcess(o.command, o.args, { cwd: o.cwd, ...(o.env ? { env: o.env } : {}) });
+  const p = platform.spawnManagedProcess(o.command, o.args, { cwd: o.cwd, ...(o.env ? { env: o.env } : {}), ...(o.stdin ? { stdin: 'pipe' as const } : {}) });
   o.onSpawn?.(p.pid);
+  let endTimer: ReturnType<typeof setTimeout> | undefined;
   let stderr = '';
   p.child.stderr.on('data', (d: Buffer) => {
     stderr = (stderr + d.toString('utf8')).slice(-STDERR_TAIL);
@@ -48,6 +54,19 @@ export async function* runAgentProcess(platform: ProcessPlatform, o: AgentProces
     timedOut = true;
     kill();
   }, o.timeoutMs);
+  const input = p.child.stdin;
+  if (o.stdin && input) {
+    input.on('error', () => undefined); // EPIPE quando o agente já saiu: o resultado vem do exit
+    o.stdin({
+      write: (line) => {
+        if (!input.destroyed && input.writable) input.write(line.endsWith('\n') ? line : `${line}\n`);
+      },
+      end: () => {
+        if (!input.destroyed) input.end();
+        endTimer ??= setTimeout(kill, o.graceMs ?? 3000);
+      },
+    });
+  }
   const lines = (decoded: ReturnType<NdjsonDecoder['push']>): AgentStreamEvent[] =>
     decoded.flatMap((l) => (l.ok ? o.map(l.value) : [{ type: 'error', code: 'PARSE_ERROR', userMessage: `${l.code}: ${l.detail}` } as AgentStreamEvent]));
   try {
@@ -64,6 +83,7 @@ export async function* runAgentProcess(platform: ProcessPlatform, o: AgentProces
     yield { type: 'exit', exitCode: r.exitCode, signal: r.signal, cancelled, reconciled: t.terminated };
   } finally {
     clearTimeout(timer);
+    if (endTimer) clearTimeout(endTimer);
     o.signal.removeEventListener('abort', onAbort);
   }
 }

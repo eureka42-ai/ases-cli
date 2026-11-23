@@ -28,7 +28,7 @@ describe('built bins (TAR-0011, AER-REQ-004, AER-REQ-245, AER-REQ-247)', () => {
     expect(d.status).toBe(0);
     const report = JSON.parse(d.stdout);
     expect(report.platform).toBe(process.platform);
-    expect(report.providers.map((x) => x.id)).toEqual(['simulator', 'claude', 'codex']);
+    expect(report.providers.map((x) => x.id)).toEqual(['simulator', 'claude', 'codex', 'kimi', 'opencode', 'google']);
     expect(report.providers.every((x) => ['SIMULATED', 'UNVERIFIED', 'VERIFIED'].includes(x.contract))).toBe(true);
     expect(report.secretStore.available).toBe(false);
   });

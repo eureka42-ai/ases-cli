@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0042",
+  "phaseId": "PHASE-08",
+  "title": "Documentação de paridade dos cinco providers",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-119",
+    "AER-REQ-130"
+  ],
+  "dependsOn": [
+    "TAR-0041"
+  ],
+  "evidence": [
+    {
+      "path": "docs/PROVIDERS.md",
+      "sha256": "d706a8f041f676ed48fc4f2c9bd4daaf077ca2e0d0dafb7b31d32461901059dc"
+    },
+    {
+      "path": "docs/ADRs/ADR-0013.md",
+      "sha256": "292bef27f63717922ca3ea84d75393d3ca1896916936f35c13c4d6dd5fede661"
+    }
+  ],
+  "lastTest": null
+}

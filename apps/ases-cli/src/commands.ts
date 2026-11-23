@@ -23,9 +23,9 @@ export const SLASH_HELP = `Comandos:
   /dep add TAR-A TAR-B            TAR-A passa a depender de TAR-B (ciclo é recusado)
   /evidence add TAR-XXXX <arquivo> [nota]   registra evidência (caminho dentro do projeto + SHA-256)
   /schedule                       mostra a ordem do scheduler e por quê (não reserva nada)
-  /run [PHASE-XX] [--parallel N] [--timeout S] [--consent claude,codex]
+  /run [PHASE-XX] [--parallel N] [--timeout S] [--consent claude,codex,kimi,opencode,google]
                                   executa as tarefas READY pelo provider de cada uma; simulator dispensa aceite;
-                                  claude/codex usam a SUA sessão oficial (cota/cobrança) e só rodam com --consent
+                                  providers reais usam a SUA sessão oficial (cota/cobrança) e só rodam com --consent
   /cancel TAR-XXXX                cancela uma tarefa em execução (encerra a árvore de processos do agente)
   /help   /exit`;
 
@@ -131,7 +131,7 @@ export function handleLine(engine: Engine, line: string, unicode = true): string
       const ci = args.indexOf('--consent');
       const consent = ci < 0 ? [] : (args.splice(ci, 2)[1] ?? '').split(',').filter(Boolean);
       const [phaseId, extra] = args;
-      if (extra || (phaseId && !/^PHASE-\d{2,}$/.test(phaseId)) || (ci >= 0 && !consent.length)) return 'uso: /run [PHASE-XX] [--parallel N] [--timeout S] [--consent claude,codex]';
+      if (extra || (phaseId && !/^PHASE-\d{2,}$/.test(phaseId)) || (ci >= 0 && !consent.length)) return 'uso: /run [PHASE-XX] [--parallel N] [--timeout S] [--consent claude,codex,kimi,opencode,google]';
       return engine.run({ ...(phaseId ? { phaseId } : {}), maxParallel, timeoutMs: timeoutS * 1000, consent }).then((r) => {
         if (!r.outcomes.length) return `nada para executar${phaseId ? ` em ${phaseId}` : ''}${r.waiting.length ? `:\n${r.waiting.map((w) => `   ${w.taskId} espera: ${w.reason}`).join('\n')}` : ' (nenhuma tarefa READY elegível)'}`;
         return [

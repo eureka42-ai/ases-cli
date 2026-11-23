@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0039",
+  "phaseId": "PHASE-08",
+  "title": "Adapter OpenCode (opencode acp)",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-101",
+    "AER-REQ-103",
+    "AER-REQ-111",
+    "AER-REQ-118",
+    "AER-REQ-125"
+  ],
+  "dependsOn": [
+    "TAR-0038"
+  ],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-08-verify.md",
+      "sha256": "ea9253d4a516e0b6d5b9f2d4e544fb0ddf8f5d5770cf0a97e9cb15b60866af84"
+    }
+  ],
+  "lastTest": null
+}
