@@ -264,7 +264,8 @@ async function interactive(root: string, adapter: Awaited<ReturnType<typeof load
         return;
       }
       if (out instanceof Promise) {
-        console.log('executando em segundo plano (acompanhe no ases-tar; /cancel TAR-XXXX cancela)');
+        // só o /run tem tarefas canceláveis; os demais comandos assíncronos (/ext, /review, /test…) só imprimem ao terminar
+        if (line.trimStart().startsWith('/run')) console.log('executando em segundo plano (acompanhe no ases-tar; /cancel TAR-XXXX cancela)');
         const p = out.then((text) => console.log(text), report).finally(() => inflight.delete(p));
         inflight.add(p);
       } else if (out) console.log(out);

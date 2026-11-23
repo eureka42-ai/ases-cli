@@ -21,12 +21,16 @@
    - Entregas: policy engine com approvals por hash (`/approval`), registry de extensões (`/ext`), SecretStore nativo (`ases secret`). Detalhes no ADR-0015.
    - Gate verificado no e2e (`.ases/evidence/PHASE-10-verify.md`).
    - **Limites:** extensões ainda não são carregadas nas sessões dos providers (só a trava de compatibilidade); Windows sem SecretStore; hooks do AER não implementados.
-   - **Próximo:** aprovação; merge; PHASE-11 (continuidade: handoff, métricas, revisão cruzada, `resume`).
-6. **Decisões do responsável (23/11/2026):**
+
+6. **PHASE-11: em andamento** (branch `ases/PHASE-11`, empilhada sobre a PHASE-10). TAR-0054..0058 estão em REVIEW.
+   - Comandos `/handoff`, `/test` (EXEC_TESTS), `/review` (read-only, outro provider), `/resume` e `/usage` (ADR-0016).
+   - A nova tentativa parte do último checkpoint; o gate de troca de provider foi verificado (`.ases/evidence/PHASE-11-verify.md`).
+   - **Próximo:** aprovação das PHASE-10 e PHASE-11 (merge em sequência); depois PHASE-12 (release: daemon, npm, CI e CLIs reais em Windows/Linux).
+7. **Decisões do responsável (23/11/2026):**
    - **Licença:** CC BY-NC-ND 4.0, Open Access (`LICENSE`; `package.json` com `CC-BY-NC-ND-4.0`). AER-REQ-210 atendido.
    - **Termos dos providers:** o responsável declarou que todos os vendors autorizaram a orquestração. A declaração está registrada; os documentos de autorização não estão no repositório.
    - **Pasta antiga do Desktop:** o responsável vai apagar.
    - **Pendente:** conferir o limite de gasto/cota de Actions da organização `eureka42-ai`, porque os jobs macOS ficam na fila sem máquina.
-7. **Restauração a partir do espelho** (clone novo sem banco → `DB_MISSING`): planejada no Project Passport (PHASE-11). Até lá, este Mac é o dono do banco.
+8. **Restauração a partir do espelho** (clone novo sem banco → `DB_MISSING`): planejada no Project Passport (PHASE-11). Até lá, este Mac é o dono do banco.
 
 Verificação rápida: `npm run verify && node scripts/ases-dev.mjs verify`.

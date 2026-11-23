@@ -92,6 +92,7 @@ export interface AttemptRow {
   branch: string | null;
   baseCommit: string | null;
   exitCode: number | null;
+  failureCode: string | null;
 }
 
 export interface TestRunInput {
@@ -631,7 +632,7 @@ export class ProjectStore {
     return (this.db.prepare('SELECT * FROM attempts WHERE project_id = ? AND task_id = ? ORDER BY id').all(this.projectId, taskId) as Row[]).map((r) => ({
       id: String(r.id), taskId, providerId: String(r.provider_id), state: r.state as AttemptRow['state'], fencingToken: Number(r.fencing_token),
       worktreePath: (r.worktree_path as string | null) ?? null, branch: (r.branch as string | null) ?? null, baseCommit: (r.base_commit as string | null) ?? null,
-      exitCode: r.exit_code === null ? null : Number(r.exit_code),
+      exitCode: r.exit_code === null ? null : Number(r.exit_code), failureCode: (r.failure_code as string | null) ?? null,
     }));
   }
 
@@ -684,6 +685,22 @@ export class ProjectStore {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(this.projectId, taskId, t.attemptId ?? null, t.command, t.exitCode, t.total, t.passed, t.failed, t.skipped, t.environment, t.startedAt, t.endedAt);
       this.appendEvent({ eventType: 'TestRunCompleted', phaseId: task.phaseId, taskId, payload: { command: t.command, exitCode: t.exitCode, total: t.total, passed: t.passed, failed: t.failed, skipped: t.skipped } });
       return Number(r.lastInsertRowid);
+    });
+  }
+
+  listTestRuns(taskId: string): { id: number; command: string; exitCode: number; total: number; passed: number; failed: number; skipped: number; environment: string; startedAt: string; endedAt: string; attemptId: string | null }[] {
+    return (this.db.prepare('SELECT * FROM test_runs WHERE project_id = ? AND task_id = ? ORDER BY id').all(this.projectId, taskId) as Row[]).map((r) => ({
+      id: Number(r.id), command: String(r.command), exitCode: Number(r.exit_code), total: Number(r.total), passed: Number(r.passed), failed: Number(r.failed), skipped: Number(r.skipped),
+      environment: String(r.environment), startedAt: String(r.started_at), endedAt: String(r.ended_at), attemptId: (r.attempt_id as string | null) ?? null,
+    }));
+  }
+
+  /** Troca o provider de uma tarefa parada (handoff). Tarefa com lease ativo não muda de executor no meio. */
+  setTaskProvider(taskId: string, provider: string): void {
+    this.inWriteTx(() => {
+      this.getTaskRow(taskId);
+      if (this.db.prepare('SELECT 1 FROM task_leases WHERE project_id = ? AND task_id = ?').get(this.projectId, taskId)) throw new StoreError('LEASED', `${taskId} is running; cancel it before a handoff`);
+      this.db.prepare('UPDATE tasks SET provider = ?, updated_at = ? WHERE project_id = ? AND id = ?').run(provider, this.now(), this.projectId, taskId);
     });
   }
 

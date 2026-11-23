@@ -1,4 +1,5 @@
 import { canUse, type Compatibility } from '@aer/security';
+import { buildPromptPack, latestHandoff, nextAttemptBase } from './continuity.ts';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { formatAttemptId, type TaskState } from '@aer/contracts';
@@ -36,7 +37,7 @@ export function parseProviderSpec(spec: string | null): { providerId: string; pr
   return m[2] ? { providerId: m[1]!, preference: m[2] } : { providerId: m[1]! };
 }
 
-const agentAuthor = (providerId: string) => ({ name: `AER agent (${providerId})`, email: `${providerId}@aer.invalid` });
+export const agentAuthor = (providerId: string) => ({ name: `AER agent (${providerId})`, email: `${providerId}@aer.invalid` });
 const isBlocking = (code: string) => (BLOCKING_ERROR_CODES as readonly string[]).includes(code);
 
 /**
@@ -99,7 +100,9 @@ export async function runAttempt(d: WorkerDeps, r: { taskId: string; fencingToke
   const expectedAttempt = formatAttemptId(read((s) => s.listAttempts(taskId)).length + 1);
   let wt;
   try {
-    wt = await createWorktree(d.root, taskId, expectedAttempt);
+    // continuidade (PHASE-11): parte do último checkpoint da tarefa, não do main, para trocar de provider sem perder arquivos
+    const { base: baseRef } = await nextAttemptBase(d.root, read((s) => s.listAttempts(taskId)));
+    wt = await createWorktree(d.root, taskId, expectedAttempt, baseRef);
   } catch (err) {
     const why = `WORKTREE_FAILED: ${(err as Error).message.slice(0, 300)}`;
     move('BLOCKED', why);
@@ -116,7 +119,9 @@ export async function runAttempt(d: WorkerDeps, r: { taskId: string; fencingToke
     return fin('BLOCKED', `ATTEMPT_ID_MISMATCH: ${attemptId} != ${expectedAttempt} (worktree ${wt.path})`);
   }
   const instructionsFile = path.join(d.root, '.ases', 'worktrees', `${taskId}-${attemptId}.instructions.md`);
-  writeFileSync(instructionsFile, `# ${taskId} — ${task.title}\n\n${task.description}\n\nRequisitos: ${task.reqs.join(', ') || '—'}\nEscreva somente dentro desta worktree.\n`);
+  // pacote de contexto: só a tarefa, os requisitos dela e o último handoff, dentro do orçamento (AER-REQ-177/179)
+  const requirements = read((s) => task.reqs.map((id) => s.getRequirement(id)).filter((r) => r !== undefined).map((r) => ({ id: r.id, title: r.title, acceptance: r.acceptance })));
+  writeFileSync(instructionsFile, buildPromptPack({ task, requirements, handoff: read((s) => latestHandoff(d.root, s, taskId)) }));
 
   const ac = new AbortController();
   const onCancel = () => ac.abort();

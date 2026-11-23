@@ -45,7 +45,7 @@ export async function isClean(cwd: string): Promise<boolean> {
 }
 
 const TASK_RE = /^TAR-\d{4,}$/;
-const ATT_RE = /^ATT-\d{4,}$/;
+const ATT_RE = /^(ATT|REV|TST)-\d{4,}$/; // REV: revisão read-only; TST: worktree de teste (PHASE-11)
 
 export interface Worktree {
   path: string;
@@ -135,4 +135,13 @@ export async function commitAll(wt: string, message: string, author: { name: str
   await git(wt, ['add', '-A']);
   await git(wt, ['-c', `user.name=${author.name}`, '-c', `user.email=${author.email}`, '-c', 'commit.gpgsign=false', 'commit', '-q', '--no-verify', '-m', message]);
   return headCommit(wt);
+}
+
+/** Commit na ponta de uma branch local, ou undefined se ela não existe (tentativa sem branch, ou branch removida). */
+export async function branchTip(root: string, branch: string): Promise<string | undefined> {
+  try {
+    return await git(root, ['rev-parse', '--verify', '--quiet', `refs/heads/${branch}^{commit}`]);
+  } catch {
+    return undefined;
+  }
 }

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0056",
+  "phaseId": "PHASE-11",
+  "title": "Revisão independente read-only por outro provider (/review)",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-187"
+  ],
+  "dependsOn": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-11-verify.md",
+      "sha256": "cc619361ba61ecded3819b9668f3a9113b35b2c2e51646725bc7c95b97c04dd6"
+    }
+  ],
+  "lastTest": null
+}

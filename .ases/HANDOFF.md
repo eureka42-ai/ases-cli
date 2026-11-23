@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
-- Último evento válido: seq 432 em 2026-11-23T19:43:07.246Z
-- Git: branch `ases/PHASE-10`, HEAD `a88b000`
-- Concluídas: 47 de 53
-- Abertas: TAR-0048 (REVIEW), TAR-0049 (REVIEW), TAR-0050 (REVIEW), TAR-0051 (REVIEW), TAR-0052 (REVIEW), TAR-0053 (REVIEW)
+- Último evento válido: seq 465 em 2026-11-23T20:12:28.828Z
+- Git: branch `ases/PHASE-11`, HEAD `4822fac`
+- Concluídas: 47 de 58
+- Abertas: TAR-0048 (REVIEW), TAR-0049 (REVIEW), TAR-0050 (REVIEW), TAR-0051 (REVIEW), TAR-0052 (REVIEW), TAR-0053 (REVIEW), TAR-0054 (REVIEW), TAR-0055 (REVIEW), TAR-0056 (REVIEW), TAR-0057 (REVIEW), TAR-0058 (REVIEW)
 - Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
 <!-- AUTO:END -->
 
@@ -148,4 +148,15 @@
 - **Testes:** `npm run verify` 262/262; os testes de segurança foram repetidos 2×.
 - **Pendente:** revisão humana das TAR-0048..0053.
 - **Próxima operação segura:** CI da branch; aprovação; merge.
+
+### Sessão 23/11/2026 — PHASE-11 (branch `ases/PHASE-11`, sobre a `ases/PHASE-10`)
+- **Feito:**
+  - Continuidade: cada tentativa parte da ponta da anterior; `/handoff` grava HANDOFF e checkpoint de recuperação.
+  - Pacote de contexto com orçamento.
+  - `/test`: test run real com aprovação EXEC_TESTS.
+  - `/review`: independente, read-only; quem escreve é INVALID.
+  - `/resume`: idempotente. `/usage`: por provider.
+- **Testes:** `npm run verify` 268/268. Os gates passaram no e2e (POSIX) e na unidade (todos os SOs).
+- **Pendente:** aprovação humana da PHASE-10 (o "continue" não foi tratado como aprovação) e da PHASE-11.
+- **Próxima operação segura:** CI da branch; aprovação; merge da PHASE-10 e depois da PHASE-11.
 

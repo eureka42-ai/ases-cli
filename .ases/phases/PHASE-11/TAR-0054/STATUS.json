@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0054",
+  "phaseId": "PHASE-11",
+  "title": "Handoff entre providers: continuidade da worktree, HANDOFF.md e pacote de contexto com budget",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-176",
+    "AER-REQ-177",
+    "AER-REQ-178",
+    "AER-REQ-179",
+    "AER-REQ-184"
+  ],
+  "dependsOn": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-11-verify.md",
+      "sha256": "cc619361ba61ecded3819b9668f3a9113b35b2c2e51646725bc7c95b97c04dd6"
+    },
+    {
+      "path": "docs/ADRs/ADR-0016.md",
+      "sha256": "5829305c0c424f45a0f686317d587ade23b39abda73a6d9c0ae57796a8947227"
+    }
+  ],
+  "lastTest": null
+}

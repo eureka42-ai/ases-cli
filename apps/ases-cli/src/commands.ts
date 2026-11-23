@@ -6,11 +6,12 @@ import { plan } from '@aer/scheduler';
 import type { Engine } from './engine.ts';
 import { METHODOLOGY_COMMANDS, METHODOLOGY_HELP, handleMethodology } from './methodology-commands.ts';
 import { SECURITY_COMMANDS, SECURITY_HELP, handleSecurity } from './security-commands.ts';
+import { CONTINUITY_COMMANDS, CONTINUITY_HELP, handleContinuity } from './continuity-commands.ts';
 
 export const PLANNED_SLASH: Record<string, string> = {
-  '/agent': 'PHASE-07', '/auto': 'sem fase alocada, AER-REQ-083', '/manual': 'sem fase alocada, AER-REQ-083', '/hybrid': 'sem fase alocada, AER-REQ-083', '/parallel': 'use /run --parallel N', '/usage': 'PHASE-11',
-  '/plan': 'sem fase alocada, §13.5', '/skills': 'use /ext', '/plugins': 'use /ext', '/mcp': 'use /ext', '/review': 'PHASE-11', '/diff': 'PHASE-05',
-  '/checkpoint': 'PHASE-05', '/resume': 'PHASE-11', '/safe-mode': 'sem fase alocada', '/history': 'PHASE-04', '/dependencies': 'PHASE-06',
+  '/agent': 'PHASE-07', '/auto': 'sem fase alocada, AER-REQ-083', '/manual': 'sem fase alocada, AER-REQ-083', '/hybrid': 'sem fase alocada, AER-REQ-083', '/parallel': 'use /run --parallel N',
+  '/plan': 'sem fase alocada, §13.5', '/skills': 'use /ext', '/plugins': 'use /ext', '/mcp': 'use /ext', '/diff': 'PHASE-05',
+  '/checkpoint': 'PHASE-05', '/safe-mode': 'sem fase alocada', '/history': 'PHASE-04', '/dependencies': 'PHASE-06',
 };
 
 export const SLASH_HELP = `Comandos:
@@ -33,7 +34,9 @@ export const SLASH_HELP = `Comandos:
 
 ${METHODOLOGY_HELP}
 
-${SECURITY_HELP}`;
+${SECURITY_HELP}
+
+${CONTINUITY_HELP}`;
 
 /** Executa um comando da sessão; mesmo código no modo linha e na TUI. 'EXIT' pede encerramento; /run devolve Promise. */
 export function handleLine(engine: Engine, line: string, unicode = true): string | Promise<string> | undefined {
@@ -155,6 +158,7 @@ export function handleLine(engine: Engine, line: string, unicode = true): string
     default:
       if (METHODOLOGY_COMMANDS.has(cmd)) return handleMethodology(engine, cmd, sub, rest);
       if (SECURITY_COMMANDS.has(cmd)) return handleSecurity(engine, cmd, sub, rest);
+      if (CONTINUITY_COMMANDS.has(cmd)) return handleContinuity(engine, cmd, sub, rest);
       if (cmd in PLANNED_SLASH) return `${cmd}: ainda não implementado (planejado: ${PLANNED_SLASH[cmd]})`;
       return `comando desconhecido: ${cmd} (/help)`;
   }

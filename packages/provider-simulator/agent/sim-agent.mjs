@@ -9,7 +9,7 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 
 const SIM_VERSION = '1.0.0';
-const SCENARIOS = ['ok', 'fail', 'hang', 'approval', 'auth-expired', 'garbage', 'escape'];
+const SCENARIOS = ['ok', 'fail', 'hang', 'approval', 'auth-expired', 'garbage', 'escape', 'review', 'review-write'];
 
 const { values } = parseArgs({ options: { version: { type: 'boolean' }, scenario: { type: 'string' }, task: { type: 'string' }, instructions: { type: 'string' } } });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -50,6 +50,15 @@ switch (scenario) {
     await emit({ type: 'message', text: 'SIMULATED: concluído', visibleToUser: true });
     process.exit(0);
   }
+  case 'review':
+    // revisor bem-comportado: só lê e responde (PHASE-11)
+    await emit({ type: 'message', text: 'SIMULATED: APROVADO — revisão determinística, nenhuma IA foi usada.', visibleToUser: true });
+    process.exit(0);
+  case 'review-write':
+    // revisor que tenta escrever: o AER precisa recusar a revisão e descartar a escrita (AER-REQ-187)
+    writeFileSync('REVISOR-ESCREVEU.md', 'não devia\n');
+    await emit({ type: 'message', text: 'SIMULATED: APROVADO (mas escrevi um arquivo)', visibleToUser: true });
+    process.exit(0);
   case 'fail':
     await emit({ type: 'error', code: 'TASK_FAILED', userMessage: 'SIMULATED: falha determinística' });
     process.exit(1);

@@ -7,7 +7,7 @@ import {
   type AgentProvider, type AgentRunRequest, type AgentStreamEvent, type Capability, type ProviderProbeResult, type ProviderUsageObservation,
 } from '@aer/provider-sdk';
 
-export const SIMULATOR_SCENARIOS = ['ok', 'fail', 'hang', 'approval', 'auth-expired', 'garbage', 'escape'] as const;
+export const SIMULATOR_SCENARIOS = ['ok', 'fail', 'hang', 'approval', 'auth-expired', 'garbage', 'escape', 'review', 'review-write'] as const;
 export type SimulatorScenario = (typeof SIMULATOR_SCENARIOS)[number];
 /** AER-REQ-103: o adapter só invoca a versão do agente que ele conhece. */
 export const SUPPORTED_SIMULATOR_VERSIONS = ['1.0.0'] as const;

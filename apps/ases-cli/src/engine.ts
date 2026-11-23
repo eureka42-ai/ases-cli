@@ -9,7 +9,7 @@ import { ClaudeCodeProvider } from '@aer/provider-claude';
 import { CodexProvider } from '@aer/provider-codex';
 import { createAntigravityProvider, createKimiProvider, createOpenCodeProvider } from '@aer/provider-acp';
 import { SimulatorProvider } from '@aer/provider-simulator';
-import { runQueue, type AttemptOutcome } from '@aer/scheduler';
+import { runQueue, type AttemptOutcome, type WorkerDeps } from '@aer/scheduler';
 import { ProjectError, historyState, isInterimProject, paths, readManifest, sessionFile, writeSession } from '@aer/project-store';
 import { writeReports } from './reports.ts';
 
@@ -95,6 +95,12 @@ export class Engine {
   }
 
   /** Raiz do projeto (para comandos que validam caminhos de evidência). */
+  /** Dependências do worker para operações fora do /run (p.ex. /review); o aceite de providers reais fica registrado. */
+  workerDeps(consent: string[] = [], timeoutMs = 600_000): WorkerDeps {
+    for (const providerId of consent) this.mutate((s) => s.appendEvent({ eventType: 'ApprovalGranted', payload: { scope: 'provider-run', providerId, grantedBy: 'user (--consent)', note: 'usa a sessão do cliente oficial; pode consumir cota/cobrança da conta' } }));
+    return { root: this.root, mutate: (fn) => this.mutate(fn), read: (fn) => fn(this.store), providers: this.providers, ttlMs: 30_000, timeoutMs, consented: new Set(consent) };
+  }
+
   get platform(): PlatformAdapter {
     return this.adapter;
   }
