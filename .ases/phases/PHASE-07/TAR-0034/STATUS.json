@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0034",
+  "phaseId": "PHASE-07",
+  "title": "Adapter Codex (codex exec --json)",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-101",
+    "AER-REQ-103",
+    "AER-REQ-112",
+    "AER-REQ-118",
+    "AER-REQ-125"
+  ],
+  "dependsOn": [
+    "TAR-0032"
+  ],
+  "evidence": [],
+  "lastTest": null
+}

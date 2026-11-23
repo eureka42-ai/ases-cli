@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0036",
+  "phaseId": "PHASE-07",
+  "title": "Matriz de limitações e doctor VERIFIED/SIMULATED/UNKNOWN",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-110",
+    "AER-REQ-116",
+    "AER-REQ-119",
+    "AER-REQ-127",
+    "AER-REQ-130"
+  ],
+  "dependsOn": [
+    "TAR-0033",
+    "TAR-0034"
+  ],
+  "evidence": [],
+  "lastTest": null
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0032",
+  "phaseId": "PHASE-07",
+  "title": "Pesquisa de flags e termos atuais (Claude Code, Codex)",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-113",
+    "AER-REQ-120",
+    "AER-REQ-121",
+    "AER-REQ-126"
+  ],
+  "dependsOn": [],
+  "evidence": [
+    {
+      "path": "docs/PROVIDERS_PESQUISA.md",
+      "sha256": "cc6153a5158c0bc5161851416d8ead5ffa290b583289b29b1134ec105a89c4a8"
+    }
+  ],
+  "lastTest": null
+}

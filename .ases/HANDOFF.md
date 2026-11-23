@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
-- Último evento válido: seq 214 em 2026-11-23T14:25:55.368Z
-- Git: branch `main`, HEAD `343f25a`
-- Concluídas: 31 de 31
-- Abertas: nenhuma
+- Último evento válido: seq 233 em 2026-11-23T14:28:05.311Z
+- Git: branch `ases/PHASE-07`, HEAD `9b2bb10`
+- Concluídas: 31 de 36
+- Abertas: TAR-0032 (REVIEW), TAR-0033 (PLANNED), TAR-0034 (PLANNED), TAR-0035 (PLANNED), TAR-0036 (PLANNED)
 - Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
 <!-- AUTO:END -->
 
