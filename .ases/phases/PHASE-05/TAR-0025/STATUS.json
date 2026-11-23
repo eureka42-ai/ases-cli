@@ -3,7 +3,7 @@
   "taskId": "TAR-0025",
   "phaseId": "PHASE-05",
   "title": "Concorrência e recuperação do scheduler",
-  "state": "PLANNED",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-045",
     "AER-REQ-046",
@@ -12,6 +12,17 @@
   "tests": [
     "packages/scheduler/test/multiprocess.test.ts"
   ],
-  "evidence": [],
-  "notes": []
+  "evidence": [
+    ".ases/evidence/PHASE-05-verify.md"
+  ],
+  "notes": [
+    {
+      "at": "2026-11-23T01:37:03.913Z",
+      "text": "integração autorizada pelo responsável"
+    },
+    {
+      "at": "2026-11-23T01:37:04.030Z",
+      "text": "fast-forward de ases/PHASE-05 em main (1663719); CI 8/8 verde"
+    }
+  ]
 }

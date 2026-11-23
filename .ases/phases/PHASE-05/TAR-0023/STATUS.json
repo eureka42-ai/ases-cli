@@ -3,7 +3,7 @@
   "taskId": "TAR-0023",
   "phaseId": "PHASE-05",
   "title": "Git worktree por tarefa/attempt",
-  "state": "PLANNED",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-051",
     "AER-REQ-052",
@@ -14,6 +14,17 @@
   "tests": [
     "packages/git-bridge/test/*.test.ts"
   ],
-  "evidence": [],
-  "notes": []
+  "evidence": [
+    ".ases/evidence/PHASE-05-verify.md"
+  ],
+  "notes": [
+    {
+      "at": "2026-11-23T01:37:03.444Z",
+      "text": "integração autorizada pelo responsável"
+    },
+    {
+      "at": "2026-11-23T01:37:03.557Z",
+      "text": "fast-forward de ases/PHASE-05 em main (1663719); CI 8/8 verde"
+    }
+  ]
 }

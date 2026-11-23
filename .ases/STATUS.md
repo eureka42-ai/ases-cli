@@ -1,6 +1,6 @@
 # STATUS AER
 
-Último evento: seq 131 (PhaseUpdated, 2026-11-23T01:15:18.507Z)
+Último evento: seq 157 (PhaseUpdated, 2026-11-23T01:37:04.387Z)
 
 ## Fases
 | Fase | Título | Estado | Evidência |
@@ -9,7 +9,7 @@
 | PHASE-02 | SQLite + eventos + estados | COMPLETED | .ases/evidence/PHASE-02-verify.md |
 | PHASE-03 | Dois executáveis e IPC | COMPLETED | .ases/evidence/PHASE-03-verify.md |
 | PHASE-04 | TUI utilizável + marca Eureka42 | COMPLETED | .ases/evidence/PHASE-04-verify.md |
-| PHASE-05 | Scheduler, DAG e isolamento Git | RUNNING | — |
+| PHASE-05 | Scheduler, DAG e isolamento Git | COMPLETED | .ases/evidence/PHASE-05-verify.md |
 
 ## Tarefas
 | Tarefa | Fase | Título | Estado | Evidência |
@@ -34,11 +34,11 @@
 | TAR-0018 | PHASE-04 | ases-tar: overview + eventos ao vivo | COMPLETED | .ases/evidence/PHASE-04-verify.md<br>apps/ases-tar/test/tui.test.tsx<br>apps/ases-tar/test/projection.test.ts |
 | TAR-0019 | PHASE-04 | ases-tar: detalhe da tarefa | COMPLETED | .ases/evidence/PHASE-04-verify.md<br>apps/ases-tar/test/tui.test.tsx |
 | TAR-0020 | PHASE-04 | Acessibilidade, larguras e smoke em pty | COMPLETED | .ases/evidence/PHASE-04-verify.md<br>test/e2e/pty.test.mjs<br>docs/TUI-UX.md |
-| TAR-0021 | PHASE-05 | DAG de dependências | PLANNED | — |
-| TAR-0022 | PHASE-05 | Leases com fencing e scheduler | PLANNED | — |
-| TAR-0023 | PHASE-05 | Git worktree por tarefa/attempt | PLANNED | — |
-| TAR-0024 | PHASE-05 | Fila de merge serializada | PLANNED | — |
-| TAR-0025 | PHASE-05 | Concorrência e recuperação do scheduler | PLANNED | — |
-| TAR-0026 | PHASE-05 | Evidências no banco e corte do .ases/ interino | PLANNED | — |
+| TAR-0021 | PHASE-05 | DAG de dependências | COMPLETED | .ases/evidence/PHASE-05-verify.md |
+| TAR-0022 | PHASE-05 | Leases com fencing e scheduler | COMPLETED | .ases/evidence/PHASE-05-verify.md |
+| TAR-0023 | PHASE-05 | Git worktree por tarefa/attempt | COMPLETED | .ases/evidence/PHASE-05-verify.md |
+| TAR-0024 | PHASE-05 | Fila de merge serializada | COMPLETED | .ases/evidence/PHASE-05-verify.md |
+| TAR-0025 | PHASE-05 | Concorrência e recuperação do scheduler | COMPLETED | .ases/evidence/PHASE-05-verify.md |
+| TAR-0026 | PHASE-05 | Evidências no banco e corte do .ases/ interino | COMPLETED | .ases/evidence/PHASE-05-verify.md |
 
 Estados sem evidência listada não foram verificados. NOT_RUN ≠ PASS.
