@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { ManifestSchema, VERSIONS, type Manifest } from '@aer/contracts';
-import { detectPlatform, writePrivateFile, type LocalIpcEndpoint, type PlatformAdapter } from '@aer/platform-core';
+import { assertSupportedTarget, writePrivateFile, type LocalIpcEndpoint, type PlatformAdapter } from '@aer/platform-core';
 
 export const ASES_DIR = '.ases';
 export const paths = (root: string) => {
@@ -20,8 +20,8 @@ export class ProjectError extends Error {
 }
 
 /** Carrega só o adapter do SO atual (§3.6). */
-export async function loadPlatformAdapter(platform: string = process.platform): Promise<PlatformAdapter> {
-  switch (detectPlatform(platform)) {
+export async function loadPlatformAdapter(platform: string = process.platform, arch: string = process.arch): Promise<PlatformAdapter> {
+  switch (assertSupportedTarget(platform, arch)) {
     case 'darwin':
       return (await import('@aer/platform-macos')).createMacosAdapter();
     case 'win32':

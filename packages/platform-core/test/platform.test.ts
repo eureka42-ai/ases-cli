@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import {
-  NotImplementedError, PlatformError, createBaseAdapter, createLocalIpcEndpoint, detectPlatform, ensurePrivateDir, writePrivateFile,
+  NotImplementedError, PlatformError, assertSupportedTarget, createBaseAdapter, createLocalIpcEndpoint, detectPlatform, ensurePrivateDir, targetStatus, writePrivateFile,
   getRuntimeDir, getTerminalCapabilities, normalizeProjectPath, type PlatformDeps,
 } from '../src/index.ts';
 
@@ -121,5 +121,16 @@ describe('private dirs and files (AER-REQ-014, AER-REQ-202)', () => {
     writePrivateFile(f, '{"a":2}');
     expect(statSync(f).mode & 0o777).toBe(0o600);
     expect(readFileSync(f, 'utf8')).toBe('{"a":2}');
+  });
+});
+
+describe('supported targets (CHANGE-0001)', () => {
+  it('accepts Apple Silicon, Windows and Linux; rejects macOS Intel', () => {
+    expect(assertSupportedTarget('darwin', 'arm64')).toBe('darwin');
+    expect(assertSupportedTarget('win32', 'x64')).toBe('win32');
+    expect(assertSupportedTarget('linux', 'x64')).toBe('linux');
+    expect(targetStatus('linux', 'arm64')).toBe('CONDITIONAL');
+    expect(() => assertSupportedTarget('darwin', 'x64')).toThrow(/macOS Intel está fora do escopo/);
+    expect(() => assertSupportedTarget('linux', 'ia32')).toThrow(PlatformError);
   });
 });

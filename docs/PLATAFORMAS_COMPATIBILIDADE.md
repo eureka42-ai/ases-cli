@@ -6,10 +6,11 @@
 
 | Alvo | Terminais principais | IPC | SecretStore | Background | Condição de suporte |
 |---|---|---|---|---|---|
-| macOS arm64/x64 | Terminal.app, iTerm2, Ghostty | Unix Domain Socket | Keychain | launchd se habilitado | E2E real e release gate |
+| macOS arm64 (Apple Silicon) | Terminal.app, iTerm2, Ghostty | Unix Domain Socket | Keychain | launchd se habilitado | E2E real e release gate |
 | Windows x64 | Windows Terminal, PowerShell | Named Pipes com ACL | Credential Manager / DPAPI | usuário/sessão, sem admin obrigatório | E2E real e release gate |
 | Linux x64 | terminal UTF-8 bash/zsh | Unix Domain Socket | Secret Service/libsecret, se existir | systemd --user, se existir | E2E real e release gate |
 | Windows arm64, Linux arm64 | conforme ambiente comprovado | conforme SO | conforme SO | conforme SO | opcional, NOT_RUN até validado |
+| ~~macOS x64 (Intel)~~ | — | — | — | — | **fora do escopo (CHANGE-0001, 22/11/2026)**: o AER recusa iniciar e o `doctor` informa |
 
 ## Critérios operacionais
 

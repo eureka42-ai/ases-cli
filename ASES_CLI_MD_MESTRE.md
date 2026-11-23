@@ -41,6 +41,7 @@ Você é o **Engenheiro Principal de Implementação do ASES Engineering Runtime
 
 ### 0.3 Decisões do usuário — NÃO NEGOCIÁVEIS
 
+- **[CHANGE-0001, 22/11/2026] macOS Intel (x64) saiu do escopo por decisão do responsável; macOS oficial = Apple Silicon (arm64). `AER-REQ-003` = N/A.**
 - O produto tem **três plataformas oficiais de destino: macOS (arm64/x64), Windows (x64/arm64 conforme suporte comprovado) e Linux (x64/arm64 conforme suporte comprovado)**, usando Terminal.app/iTerm2/Ghostty, Windows Terminal/PowerShell e terminais Linux. **Desenvolvimento e primeira validação no macOS; arquitetura multiplataforma desde o primeiro commit; lançamento estável multiplataforma somente com gates reais em cada sistema.** Sem painel web, PWA, interface gráfica externa, hospedagem Cloudflare ou dashboard remoto.
 - Dois comandos instaláveis no mesmo pacote: `ases` (comando/planejamento/orquestração) e `ases-tar` (monitor de tarefas em outra aba ou janela de terminal).
 - `ases` deve proporcionar uma experiência unificada de diálogo e operação, com integração progressiva a **Claude Code, OpenAI Codex, Kimi Code, OpenCode e cliente Google oficialmente utilizável**.
@@ -927,7 +928,7 @@ Parser com autocomplete, aliases controlados, errors explicativos e confirmaçã
 ---
 ### 11.7 Identidade Eureka42 — obrigação de produto
 
-**Referência visual escolhida pelo usuário:** `branding/references/Estudo de Marca Eureka42: Quatro Variações.png`. Estudo com símbolo `⌘` (U+2318; referência tipográfica Noto Sans Symbols 2), *Eureka* em Inter e **42** em Montserrat ExtraBold. O terminal usa fonte monoespaçada escolhida pelo usuário: logo ASCII/Unicode é uma **adaptação textual**, não consegue garantir Inter/Montserrat nem reproduzir pixels da arte. O símbolo de laços deve manter legibilidade com fallback `E42` quando o terminal não renderizar `⌘` corretamente.
+**Referência visual escolhida pelo usuário:** `branding/references/Estudo de Marca Eureka42 - Quatro Variações.png`. Estudo com símbolo `⌘` (U+2318; referência tipográfica Noto Sans Symbols 2), *Eureka* em Inter e **42** em Montserrat ExtraBold. O terminal usa fonte monoespaçada escolhida pelo usuário: logo ASCII/Unicode é uma **adaptação textual**, não consegue garantir Inter/Montserrat nem reproduzir pixels da arte. O símbolo de laços deve manter legibilidade com fallback `E42` quando o terminal não renderizar `⌘` corretamente.
 
 **Quatro variantes identificadas no estudo:** TEAL (padrão sugerido), BLUE, PURPLE e GOLD; as amostras ANSI/HEX são aproximações de implementação propostas, **não códigos oficiais certificados**. `branding/BRAND_TOKENS.json` contém propostas de valores a calibrar por leitura visual em terminal real; contraste WCAG deve orientar tema dark/light. Nunca reivindicar reprodução vetorial idêntica.
 

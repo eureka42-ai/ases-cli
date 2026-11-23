@@ -9,7 +9,7 @@ Quem usa vários CLIs de IA (Claude Code, Codex, Kimi, OpenCode, Google) perde c
 Engenheiro individual, líder técnico, colaborador externo e auditor (§1.5).
 
 ## Escopo confirmado (CONFIRMED)
-- CLI/TUI local em macOS, Windows e Linux; **sem painel web**, Electron ou servidor público.
+- CLI/TUI local em **macOS Apple Silicon (arm64), Windows e Linux**; macOS Intel fora do escopo (CHANGE-0001); **sem painel web**, Electron ou servidor público.
 - Dois bins no mesmo pacote npm: `ases` (controle e orquestração) e `ases-tar` (monitor somente leitura).
 - `.ases/` por projeto, com `PHASE-XX`, `TAR-XXXX` globais, eventos, checkpoints, `HANDOFF.md` e `NEXT-STEPS.md`.
 - Providers apenas por clientes ou APIs oficiais e autorizados; nunca captura de tokens.
@@ -28,4 +28,3 @@ Web/PWA/Electron, pool de cotas entre assinaturas, reutilização de credenciais
 ## Pendências
 - Licença (bloqueia publicação, AER-REQ-210).
 - Driver SQLite (ADR-0002).
-- Nome de arquivo de marca inválido no Windows (ver ADR-0001).

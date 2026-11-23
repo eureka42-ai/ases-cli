@@ -3,6 +3,7 @@ import { parseArgs } from 'node:util';
 import { PHASE_STATES, TASK_STATES, VERSIONS, type PhaseState, type TaskState } from '@aer/contracts';
 import { LOGO_MODES, THEMES, pickLogoMode, renderBrand, type LogoMode, type ThemeName } from '@aer/branding';
 import { sqliteVersion } from '@aer/persistence';
+import { targetStatus } from '@aer/platform-core';
 import { findProjectRoot, initProject, loadPlatformAdapter, readManifest } from '@aer/project-store';
 import { Engine } from './engine.ts';
 
@@ -88,7 +89,8 @@ async function main(argv: string[]): Promise<number> {
       project: root ? { projectId: readManifest(root).projectId, ipc: adapter.createLocalIpcEndpoint(readManifest(root).projectId).kind } : null,
       providers: { status: 'NOT_PROBED', plannedPhase: 'PHASE-07' },
       secretStore: await adapter.getSecretStore().probe(),
-      support: { [adapter.id]: 'ALPHA (testes locais)', note: 'demais SO: NOT_RUN até execução real (§3.7)' },
+      target: { id: `${process.platform}-${process.arch}`, status: targetStatus(process.platform, process.arch) },
+      support: { tested: 'darwin-arm64 (ALPHA, testes locais)', notRun: ['win32-x64', 'linux-x64', 'win32-arm64', 'linux-arm64'], outOfScope: ['darwin-x64 (CHANGE-0001)'] },
     };
     if (values.json) console.log(JSON.stringify(report));
     else for (const [k, v] of Object.entries(report)) console.log(`${k}: ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`);

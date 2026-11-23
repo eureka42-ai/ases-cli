@@ -1,7 +1,7 @@
 id,domain,priority,title,requirement,acceptance,test_id,status,source
 AER-REQ-001,FOUNDATION / INSTALAÇÃO,P0,Projeto multiplataforma,O produto deve operar nos terminais nativos de macOS Windows e Linux sem serviço remoto de coordenação,Smoke local por OS com estados PASS/NOT_RUN,T-AER-001,PROPOSED,AER-MASTER-001
 AER-REQ-002,FOUNDATION / INSTALAÇÃO,P0,Apple Silicon,O binário deve funcionar em macOS arm64 suportado,Smoke `ases --help` e `ases-tar --help` em arm64,T-AER-002,PROPOSED,AER-MASTER-001
-AER-REQ-003,FOUNDATION / INSTALAÇÃO,P0,Mac Intel,O binário deve funcionar em macOS x86_64 suportado,Smoke equivalente em host x86_64; se não executado marcar NOT_RUN,T-AER-003,PROPOSED,AER-MASTER-001
+AER-REQ-003,FOUNDATION / INSTALAÇÃO,P0,Mac Intel,O binário deve funcionar em macOS x86_64 suportado,Smoke equivalente em host x86_64; se não executado marcar NOT_RUN,T-AER-003,N/A (CHANGE-0001),AER-MASTER-001
 AER-REQ-004,FOUNDATION / INSTALAÇÃO,P0,Dois executáveis,O mesmo pacote deve fornecer os comandos `ases` e `ases-tar`,`which` identifica ambos após instalação local,T-AER-004,PROPOSED,AER-MASTER-001
 AER-REQ-005,FOUNDATION / INSTALAÇÃO,P0,Node LTS,Versão Node suportada deve constar em engines e CI,Build rejeita versão abaixo do limite documentado,T-AER-005,PROPOSED,AER-MASTER-001
 AER-REQ-006,FOUNDATION / INSTALAÇÃO,P0,Workspace,Dependências entre pacotes devem respeitar direção de imports,Teste de dependências rejeita import de UI em core,T-AER-006,PROPOSED,AER-MASTER-001

@@ -110,3 +110,26 @@ export function writePrivateFile(file: string, content: string): void {
   writeFileSync(tmp, content, { encoding: 'utf8', mode: 0o600 });
   renameSync(tmp, file);
 }
+
+/** CHANGE-0001: macOS só em Apple Silicon. arm64 de Windows/Linux é condicional a testes reais (§3.7). */
+export const SUPPORTED_TARGETS = {
+  'darwin-arm64': 'TARGET',
+  'win32-x64': 'TARGET',
+  'linux-x64': 'TARGET',
+  'win32-arm64': 'CONDITIONAL',
+  'linux-arm64': 'CONDITIONAL',
+} as const;
+export type TargetStatus = (typeof SUPPORTED_TARGETS)[keyof typeof SUPPORTED_TARGETS] | 'UNSUPPORTED';
+
+export function targetStatus(platform: string, arch: string): TargetStatus {
+  return (SUPPORTED_TARGETS as Record<string, TargetStatus>)[`${platform}-${arch}`] ?? 'UNSUPPORTED';
+}
+
+export function assertSupportedTarget(platform: string = process.platform, arch: string = process.arch): PlatformId {
+  const id = detectPlatform(platform);
+  if (targetStatus(platform, arch) === 'UNSUPPORTED') {
+    const hint = platform === 'darwin' ? ' macOS Intel está fora do escopo (CHANGE-0001); em Apple Silicon use um Node arm64 nativo (não sob Rosetta).' : '';
+    throw new PlatformError('UNSUPPORTED_PLATFORM', `target ${platform}-${arch} is not supported.${hint}`);
+  }
+  return id;
+}

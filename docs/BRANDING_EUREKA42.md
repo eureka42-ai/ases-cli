@@ -2,7 +2,7 @@
 
 ## Marca escolhida e referências
 
-O estudo recuperado `branding/references/Estudo de Marca Eureka42: Quatro Variações.png` mostra a combinação **símbolo ⌘ (U+2318; Noto Sans Symbols 2)**, palavra **Eureka (Inter)** e **42 (Montserrat ExtraBold)**. Quatro variantes de cor: **TEAL**, **BLUE**, **PURPLE**, **GOLD**. Há também referência de emblema circular em `branding/references/Emblema Tecnológico Eureka42 AI Framework.png`; esta segunda arte é **referência complementar**, não substitui a opção de marca selecionada. Preservar as imagens originais e não adicionar fontes de terceiros ao repositório.
+O estudo recuperado `branding/references/Estudo de Marca Eureka42 - Quatro Variações.png` mostra a combinação **símbolo ⌘ (U+2318; Noto Sans Symbols 2)**, palavra **Eureka (Inter)** e **42 (Montserrat ExtraBold)**. Quatro variantes de cor: **TEAL**, **BLUE**, **PURPLE**, **GOLD**. Há também referência de emblema circular em `branding/references/Emblema Tecnológico Eureka42 AI Framework.png`; esta segunda arte é **referência complementar**, não substitui a opção de marca selecionada. Preservar as imagens originais e não adicionar fontes de terceiros ao repositório.
 
 ## Restrições do Terminal
 

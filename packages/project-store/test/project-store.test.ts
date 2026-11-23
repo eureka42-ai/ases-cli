@@ -53,3 +53,10 @@ describe('ases init (TAR-0011, AER-REQ-011, AER-REQ-017)', () => {
     expect(() => readSession(adapter, 'prj_naoexiste01')).toThrow(/no running ases engine/);
   });
 });
+
+describe('loadPlatformAdapter (CHANGE-0001)', () => {
+  it('refuses macOS Intel before loading anything', async () => {
+    await expect(loadPlatformAdapter('darwin', 'x64')).rejects.toThrow(/fora do escopo/);
+    expect((await loadPlatformAdapter('linux', 'x64')).id).toBe('linux');
+  });
+});

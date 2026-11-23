@@ -8,3 +8,5 @@ Prioridade imediata: PHASE-01, bootstrap real do projeto e primeira fatia vertic
 
 
 **Nova decisão confirmada:** escopo multiplataforma `darwin/win32/linux` com contrato `PlatformAdapter`, UDS macOS/Linux, Named Pipes Windows, SecretStore nativo, testes reais por OS, npm com dois bins. Incluir **logo textual Eureka42**, símbolo **⌘** e quatro paletas TEAL/BLUE/PURPLE/GOLD nas TUIs `ases`/`ases-tar`, respeitando NO_COLOR/fallback ASCII. Consulte `docs/PLATAFORMAS_COMPATIBILIDADE.md`, `docs/BRANDING_EUREKA42.md` e `branding/references/` (fontes ASES devem continuar byte a byte preservadas). Especificação proposta, não alegar suporte já testado.
+
+**CHANGE-0001 (22/11/2026):** alvos = macOS **Apple Silicon (arm64)**, Windows e Linux. **macOS Intel (x64) está fora do escopo** (`AER-REQ-003` = N/A); o AER recusa iniciar em darwin-x64. **CHANGE-0002:** a imagem de estudo de marca foi renomeada para `Estudo de Marca Eureka42 - Quatro Variações.png` (conteúdo idêntico; `:` era inválido no Windows).
