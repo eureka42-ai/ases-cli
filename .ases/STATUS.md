@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 336 (PhaseUpdated, 2026-11-23T18:19:31.796Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 376 (TaskUpdated, 2026-11-23T19:07:16.629Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -13,6 +13,7 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | PHASE-06 | Motor de provider e simulador determinístico | COMPLETED |
 | PHASE-07 | Claude Code oficial e Codex oficial | COMPLETED |
 | PHASE-08 | Kimi, OpenCode e Google | COMPLETED |
+| PHASE-09 | ASES-300/500 e rastreabilidade | RUNNING |
 
 ## Tarefas
 | Tarefa | Fase | Título | Estado | Último teste | Evidência |
@@ -59,5 +60,10 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0040 | PHASE-08 | Adapter Google (Gemini CLI) com capability honesta | COMPLETED | — | .ases/evidence/PHASE-08-verify.md<br>.ases/evidence/TAR-0041-smoke-real.md |
 | TAR-0041 | PHASE-08 | Fixtures de teste e smoke opt-in | COMPLETED | — | .ases/evidence/TAR-0041-smoke-real.md<br>.ases/evidence/TAR-0041-smoke-real.md |
 | TAR-0042 | PHASE-08 | Documentação de paridade dos cinco providers | COMPLETED | — | docs/PROVIDERS.md<br>docs/ADRs/ADR-0013.md |
+| TAR-0043 | PHASE-09 | Importação e verificação das fontes ASES (REQ-001..300 literais + SHA-256) | REVIEW | — | .ases/evidence/PHASE-09-verify.md |
+| TAR-0044 | PHASE-09 | Fluxo de especificação ASES-500 (entrevista por lacunas, decisões) | REVIEW | — | .ases/evidence/PHASE-09-verify.md |
+| TAR-0045 | PHASE-09 | Matriz de requisitos (aplicabilidade, estado, evidência, N/A justificado) | REVIEW | — | .ases/evidence/PHASE-09-verify.md |
+| TAR-0046 | PHASE-09 | Rastreabilidade, gates G0/G1 e mudança controlada (CHANGE) | REVIEW | — | .ases/evidence/PHASE-09-verify.md<br>docs/ADRs/ADR-0014.md |
+| TAR-0047 | PHASE-09 | QA: projeto de exemplo da entrevista a 2 fases e 3 tarefas rastreáveis | REVIEW | — | .ases/evidence/PHASE-09-verify.md |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

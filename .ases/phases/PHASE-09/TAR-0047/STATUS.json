@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0047",
+  "phaseId": "PHASE-09",
+  "title": "QA: projeto de exemplo da entrevista a 2 fases e 3 tarefas rastreáveis",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-157",
+    "AER-REQ-158"
+  ],
+  "dependsOn": [
+    "TAR-0046"
+  ],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-09-verify.md",
+      "sha256": "70fab8dace5d419abd6ff2462d41404dcf685048b9936bb4a10a251d5115bcbe"
+    }
+  ],
+  "lastTest": null
+}

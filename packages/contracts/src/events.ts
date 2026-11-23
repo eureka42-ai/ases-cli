@@ -11,6 +11,8 @@ export const EVENT_TYPES = [
   'ApprovalRequested', 'ApprovalGranted', 'ApprovalDenied', 'ExtensionDiscovered', 'ExtensionScanned', 'ExtensionInstalled',
   'TestRunStarted', 'TestRunCompleted', 'GitCheckpointCreated', 'HandoffCreated', 'RecoveryStarted', 'RecoveryCompleted',
   'SecurityViolationBlocked', 'AuditExported', 'LegacyImported',
+  // PHASE-09: metodologia ASES-300/500
+  'MethodologySourceImported', 'RequirementCreated', 'RequirementUpdated', 'DecisionRecorded', 'ChangeRecorded',
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
@@ -31,6 +33,11 @@ export const CRITICAL_PAYLOADS = {
   TaskReserved: z.strictObject({ ownerId: z.string().min(1), fencingToken: z.number().int().min(1), expiresAt: z.iso.datetime(), explanation: z.string() }),
   AttemptStarted: z.strictObject({ providerId: z.string().min(1), fencingToken: z.number().int().min(1), branch: z.string().nullable(), baseCommit: z.string().nullable() }),
   AttemptExited: z.strictObject({ state: z.enum(['EXITED', 'FAILED', 'CANCELLED', 'UNKNOWN']), exitCode: z.number().int().nullable(), failureCode: z.string().nullable() }),
+  MethodologySourceImported: z.strictObject({ key: z.string().min(1), path: z.string().min(1), sha256: z.string().regex(/^[0-9a-f]{64}$/), requirements: z.number().int().min(0) }),
+  RequirementCreated: z.strictObject({ id: z.string().regex(/^REQ-\d{3,}$/), title: z.string().min(1), priority: z.string(), origin: z.string().min(1) }),
+  RequirementUpdated: z.strictObject({ id: z.string().regex(/^REQ-\d{3,}$/), field: z.enum(['status', 'approval', 'content']), from: z.string().nullable(), to: z.string(), note: z.string().nullable(), changeId: z.string().nullable() }),
+  DecisionRecorded: z.strictObject({ id: z.string().regex(/^DEC-\d{4,}$/), questionId: z.string().min(1), state: z.string(), supersedes: z.string().nullable(), changeId: z.string().nullable() }),
+  ChangeRecorded: z.strictObject({ id: z.string().regex(/^CHANGE-\d{4,}$/), reason: z.string().min(1), targets: z.array(z.string()), approvedBy: z.string().min(1) }),
   TestRunCompleted: z.strictObject({ command: z.string().min(1), exitCode: z.number().int(), total: z.number().int().min(0), passed: z.number().int().min(0), failed: z.number().int().min(0), skipped: z.number().int().min(0) }),
 } as const satisfies Partial<Record<EventType, z.ZodType>>;
 

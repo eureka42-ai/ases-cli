@@ -177,4 +177,64 @@ CREATE TRIGGER events_append_only_delete BEFORE DELETE ON events
   CREATE INDEX idx_test_runs_task ON test_runs(project_id, task_id, id);
   `,
   },
+  // PHASE-09 (ADR-0014): matriz ASES-300/500 — fontes com SHA-256, requisitos (gerais literais + domínio REQ-301+), decisões e CHANGE.
+  {
+    version: 3,
+    name: 'ases-methodology',
+    sql: `
+  CREATE TABLE methodology_sources (
+    project_id TEXT NOT NULL REFERENCES projects(id),
+    key TEXT NOT NULL,
+    relative_path TEXT NOT NULL,
+    sha256 TEXT NOT NULL CHECK (length(sha256) = 64),
+    imported_at TEXT NOT NULL,
+    PRIMARY KEY (project_id, key)
+  );
+  CREATE TABLE requirements (
+    project_id TEXT NOT NULL REFERENCES projects(id),
+    id TEXT NOT NULL CHECK (id GLOB 'REQ-[0-9][0-9][0-9]*'),
+    series TEXT NOT NULL CHECK (series IN ('GENERAL','DOMAIN')),
+    title TEXT NOT NULL,
+    classification TEXT NOT NULL,
+    priority TEXT NOT NULL CHECK (priority IN ('CRITICAL','HIGH','MEDIUM','LOW')),
+    grp TEXT NOT NULL DEFAULT '',
+    text TEXT NOT NULL,
+    text_sha256 TEXT NOT NULL CHECK (length(text_sha256) = 64),
+    acceptance TEXT NOT NULL DEFAULT '',
+    origin TEXT NOT NULL,
+    dependencies TEXT NOT NULL DEFAULT '[]',
+    status TEXT NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING','IN_PROGRESS','PASS','FAIL','BLOCKED','N/A')),
+    note TEXT,
+    evidence_path TEXT,
+    evidence_sha256 TEXT,
+    approved_by TEXT,
+    version INTEGER NOT NULL DEFAULT 1,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (project_id, id),
+    CHECK (status <> 'PASS' OR evidence_sha256 IS NOT NULL),
+    CHECK (status NOT IN ('N/A','FAIL','BLOCKED') OR (note IS NOT NULL AND length(trim(note)) > 0))
+  );
+  CREATE TABLE decisions (
+    project_id TEXT NOT NULL REFERENCES projects(id),
+    id TEXT NOT NULL CHECK (id GLOB 'DEC-[0-9][0-9][0-9][0-9]*'),
+    question_id TEXT NOT NULL,
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    state TEXT NOT NULL CHECK (state IN ('CONFIRMED','PROPOSED','OPEN','VALIDATION_REQUIRED','SUPERSEDED','N/A')),
+    change_id TEXT,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (project_id, id)
+  );
+  CREATE INDEX idx_decisions_question ON decisions(project_id, question_id);
+  CREATE TABLE changes (
+    project_id TEXT NOT NULL REFERENCES projects(id),
+    id TEXT NOT NULL CHECK (id GLOB 'CHANGE-[0-9][0-9][0-9][0-9]*'),
+    reason TEXT NOT NULL CHECK (length(trim(reason)) > 0),
+    targets TEXT NOT NULL,
+    approved_by TEXT NOT NULL CHECK (length(trim(approved_by)) > 0),
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (project_id, id)
+  );
+  `,
+  },
 ];

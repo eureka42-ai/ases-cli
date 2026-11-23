@@ -41,6 +41,9 @@
       "path": "packages/provider-acp/tsconfig.build.json"
     },
     {
+      "path": "packages/ases-methodology/tsconfig.build.json"
+    },
+    {
       "path": "packages/branding/tsconfig.build.json"
     },
     {

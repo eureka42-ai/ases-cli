@@ -78,6 +78,33 @@ ${AUTO_END}`;
     if (s !== -1 && e > s) writeIfChanged(handoff, text.slice(0, s) + auto + text.slice(e + AUTO_END.length));
   }
 
+  // PHASE-09: matriz ASES-300/500 (só quando a metodologia está ativa no projeto)
+  const reqs = store.listRequirements();
+  if (reqs.length) {
+    const tasksByReq = new Map<string, string[]>();
+    for (const t of tasks) for (const r of t.reqs) tasksByReq.set(r, [...(tasksByReq.get(r) ?? []), t.id]);
+    writeIfChanged(path.join(A, 'REQUIREMENTS-MATRIX.csv'), `id,series,title,classification,priority,status,approved_by,evidence,note,tasks,text_sha256,origin\n${reqs.map((r) => [
+      r.id, r.series, r.title, r.classification, r.priority, r.status, r.approvedBy ?? '', r.evidencePath ? `${r.evidencePath}#${r.evidenceSha256!.slice(0, 12)}` : '',
+      r.note ?? '', (tasksByReq.get(r.id) ?? []).join(' '), r.textSha256, r.origin,
+    ].map(q).join(',')).join('\n')}\n`);
+    const decisions = store.listDecisions();
+    const changes = store.listChanges();
+    writeIfChanged(path.join(A, 'DECISIONS.md'), `# Decisões e mudanças (ASES-500)
+
+Gerado pelo engine. Fonte ASES-500 consolidada **para validação** (não é original homologado).
+
+## Decisões
+| ID | Pergunta | Estado | Resposta | CHANGE |
+|---|---|---|---|---|
+${decisions.map((d) => `| ${d.id} | ${d.questionId} — ${d.question.replaceAll('|', '/')} | ${d.state} | ${d.answer.replaceAll('|', '/') || '—'} | ${d.changeId ?? '—'} |`).join('\n')}
+
+## Mudanças controladas
+| ID | Motivo | Itens | Aprovado por |
+|---|---|---|---|
+${changes.map((c) => `| ${c.id} | ${c.reason.replaceAll('|', '/')} | ${c.targets.join(', ')} | ${c.approvedBy} |`).join('\n')}
+`);
+  }
+
   for (const t of tasks) {
     writeIfChanged(path.join(A, 'phases', t.phaseId, t.id, 'STATUS.json'), `${JSON.stringify({
       schemaVersion: 2, generatedBy: 'aer-engine', taskId: t.id, phaseId: t.phaseId, title: t.title, state: t.state, version: t.version,

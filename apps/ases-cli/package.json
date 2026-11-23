@@ -14,6 +14,7 @@
     "@aer/platform-core": "0.0.0",
     "@aer/project-store": "0.0.0",
     "@aer/provider-claude": "0.0.0",
+    "@aer/ases-methodology": "0.0.0",
     "@aer/provider-acp": "0.0.0",
     "@aer/provider-codex": "0.0.0",
     "@aer/provider-sdk": "0.0.0",

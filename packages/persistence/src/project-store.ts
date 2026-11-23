@@ -1,8 +1,9 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import {
   EVENT_TYPES, PHASE_STATES, TASK_STATES, canTransitionPhase, canTransitionTask, formatAttemptId, formatPhaseId, formatTaskId,
   payloadSha256, validatePayload, type EventEnvelope, type EventType, type PhaseState, type TaskState,
 } from '@aer/contracts';
+import { DECISION_STATES, PRIORITIES, REQUIREMENT_STATES, type DecisionState, type RequirementState } from '@aer/ases-methodology';
 import { openDatabase, withBusyRetry, type OpenResult } from './database.ts';
 import type { Database } from './driver.ts';
 import { StoreError } from './errors.ts';
@@ -143,6 +144,56 @@ function toEvent(r: Row): EventEnvelope {
  * Autoridade do estado operacional (§6.1): toda mudança de estado e seu evento entram na mesma transação.
  * Um ProjectStore por processo; vários processos podem abrir o mesmo arquivo (WAL + BEGIN IMMEDIATE).
  */
+// ===== PHASE-09: metodologia ASES-300/500 (ADR-0014) =====
+export interface GeneralRequirementInput {
+  id: string;
+  title: string;
+  classification: string;
+  priority: string;
+  group: string;
+  text: string;
+  textSha256: string;
+  acceptance: string;
+}
+
+export interface RequirementRow {
+  id: string;
+  series: 'GENERAL' | 'DOMAIN';
+  title: string;
+  classification: string;
+  priority: string;
+  group: string;
+  text: string;
+  textSha256: string;
+  acceptance: string;
+  origin: string;
+  dependencies: string[];
+  status: RequirementState;
+  note: string | null;
+  evidencePath: string | null;
+  evidenceSha256: string | null;
+  approvedBy: string | null;
+  version: number;
+}
+
+export interface DecisionRow {
+  id: string;
+  questionId: string;
+  question: string;
+  answer: string;
+  state: DecisionState;
+  changeId: string | null;
+  createdAt: string;
+}
+
+export interface ChangeRow {
+  id: string;
+  reason: string;
+  targets: string[];
+  approvedBy: string;
+  createdAt: string;
+}
+
 export class ProjectStore {
   readonly projectId: string;
   readonly info: Omit<OpenResult, 'db'>;
@@ -252,6 +303,11 @@ export class ProjectStore {
     return this.inWriteTx(() => {
       if (!this.db.prepare('SELECT 1 FROM phases WHERE project_id = ? AND id = ?').get(this.projectId, input.phaseId)) {
         throw new StoreError('NOT_FOUND', `phase ${input.phaseId} not found`);
+      }
+      if (this.hasRequirements()) {
+        // metodologia ativa: toda tarefa aponta para requisitos existentes (AER-REQ-157)
+        if (!reqs.length) throw new StoreError('REQUIREMENT_REQUIRED', 'this project uses the ASES matrix: a task must cite at least one requirement (--reqs)');
+        for (const [k, req] of reqs.entries()) if (namespaces[k] === 'ASES' && !this.getRequirement(req)) throw new StoreError('NOT_FOUND', `requirement ${req} not found in the matrix`);
       }
       const id = formatTaskId(this.nextId('TASK'));
       const now = this.now();
@@ -594,6 +650,197 @@ export class ProjectStore {
     if (!last && artifacts === 0) throw new StoreError('EVIDENCE_REQUIRED', `${taskId} cannot be COMPLETED without evidence or a recorded test run`);
   }
 
+  // ===== PHASE-09: metodologia ASES-300/500 =====
+
+  private hasRequirements(): boolean {
+    return !!this.db.prepare('SELECT 1 FROM requirements WHERE project_id = ? LIMIT 1').get(this.projectId);
+  }
+
+  /**
+   * Registra uma fonte ASES (SHA-256) e, para o ASES-300, os 300 REQ gerais literais. Idempotente: reimportar o mesmo
+   * texto não muda nada; texto diferente para um REQ já importado é recusado (o núcleo geral nunca é reescrito, AER-REQ-152).
+   */
+  importMethodologySource(key: string, relativePath: string, sourceSha256: string, general: readonly GeneralRequirementInput[] = []): { inserted: number } {
+    return this.inWriteTx(() => {
+      let inserted = 0;
+      const now = this.now();
+      for (const r of general) {
+        const cur = this.db.prepare('SELECT text_sha256 FROM requirements WHERE project_id = ? AND id = ?').get(this.projectId, r.id) as Row | undefined;
+        if (cur) {
+          if (cur.text_sha256 !== r.textSha256) throw new StoreError('SOURCE_CONFLICT', `${r.id} already imported with different text; general requirements are never rewritten`);
+          continue;
+        }
+        this.db.prepare(`INSERT INTO requirements (project_id, id, series, title, classification, priority, grp, text, text_sha256, acceptance, origin, updated_at)
+          VALUES (?, ?, 'GENERAL', ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(this.projectId, r.id, r.title, r.classification, r.priority, r.group, r.text, r.textSha256, r.acceptance, `${relativePath}#${r.id}`, now);
+        inserted++;
+      }
+      this.db.prepare(`INSERT INTO methodology_sources (project_id, key, relative_path, sha256, imported_at) VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT (project_id, key) DO UPDATE SET relative_path = excluded.relative_path, sha256 = excluded.sha256, imported_at = excluded.imported_at`)
+        .run(this.projectId, key, relativePath, sourceSha256, now);
+      this.appendEvent({ eventType: 'MethodologySourceImported', payload: { key, path: relativePath, sha256: sourceSha256, requirements: inserted } });
+      return { inserted };
+    });
+  }
+
+  listMethodologySources(): { key: string; relativePath: string; sha256: string }[] {
+    return (this.db.prepare('SELECT key, relative_path, sha256 FROM methodology_sources WHERE project_id = ? ORDER BY key').all(this.projectId) as Row[])
+      .map((r) => ({ key: String(r.key), relativePath: String(r.relative_path), sha256: String(r.sha256) }));
+  }
+
+  private toRequirement(r: Row): RequirementRow {
+    return {
+      id: String(r.id), series: r.series as RequirementRow['series'], title: String(r.title), classification: String(r.classification), priority: String(r.priority),
+      group: String(r.grp), text: String(r.text), textSha256: String(r.text_sha256), acceptance: String(r.acceptance), origin: String(r.origin),
+      dependencies: JSON.parse(String(r.dependencies)) as string[], status: r.status as RequirementState, note: (r.note as string | null) ?? null,
+      evidencePath: (r.evidence_path as string | null) ?? null, evidenceSha256: (r.evidence_sha256 as string | null) ?? null, approvedBy: (r.approved_by as string | null) ?? null, version: Number(r.version),
+    };
+  }
+
+  listRequirements(series?: 'GENERAL' | 'DOMAIN'): RequirementRow[] {
+    const rows = series
+      ? this.db.prepare('SELECT * FROM requirements WHERE project_id = ? AND series = ? ORDER BY id').all(this.projectId, series)
+      : this.db.prepare('SELECT * FROM requirements WHERE project_id = ? ORDER BY id').all(this.projectId);
+    return (rows as Row[]).map((r) => this.toRequirement(r));
+  }
+
+  getRequirement(id: string): RequirementRow | undefined {
+    const r = this.db.prepare('SELECT * FROM requirements WHERE project_id = ? AND id = ?').get(this.projectId, id) as Row | undefined;
+    return r ? this.toRequirement(r) : undefined;
+  }
+
+  private requireRequirement(id: string): RequirementRow {
+    const r = this.getRequirement(id);
+    if (!r) throw new StoreError('NOT_FOUND', `requirement ${id} not found`);
+    return r;
+  }
+
+  /** Requisito específico do projeto: REQ-301+ (§13.3), com critério de aceite verificável e origem. */
+  createDomainRequirement(i: { title: string; acceptance: string; priority: string; origin: string; dependencies?: string[] }): string {
+    if (!i.title.trim()) throw new StoreError('INVALID_INPUT', 'requirement title is required');
+    if (!i.acceptance.trim()) throw new StoreError('INVALID_INPUT', 'a verifiable acceptance criterion is required');
+    if (!i.origin.trim()) throw new StoreError('INVALID_INPUT', 'requirement origin is required (p.ex. DEC-0001)');
+    if (!(PRIORITIES as readonly string[]).includes(i.priority)) throw new StoreError('INVALID_INPUT', `priority must be one of ${PRIORITIES.join(', ')}`);
+    return this.inWriteTx(() => {
+      for (const d of i.dependencies ?? []) this.requireRequirement(d);
+      const max = Number((this.db.prepare("SELECT max(CAST(substr(id, 5) AS INTEGER)) m FROM requirements WHERE project_id = ? AND series = 'DOMAIN'").get(this.projectId) as Row).m ?? 300);
+      const id = `REQ-${String(Math.max(300, max) + 1).padStart(3, '0')}`;
+      const text = domainText(id, i.title, i.acceptance);
+      this.db.prepare(`INSERT INTO requirements (project_id, id, series, title, classification, priority, text, text_sha256, acceptance, origin, dependencies, updated_at)
+        VALUES (?, ?, 'DOMAIN', ?, 'DOMAIN', ?, ?, ?, ?, ?, ?, ?)`).run(this.projectId, id, i.title.trim(), i.priority, text, sha256(text), i.acceptance.trim(), i.origin.trim(), JSON.stringify(i.dependencies ?? []), this.now());
+      this.appendEvent({ eventType: 'RequirementCreated', payload: { id, title: i.title.trim(), priority: i.priority, origin: i.origin.trim() } });
+      return id;
+    });
+  }
+
+  /** Aprovação humana de um requisito de domínio (G1). Depois dela, mudar o conteúdo exige CHANGE (AER-REQ-159). */
+  approveRequirement(id: string, approvedBy: string): void {
+    if (!approvedBy.trim()) throw new StoreError('INVALID_INPUT', 'approvedBy is required');
+    this.inWriteTx(() => {
+      const r = this.requireRequirement(id);
+      if (r.series !== 'DOMAIN') throw new StoreError('INVALID_INPUT', `${id} is a general ASES-300 requirement; only its status/applicability changes`);
+      this.db.prepare('UPDATE requirements SET approved_by = ?, version = version + 1, updated_at = ? WHERE project_id = ? AND id = ?').run(approvedBy.trim(), this.now(), this.projectId, id);
+      this.appendEvent({ eventType: 'RequirementUpdated', payload: { id, field: 'approval', from: r.approvedBy, to: approvedBy.trim(), note: null, changeId: null } });
+    });
+  }
+
+  /**
+   * Estado do requisito (fonte ASES-300 24.2): PASS exige evidência real (arquivo + SHA-256); N/A, FAIL e BLOCKED exigem
+   * justificativa; N/A num CORE exige quem aprovou a exceção. Diferencia "não aplicável" de "não implementado".
+   */
+  setRequirementStatus(id: string, status: string, o: { note?: string; evidence?: { path: string; sha256: string }; approvedBy?: string } = {}): void {
+    if (!(REQUIREMENT_STATES as readonly string[]).includes(status)) throw new StoreError('INVALID_INPUT', `status must be one of ${REQUIREMENT_STATES.join(', ')}`);
+    const note = o.note?.trim() || null;
+    if (status === 'PASS' && !o.evidence) throw new StoreError('EVIDENCE_REQUIRED', `${id}: PASS requires evidence (file inside the project)`);
+    if ((status === 'N/A' || status === 'FAIL' || status === 'BLOCKED') && !note) throw new StoreError('JUSTIFICATION_REQUIRED', `${id}: ${status} requires a justification`);
+    this.inWriteTx(() => {
+      const r = this.requireRequirement(id);
+      if (status === 'N/A' && r.classification === 'CORE' && !o.approvedBy?.trim()) {
+        throw new StoreError('APPROVAL_REQUIRED', `${id} is CORE: N/A only as an explicitly approved exception (--approved-by)`);
+      }
+      const ev = status === 'PASS' ? o.evidence! : { path: r.evidencePath, sha256: r.evidenceSha256 };
+      const fullNote = status === 'N/A' && o.approvedBy?.trim() ? `${note} (exceção aprovada por ${o.approvedBy.trim()})` : note;
+      this.db.prepare('UPDATE requirements SET status = ?, note = ?, evidence_path = ?, evidence_sha256 = ?, version = version + 1, updated_at = ? WHERE project_id = ? AND id = ?')
+        .run(status, fullNote, ev.path, ev.sha256, this.now(), this.projectId, id);
+      this.appendEvent({ eventType: 'RequirementUpdated', payload: { id, field: 'status', from: r.status, to: status, note: fullNote ?? (status === 'PASS' ? `evidence ${ev.path}` : null), changeId: null } });
+    });
+  }
+
+  /** Conteúdo de requisito de domínio: livre até a aprovação; depois, só com CHANGE que cite o requisito (AER-REQ-159). */
+  editDomainRequirement(id: string, i: { title?: string; acceptance?: string }, changeId?: string): void {
+    this.inWriteTx(() => {
+      const r = this.requireRequirement(id);
+      if (r.series !== 'DOMAIN') throw new StoreError('INVALID_INPUT', `${id} is a general ASES-300 requirement and is never rewritten`);
+      if (r.approvedBy) this.requireChangeFor(changeId, id);
+      const title = i.title?.trim() || r.title;
+      const acceptance = i.acceptance?.trim() || r.acceptance;
+      const text = domainText(id, title, acceptance);
+      this.db.prepare('UPDATE requirements SET title = ?, acceptance = ?, text = ?, text_sha256 = ?, version = version + 1, updated_at = ? WHERE project_id = ? AND id = ?')
+        .run(title, acceptance, text, sha256(text), this.now(), this.projectId, id);
+      this.appendEvent({ eventType: 'RequirementUpdated', payload: { id, field: 'content', from: r.textSha256, to: sha256(text), note: null, changeId: changeId ?? null } });
+    });
+  }
+
+  private requireChangeFor(changeId: string | undefined, target: string): void {
+    if (!changeId) throw new StoreError('CHANGE_REQUIRED', `${target} is already approved/confirmed; a CHANGE-XXXX citing it is required (AER-REQ-159)`);
+    const c = this.getChange(changeId);
+    if (!c) throw new StoreError('NOT_FOUND', `change ${changeId} not found`);
+    if (!c.targets.includes(target)) throw new StoreError('CHANGE_REQUIRED', `${changeId} does not cite ${target}`);
+  }
+
+  listDecisions(): DecisionRow[] {
+    return (this.db.prepare('SELECT * FROM decisions WHERE project_id = ? ORDER BY id').all(this.projectId) as Row[]).map((r) => ({
+      id: String(r.id), questionId: String(r.question_id), question: String(r.question), answer: String(r.answer), state: r.state as DecisionState,
+      changeId: (r.change_id as string | null) ?? null, createdAt: String(r.created_at),
+    }));
+  }
+
+  /**
+   * Decisão da entrevista ASES-500. A decisão vigente anterior da mesma pergunta vira SUPERSEDED (preservada).
+   * Substituir uma decisão CONFIRMED exige CHANGE (§13.6: nenhuma edição silenciosa de decisão confirmada).
+   */
+  recordDecision(i: { questionId: string; question: string; answer: string; state: string; changeId?: string }): string {
+    if (!(DECISION_STATES as readonly string[]).includes(i.state) || i.state === 'SUPERSEDED') throw new StoreError('INVALID_INPUT', `state must be one of ${DECISION_STATES.filter((x) => x !== 'SUPERSEDED').join(', ')}`);
+    if (!i.questionId.trim() || !i.question.trim()) throw new StoreError('INVALID_INPUT', 'questionId and question are required');
+    if (i.state !== 'OPEN' && !i.answer.trim()) throw new StoreError('INVALID_INPUT', `${i.state} requires an answer or justification`);
+    return this.inWriteTx(() => {
+      const prev = this.db.prepare("SELECT id, state FROM decisions WHERE project_id = ? AND question_id = ? AND state <> 'SUPERSEDED' ORDER BY id DESC LIMIT 1").get(this.projectId, i.questionId) as Row | undefined;
+      if (prev?.state === 'CONFIRMED') this.requireChangeFor(i.changeId, i.questionId);
+      const n = Number((this.db.prepare('SELECT count(*) n FROM decisions WHERE project_id = ?').get(this.projectId) as Row).n) + 1;
+      const id = `DEC-${String(n).padStart(4, '0')}`;
+      if (prev) this.db.prepare("UPDATE decisions SET state = 'SUPERSEDED' WHERE project_id = ? AND id = ?").run(this.projectId, String(prev.id));
+      this.db.prepare('INSERT INTO decisions (project_id, id, question_id, question, answer, state, change_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+        .run(this.projectId, id, i.questionId, i.question, i.answer.trim(), i.state, i.changeId ?? null, this.now());
+      this.appendEvent({ eventType: 'DecisionRecorded', payload: { id, questionId: i.questionId, state: i.state, supersedes: (prev?.id as string | undefined) ?? null, changeId: i.changeId ?? null } });
+      return id;
+    });
+  }
+
+  /** CHANGE-XXXX (§13.6): motivo, itens afetados e aprovação humana. */
+  createChange(i: { reason: string; targets: string[]; approvedBy: string }): string {
+    if (!i.reason.trim()) throw new StoreError('INVALID_INPUT', 'change reason is required');
+    if (!i.approvedBy.trim()) throw new StoreError('INVALID_INPUT', 'approvedBy is required');
+    const targets = [...new Set(i.targets.map((t) => t.trim()).filter(Boolean))];
+    if (!targets.length) throw new StoreError('INVALID_INPUT', 'a change must cite at least one requirement or question');
+    return this.inWriteTx(() => {
+      for (const t of targets) if (/^REQ-\d{3,}$/.test(t)) this.requireRequirement(t);
+      const n = Number((this.db.prepare('SELECT count(*) n FROM changes WHERE project_id = ?').get(this.projectId) as Row).n) + 1;
+      const id = `CHANGE-${String(n).padStart(4, '0')}`;
+      this.db.prepare('INSERT INTO changes (project_id, id, reason, targets, approved_by, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+        .run(this.projectId, id, i.reason.trim(), JSON.stringify(targets), i.approvedBy.trim(), this.now());
+      this.appendEvent({ eventType: 'ChangeRecorded', payload: { id, reason: i.reason.trim(), targets, approvedBy: i.approvedBy.trim() } });
+      return id;
+    });
+  }
+
+  getChange(id: string): ChangeRow | undefined {
+    const r = this.db.prepare('SELECT * FROM changes WHERE project_id = ? AND id = ?').get(this.projectId, id) as Row | undefined;
+    return r ? { id: String(r.id), reason: String(r.reason), targets: JSON.parse(String(r.targets)) as string[], approvedBy: String(r.approved_by), createdAt: String(r.created_at) } : undefined;
+  }
+
+  listChanges(): ChangeRow[] {
+    return (this.db.prepare('SELECT id FROM changes WHERE project_id = ? ORDER BY id').all(this.projectId) as Row[]).map((r) => this.getChange(String(r.id))!);
+  }
+
   /** Snapshot consistente + cursor numa única transação de leitura (AER-REQ-074, §10.3). */
   snapshot(): Snapshot {
     if (this.inTx) throw new StoreError('NESTED_TRANSACTION', 'snapshot cannot run inside a write transaction');
@@ -604,4 +851,11 @@ export class ProjectStore {
       this.db.exec('COMMIT');
     }
   }
+}
+
+const sha256 = (t: string) => createHash('sha256').update(t).digest('hex');
+
+/** Texto de um requisito de domínio, na gramática do catálogo (título + critério de aceite). */
+function domainText(id: string, title: string, acceptance: string): string {
+  return `### ${id} — ${title.trim()}\n\nCritério de aceite: ${acceptance.trim()}`;
 }

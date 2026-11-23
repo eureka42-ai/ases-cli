@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0043",
+  "phaseId": "PHASE-09",
+  "title": "Importação e verificação das fontes ASES (REQ-001..300 literais + SHA-256)",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-151",
+    "AER-REQ-152",
+    "AER-REQ-153",
+    "AER-REQ-156"
+  ],
+  "dependsOn": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-09-verify.md",
+      "sha256": "70fab8dace5d419abd6ff2462d41404dcf685048b9936bb4a10a251d5115bcbe"
+    }
+  ],
+  "lastTest": null
+}

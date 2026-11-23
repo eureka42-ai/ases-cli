@@ -4,10 +4,11 @@ import path from 'node:path';
 import { PHASE_STATES, TASK_STATES, type PhaseState, type TaskState } from '@aer/contracts';
 import { plan } from '@aer/scheduler';
 import type { Engine } from './engine.ts';
+import { METHODOLOGY_COMMANDS, METHODOLOGY_HELP, handleMethodology } from './methodology-commands.ts';
 
 export const PLANNED_SLASH: Record<string, string> = {
-  '/agent': 'PHASE-07', '/auto': 'PHASE-09', '/manual': 'PHASE-09', '/hybrid': 'PHASE-09', '/parallel': 'PHASE-09 (use /run --parallel N)', '/usage': 'PHASE-11',
-  '/plan': 'PHASE-09', '/skills': 'PHASE-10', '/plugins': 'PHASE-10', '/mcp': 'PHASE-10', '/review': 'PHASE-11', '/diff': 'PHASE-05',
+  '/agent': 'PHASE-07', '/auto': 'sem fase alocada, AER-REQ-083', '/manual': 'sem fase alocada, AER-REQ-083', '/hybrid': 'sem fase alocada, AER-REQ-083', '/parallel': 'use /run --parallel N', '/usage': 'PHASE-11',
+  '/plan': 'sem fase alocada, §13.5', '/skills': 'PHASE-10', '/plugins': 'PHASE-10', '/mcp': 'PHASE-10', '/review': 'PHASE-11', '/diff': 'PHASE-05',
   '/checkpoint': 'PHASE-05', '/resume': 'PHASE-11', '/approval': 'PHASE-10', '/safe-mode': 'PHASE-10', '/history': 'PHASE-04', '/dependencies': 'PHASE-06',
 };
 
@@ -27,7 +28,9 @@ export const SLASH_HELP = `Comandos:
                                   executa as tarefas READY pelo provider de cada uma; simulator dispensa aceite;
                                   providers reais usam a SUA sessão oficial (cota/cobrança) e só rodam com --consent
   /cancel TAR-XXXX                cancela uma tarefa em execução (encerra a árvore de processos do agente)
-  /help   /exit`;
+  /help   /exit
+
+${METHODOLOGY_HELP}`;
 
 /** Executa um comando da sessão; mesmo código no modo linha e na TUI. 'EXIT' pede encerramento; /run devolve Promise. */
 export function handleLine(engine: Engine, line: string, unicode = true): string | Promise<string> | undefined {
@@ -145,6 +148,7 @@ export function handleLine(engine: Engine, line: string, unicode = true): string
       if (!sub) return 'uso: /cancel TAR-XXXX';
       return engine.cancelTask(sub) ? `${sub}: cancelamento pedido; o resultado aparece quando a árvore de processos for encerrada` : `${sub} não está em execução neste engine`;
     default:
+      if (METHODOLOGY_COMMANDS.has(cmd)) return handleMethodology(engine, cmd, sub, rest);
       if (cmd in PLANNED_SLASH) return `${cmd}: ainda não implementado (planejado: ${PLANNED_SLASH[cmd]})`;
       return `comando desconhecido: ${cmd} (/help)`;
   }

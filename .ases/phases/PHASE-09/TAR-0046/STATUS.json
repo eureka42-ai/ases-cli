@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0046",
+  "phaseId": "PHASE-09",
+  "title": "Rastreabilidade, gates G0/G1 e mudança controlada (CHANGE)",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-157",
+    "AER-REQ-159"
+  ],
+  "dependsOn": [
+    "TAR-0044",
+    "TAR-0045"
+  ],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-09-verify.md",
+      "sha256": "70fab8dace5d419abd6ff2462d41404dcf685048b9936bb4a10a251d5115bcbe"
+    },
+    {
+      "path": "docs/ADRs/ADR-0014.md",
+      "sha256": "0cc5216e3289163750a437d6a58d1d51e0130a306ac84f7af798f9fa53f98474"
+    }
+  ],
+  "lastTest": null
+}
