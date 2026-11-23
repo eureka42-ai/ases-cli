@@ -5,6 +5,8 @@ import { IpcServer, type Handler } from '@aer/ipc';
 import { ProjectStore, exportHistory, type CreateTaskInput, type Risk } from '@aer/persistence';
 import type { PlatformAdapter } from '@aer/platform-core';
 import type { AgentProvider } from '@aer/provider-sdk';
+import { ClaudeCodeProvider } from '@aer/provider-claude';
+import { CodexProvider } from '@aer/provider-codex';
 import { SimulatorProvider } from '@aer/provider-simulator';
 import { runQueue, type AttemptOutcome } from '@aer/scheduler';
 import { ProjectError, historyState, isInterimProject, paths, readManifest, sessionFile, writeSession } from '@aer/project-store';
@@ -45,7 +47,7 @@ export class Engine {
     this.server = server;
     this.projectName = name;
     this.lastPublished = store.lastSeq();
-    this.providers = { simulator: new SimulatorProvider(adapter) };
+    this.providers = { simulator: new SimulatorProvider(adapter), claude: new ClaudeCodeProvider(adapter), codex: new CodexProvider(adapter) };
   }
 
   static async start(root: string, adapter: PlatformAdapter): Promise<Engine> {
@@ -174,12 +176,18 @@ export class Engine {
    * /run: scheduler + workers até não haver nada elegível (§5.3). Um run por vez; as tarefas reservadas por este engine
    * usam leases com o pid no dono, então outro processo nunca as executa em duplicidade.
    */
-  async run(o: { phaseId?: string; maxParallel: number; timeoutMs: number; onOutcome?: (x: AttemptOutcome) => void }): Promise<{ outcomes: AttemptOutcome[]; waiting: { taskId: string; reason: string }[] }> {
+  async run(o: { phaseId?: string; maxParallel: number; timeoutMs: number; consent?: string[]; onOutcome?: (x: AttemptOutcome) => void }): Promise<{ outcomes: AttemptOutcome[]; waiting: { taskId: string; reason: string }[] }> {
     if (this.current) throw Object.assign(new Error('a /run is already in progress (use /cancel TAR-XXXX or wait)'), { code: 'RUN_IN_PROGRESS' });
+    const consent = [...new Set(o.consent ?? [])];
+    const unknown = consent.filter((id) => !(id in this.providers) || id === 'simulator');
+    if (unknown.length) throw Object.assign(new Error(`--consent: unknown real provider(s) ${unknown.join(', ')}`), { code: 'INVALID_INPUT' });
+    // AER-REQ-123: o aceite fica no histórico, com escopo deste run
+    for (const providerId of consent) this.mutate((s) => s.appendEvent({ eventType: 'ApprovalGranted', payload: { scope: 'provider-run', providerId, grantedBy: 'user (/run --consent)', note: 'usa a sessão do cliente oficial; pode consumir cota/cobrança da conta' } }));
     this.runAbort = new AbortController();
     const p = runQueue(
-      { root: this.root, mutate: (fn) => this.mutate(fn), read: (fn) => fn(this.store), providers: this.providers, ttlMs: 30_000, timeoutMs: o.timeoutMs },
-      { ownerId: `ases:${process.pid}`, maxParallel: o.maxParallel, signal: this.runAbort.signal, controllers: this.controllers, ...(o.phaseId ? { phaseId: o.phaseId } : {}), ...(o.onOutcome ? { onOutcome: o.onOutcome } : {}) },
+      { root: this.root, mutate: (fn) => this.mutate(fn), read: (fn) => fn(this.store), providers: this.providers, ttlMs: 30_000, timeoutMs: o.timeoutMs, consented: new Set(consent) },
+      // paralelismo 1 por provider real: termos de uso individual (docs/PROVIDERS_PESQUISA.md)
+      { ownerId: `ases:${process.pid}`, maxParallel: o.maxParallel, maxPerProvider: { claude: 1, codex: 1 }, signal: this.runAbort.signal, controllers: this.controllers, ...(o.phaseId ? { phaseId: o.phaseId } : {}), ...(o.onOutcome ? { onOutcome: o.onOutcome } : {}) },
     );
     this.current = p;
     try {

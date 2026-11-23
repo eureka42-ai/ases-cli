@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"00000000-0000-4000-8000-000000000002","model":"claude-sonnet-5-5"}
+{"type":"result","subtype":"error_during_execution","is_error":true,"result":"Not logged in · Please run /login"}

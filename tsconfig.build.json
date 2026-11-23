@@ -32,6 +32,12 @@
       "path": "packages/provider-simulator/tsconfig.build.json"
     },
     {
+      "path": "packages/provider-claude/tsconfig.build.json"
+    },
+    {
+      "path": "packages/provider-codex/tsconfig.build.json"
+    },
+    {
       "path": "packages/branding/tsconfig.build.json"
     },
     {

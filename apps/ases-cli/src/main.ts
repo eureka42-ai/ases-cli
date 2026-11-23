@@ -7,6 +7,9 @@ import path from 'node:path';
 import { ProjectStore, exportHistory, importLegacy, sqliteVersion } from '@aer/persistence';
 import { defaultDeps, syncedFolderHint, targetStatus } from '@aer/platform-core';
 import { findProjectRoot, initProject, isInterimProject, loadPlatformAdapter, paths, readInterimProject, readManifest } from '@aer/project-store';
+import { ClaudeCodeProvider } from '@aer/provider-claude';
+import { CodexProvider } from '@aer/provider-codex';
+import { SimulatorProvider } from '@aer/provider-simulator';
 import { writeReports } from './reports.ts';
 import { Engine } from './engine.ts';
 import { handleLine } from './commands.ts';
@@ -26,6 +29,7 @@ Opções:
 
 Ainda NÃO implementados (resposta explícita, nunca falso sucesso):
   status, agents, usage, skills, plugins, mcp, phases, tasks, task, run, resume, checkpoint, export, repair, config, logs
+  (dentro da sessão, /run executa tarefas; providers reais só com /run --consent claude,codex)
 `;
 
 const PLANNED: Record<string, string> = {
@@ -79,13 +83,18 @@ async function main(argv: string[]): Promise<number> {
       sqlite: { version: sqliteVersion(), driver: 'node:sqlite (experimental API, ADR-0002)' },
       terminal: caps,
       project: root ? { projectId: readManifest(root).projectId, ipc: adapter.createLocalIpcEndpoint(readManifest(root).projectId).kind, syncedFolder: syncedFolderHint(adapter.id, defaultDeps(), root) ?? null } : null,
-      providers: { status: 'NOT_PROBED', plannedPhase: 'PHASE-07' },
+      // probes sem custo (--version e status de login dos clientes oficiais); nenhum prompt é enviado (§7.4)
+      providers: await probeProviders(adapter),
       secretStore: await adapter.getSecretStore().probe(),
       target: { id: `${process.platform}-${process.arch}`, status: targetStatus(process.platform, process.arch) },
       support: { tested: 'darwin-arm64 (ALPHA, testes locais)', notRun: ['win32-x64', 'linux-x64', 'win32-arm64', 'linux-arm64'], outOfScope: ['darwin-x64 (CHANGE-0001)'] },
     };
     if (values.json) console.log(JSON.stringify(report));
-    else for (const [k, v] of Object.entries(report)) console.log(`${k}: ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`);
+    else {
+      for (const [k, v] of Object.entries(report)) if (k !== 'providers') console.log(`${k}: ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`);
+      console.log('providers:');
+      for (const p of report.providers) console.log(`  ${p.id.padEnd(10)} ${p.availability.padEnd(22)} ${(p.version ?? '-').padEnd(10)} ${p.contract.padEnd(10)} ${p.evidence.join('; ')}`);
+    }
     return 0;
   }
   if (cmd === 'migrate-interim') {
@@ -135,6 +144,19 @@ async function main(argv: string[]): Promise<number> {
 }
 
 class UsageError extends Error {}
+
+/** AER-REQ-116/119: cada provider é sondado isoladamente; a falha de um não impede os outros. */
+async function probeProviders(adapter: Awaited<ReturnType<typeof loadPlatformAdapter>>) {
+  const providers = [new SimulatorProvider(adapter), new ClaudeCodeProvider(adapter), new CodexProvider(adapter)];
+  return Promise.all(providers.map(async (p) => {
+    try {
+      const r = await p.probe();
+      return { id: r.providerId, availability: r.availability, version: r.version ?? null, contract: r.contractStatus, evidence: r.evidence };
+    } catch (err) {
+      return { id: p.id, availability: 'UNKNOWN', version: null, contract: 'UNVERIFIED', evidence: [`probe failed: ${(err as Error).message}`] };
+    }
+  }));
+}
 
 const exitNote = (n: number) => (n ? `${n} tarefa(s) em execução cancelada(s), árvore de processos encerrada` : 'Nenhuma tarefa estava em execução');
 

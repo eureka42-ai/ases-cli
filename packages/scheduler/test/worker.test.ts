@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { git } from '@aer/git-bridge';
 import { ProjectStore } from '@aer/persistence';
@@ -121,5 +122,36 @@ describe('PHASE-06 gate: parallel simulated tasks with a dependency', () => {
     expect(ev.filter((e) => e.eventType === 'AttemptStarted' && e.seq < firstExit)).toHaveLength(2);
     const wts = ids.slice(0, 2).map((id) => s.listAttempts(id)[0]!.worktreePath);
     expect(new Set(wts).size).toBe(2);
+  });
+});
+
+describe('real providers: consent and per-provider limit (PHASE-07, fake binary)', async () => {
+  const { ClaudeCodeProvider } = await import('@aer/provider-claude');
+  const fake = fileURLToPath(new URL('../../provider-claude/test/fixtures/fake-claude.mjs', import.meta.url));
+  const claude = new ClaudeCodeProvider(adapter, { executable: process.execPath, prefixArgs: [fake], env: { PATH: process.env.PATH, HOME: process.env.HOME, SystemRoot: process.env.SystemRoot, FAKE_SCENARIO: 'ok' }, graceMs: 200 });
+
+  it('without consent the task is BLOCKED CONSENT_REQUIRED and no attempt starts (AER-REQ-123)', async () => {
+    const { s, ids, d } = await setup(['claude']);
+    const o = await runAttempt({ ...d, providers: { claude } }, reserve(s)[0]!, new AbortController().signal);
+    expect(o).toMatchObject({ state: 'BLOCKED', reason: expect.stringMatching(/^CONSENT_REQUIRED/) });
+    expect(s.listAttempts(ids[0]!)).toEqual([]);
+  });
+
+  it('with consent a real-provider task reaches REVIEW, labelled UNVERIFIED, never SIMULATED', async () => {
+    const { s, ids, d } = await setup(['claude:sonnet']);
+    const o = await runAttempt({ ...d, providers: { claude }, consented: new Set(['claude']) }, reserve(s)[0]!, new AbortController().signal);
+    expect(o).toMatchObject({ state: 'REVIEW', simulated: false });
+    const det = s.eventsSince(0, 1000).find((e) => e.eventType === 'ProviderDetected')!;
+    expect(det.payload).toMatchObject({ providerId: 'claude', contractStatus: 'UNVERIFIED', simulated: false, label: null });
+    expect(types(s, ids[0]!)).toContain('GitCheckpointCreated');
+  });
+
+  it('maxPerProvider counts claude:<model> as claude: two claude tasks never overlap', async () => {
+    const { s, d } = await setup(['claude', 'claude:sonnet']);
+    const r = await runQueue({ ...d, providers: { claude }, consented: new Set(['claude']) }, { ownerId: 'w', maxParallel: 2, maxPerProvider: { claude: 1 }, signal: new AbortController().signal });
+    expect(r.outcomes.map((o) => o.state)).toEqual(['REVIEW', 'REVIEW']);
+    const ev = s.eventsSince(0, 1000);
+    const firstExit = ev.find((e) => e.eventType === 'AttemptExited')!.seq;
+    expect(ev.filter((e) => e.eventType === 'AttemptStarted' && e.seq < firstExit)).toHaveLength(1);
   });
 });

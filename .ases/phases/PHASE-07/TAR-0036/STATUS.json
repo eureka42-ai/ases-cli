@@ -4,8 +4,8 @@
   "taskId": "TAR-0036",
   "phaseId": "PHASE-07",
   "title": "Matriz de limitações e doctor VERIFIED/SIMULATED/UNKNOWN",
-  "state": "PLANNED",
-  "version": 1,
+  "state": "REVIEW",
+  "version": 6,
   "reqs": [
     "AER-REQ-110",
     "AER-REQ-116",
@@ -17,6 +17,19 @@
     "TAR-0033",
     "TAR-0034"
   ],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": "docs/PROVIDERS.md",
+      "sha256": "8a921f06a50e85250cb75966fc01e068fbd8d849c74bd484e4cb2545deb85d51"
+    },
+    {
+      "path": "test/e2e/providers.test.mjs",
+      "sha256": "256eaef356a005cb6f9e0ec29250078b8211357cc9cb8749d319cc38953c58f7"
+    },
+    {
+      "path": ".ases/evidence/PHASE-07-verify.md",
+      "sha256": "9473d41820120d979507349e6d7bf396ca6a80109540c33bb1ccff90f7d3d231"
+    }
+  ],
   "lastTest": null
 }

@@ -33,6 +33,11 @@ export interface ProviderProbeResult {
   evidence: string[];
   /** true só no simulador: telas e evidências mostram SIMULATED (§7.3) */
   simulated: boolean;
+  /**
+   * AER-REQ-119: VERIFIED = parser validado contra fixture real capturada desta versão; UNVERIFIED = escrito a partir
+   * da documentação, ainda sem captura; SIMULATED = simulador.
+   */
+  contractStatus: 'VERIFIED' | 'UNVERIFIED' | 'SIMULATED';
 }
 
 export interface AgentRunRequest {
@@ -80,6 +85,8 @@ export interface InstalledExtension {
 export interface AgentProvider {
   readonly id: ProviderId;
   readonly contractVersion: number;
+  /** true quando rodar usa a conta do usuário (cota/cobrança): o AER exige aceite explícito antes até do probe (AER-REQ-123) */
+  readonly requiresConsent: boolean;
   probe(): Promise<ProviderProbeResult>;
   start(request: AgentRunRequest): AsyncIterable<AgentStreamEvent>;
   cancel(attemptId: string, reason: string): Promise<void>;

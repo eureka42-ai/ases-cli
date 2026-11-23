@@ -6,6 +6,7 @@ export interface RunOptions {
   ownerId: string;
   maxParallel: number;
   phaseId?: string;
+  maxPerProvider?: Record<string, number>;
   /** aborta tudo (p.ex. saída do `ases`): tentativas em curso são canceladas e reconciliadas */
   signal: AbortSignal;
   /** uma entrada por tarefa em execução; abortar uma cancela só aquela tarefa (/cancel) */
@@ -24,7 +25,7 @@ export async function runQueue(d: WorkerDeps, o: RunOptions): Promise<{ outcomes
   let waiting: { taskId: string; reason: string }[] = [];
   for (;;) {
     if (!o.signal.aborted) {
-      const r = d.mutate((s: ProjectStore) => tick(s, { ownerId: o.ownerId, ttlMs: d.ttlMs, maxParallel: o.maxParallel, ...(o.phaseId ? { phaseId: o.phaseId } : {}) }));
+      const r = d.mutate((s: ProjectStore) => tick(s, { ownerId: o.ownerId, ttlMs: d.ttlMs, maxParallel: o.maxParallel, ...(o.phaseId ? { phaseId: o.phaseId } : {}), ...(o.maxPerProvider ? { maxPerProvider: o.maxPerProvider } : {}) }));
       waiting = r.waiting;
       for (const x of r.reserved) {
         const ac = new AbortController();

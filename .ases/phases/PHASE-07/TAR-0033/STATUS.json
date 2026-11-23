@@ -4,8 +4,8 @@
   "taskId": "TAR-0033",
   "phaseId": "PHASE-07",
   "title": "Adapter Claude Code (claude -p, stream-json)",
-  "state": "PLANNED",
-  "version": 1,
+  "state": "REVIEW",
+  "version": 6,
   "reqs": [
     "AER-REQ-101",
     "AER-REQ-103",
@@ -16,6 +16,15 @@
   "dependsOn": [
     "TAR-0032"
   ],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": "packages/provider-claude/test/claude.test.ts",
+      "sha256": "c7938a938312e63534f3875888e1303ad17f805ccf20c0dd0290f6651ffb0ceb"
+    },
+    {
+      "path": ".ases/evidence/PHASE-07-verify.md",
+      "sha256": "9473d41820120d979507349e6d7bf396ca6a80109540c33bb1ccff90f7d3d231"
+    }
+  ],
   "lastTest": null
 }

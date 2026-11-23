@@ -14,6 +14,8 @@ export interface WorkerDeps {
   providers: Readonly<Record<string, AgentProvider>>;
   ttlMs: number;
   timeoutMs: number;
+  /** providers reais que o usuário autorizou NESTE run (AER-REQ-123); o simulador não precisa */
+  consented?: ReadonlySet<string>;
 }
 
 export interface AttemptOutcome {
@@ -33,7 +35,7 @@ export function parseProviderSpec(spec: string | null): { providerId: string; pr
   return m[2] ? { providerId: m[1]!, preference: m[2] } : { providerId: m[1]! };
 }
 
-const AGENT_AUTHOR = { name: 'AER agent (simulator)', email: 'simulator@aer.invalid' };
+const agentAuthor = (providerId: string) => ({ name: `AER agent (${providerId})`, email: `${providerId}@aer.invalid` });
 const isBlocking = (code: string) => (BLOCKING_ERROR_CODES as readonly string[]).includes(code);
 
 /**
@@ -61,6 +63,12 @@ export async function runAttempt(d: WorkerDeps, r: { taskId: string; fencingToke
     move('BLOCKED', why);
     return out('BLOCKED', why);
   }
+  if (provider.requiresConsent && !d.consented?.has(provider.id)) {
+    // sem aceite explícito nada roda, nem o probe: a conta (cota/cobrança) é do usuário (AER-REQ-123)
+    const why = `CONSENT_REQUIRED: rode /run --consent ${provider.id} para autorizar o uso da sua conta ${provider.id}`;
+    move('BLOCKED', why);
+    return out('BLOCKED', why, { providerId: provider.id });
+  }
   const probe = await provider.probe();
   const simulated = probe.simulated;
   const base = { providerId: provider.id, simulated };
@@ -70,7 +78,7 @@ export async function runAttempt(d: WorkerDeps, r: { taskId: string; fencingToke
     move('BLOCKED', probe.availability);
     return out('BLOCKED', probe.availability, base);
   }
-  d.mutate((s) => s.appendEvent({ eventType: 'ProviderDetected', phaseId, taskId, payload: { providerId: provider.id, version: probe.version ?? null, contractVersion: probe.contractVersion, simulated, label: simulated ? 'SIMULATED' : null } }));
+  d.mutate((s) => s.appendEvent({ eventType: 'ProviderDetected', phaseId, taskId, payload: { providerId: provider.id, version: probe.version ?? null, contractVersion: probe.contractVersion, contractStatus: probe.contractStatus, simulated, label: simulated ? 'SIMULATED' : null } }));
 
   // o próximo id de tentativa é previsível porque só quem tem o lease cria tentativas desta tarefa
   const expectedAttempt = formatAttemptId(read((s) => s.listAttempts(taskId)).length + 1);
@@ -208,7 +216,7 @@ export async function runAttempt(d: WorkerDeps, r: { taskId: string; fencingToke
       end('FAILED', code, lastError ?? 'NONZERO_EXIT');
       return fin('FAILED', `${lastError ?? 'NONZERO_EXIT'} (exit ${code ?? exit?.signal ?? '?'})`);
     }
-    const commit = await commitAll(wt.path, `${taskId} ${attemptId}: ${task.title}${simulated ? ' [SIMULATED]' : ''}`, AGENT_AUTHOR);
+    const commit = await commitAll(wt.path, `${taskId} ${attemptId}: ${task.title}${simulated ? ' [SIMULATED]' : ''}`, agentAuthor(provider.id));
     if (commit) ev('GitCheckpointCreated', { branch: wt.branch, commit, baseCommit: wt.baseCommit });
     end('EXITED', 0, null);
     move('VERIFYING', `exit 0${commit ? `, checkpoint ${commit.slice(0, 12)}` : ', sem alterações'}`);

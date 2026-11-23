@@ -55,6 +55,7 @@ Fontes, em ordem de autoridade:
   - `turn.completed` (com usage) / `turn.failed`.
   - `error`.
   - **Contrato real a confirmar com fixture capturada desta versão.**
+- **Verificado em 23/11/2026:** `codex login status` escreve o status no **stderr** (stdout vazio). O probe lê os dois.
 - **`codex app-server`** é preferido pelo §7.3, mas está marcado `[experimental]` nesta versão. A PHASE-07 usa `exec --json` (a alternativa documentada no §7.3); o app-server fica CONDITIONAL.
 
 ## Conformidade de autenticação — ponto aberto (não é parecer jurídico)

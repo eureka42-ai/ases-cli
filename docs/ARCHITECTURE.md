@@ -26,6 +26,7 @@ No Windows o transporte é Named Pipe `\\.\pipe\ases-{userHash}-{projectHash}`. 
 | `@aer/persistence` | SQLite (`node:sqlite`, ADR-0002): migrações, `ProjectStore` transacional (estado + evento na mesma transação), espelho/verificação JSONL. Único pacote que pode importar `node:sqlite` | contracts |
 | `@aer/scheduler` | elegibilidade/ordem explicável (`plan`), rodada com reservas (`tick`), fila de merge serializada (`mergeTask`) — ADR-0004; worker de tentativa (`runAttempt`) e laço `runQueue` — ADR-0012 | contracts, persistence, git-bridge, provider-sdk |
 | `@aer/provider-sdk` | contrato `AgentProvider` v1 (§7.2), parser NDJSON incremental com limite, normalização (formato desconhecido = `PARSE_ERROR`), redação de segredos — ADR-0012 | zod |
+| `@aer/provider-claude` / `@aer/provider-codex` | adapters dos CLIs oficiais (`claude -p` stream-json, `codex exec --json`); probe por `--version` e status de login; contrato UNVERIFIED até fixture real — `docs/PROVIDERS.md` | platform-core, provider-sdk |
 | `@aer/provider-simulator` | provider `simulator`: processo Node local determinístico, cenários de teste, sempre `SIMULATED`, usage `UNKNOWN` | platform-core, provider-sdk |
 | `@aer/git-bridge` | Git oficial sem shell: worktree por tarefa/attempt, `resolveInside` (anti-escape), merge seguro com abort em conflito | — |
 | `@aer/ipc` | JSON-RPC 2.0 NDJSON sobre UDS/Named Pipe; servidor com handshake, papéis control/monitor, assinatura sem corrida e backpressure; cliente com timeout (ADR-0003, `docs/API.md`) | contracts, platform-core |
@@ -50,4 +51,4 @@ No Windows o transporte é Named Pipe `\\.\pipe\ases-{userHash}-{projectHash}`. 
 O engine é o único escritor do `.ases/` (banco + espelho + STATUS/TRACEABILITY/HANDOFF gerados). `.ases/` criados pelo bootstrap interino são entregues com `ases migrate-interim`; depois disso o `scripts/ases-dev.mjs` só verifica. O engine roda no checkout principal: worktrees não carregam o banco (`DB_MISSING` protege o histórico).
 
 ## Próximas peças
-PHASE-07: adapters oficiais de Claude Code e Codex sobre o mesmo contrato `AgentProvider`, com probe, auth delegada e smoke opt-in.
+PHASE-07 (em andamento): smoke opt-in com consentimento para validar os parsers contra saídas reais. PHASE-08: Kimi, OpenCode e Google.

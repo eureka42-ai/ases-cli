@@ -414,10 +414,11 @@ export class ProjectStore {
       if (existing && String(existing.expires_at) > nowIso) throw new StoreError('LEASED', `${taskId} already leased by ${String(existing.owner_id)}`);
       const active = this.activeLeases(nowIso);
       if (o.maxActive !== undefined && active.length >= o.maxActive) throw new StoreError('CAPACITY', `max ${o.maxActive} active task(s) reached`);
-      const provider = (t.provider as string | null) ?? null;
+      // `claude:sonnet` conta como `claude`: o limite é por provider, não por preferência de modelo/cenário
+      const provider = ((t.provider as string | null) ?? '').split(':')[0] || null;
       if (provider && o.maxPerProvider?.[provider] !== undefined) {
         const n = Number((this.db.prepare(`SELECT count(*) n FROM task_leases l JOIN tasks x ON x.project_id = l.project_id AND x.id = l.task_id
-          WHERE l.project_id = ? AND l.expires_at > ? AND x.provider = ?`).get(this.projectId, nowIso, provider) as Row).n);
+          WHERE l.project_id = ? AND l.expires_at > ? AND (x.provider = ? OR x.provider LIKE ? || ':%')`).get(this.projectId, nowIso, provider, provider) as Row).n);
         if (n >= o.maxPerProvider[provider]!) throw new StoreError('CAPACITY', `max ${o.maxPerProvider[provider]} active task(s) for provider ${provider}`);
       }
       const busy = this.db.prepare(`SELECT r.resource, l.task_id FROM task_resources r

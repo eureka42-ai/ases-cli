@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
-- Último evento válido: seq 233 em 2026-11-23T14:28:05.311Z
-- Git: branch `ases/PHASE-07`, HEAD `9b2bb10`
+- Último evento válido: seq 249 em 2026-11-23T14:46:23.684Z
+- Git: branch `ases/PHASE-07`, HEAD `5c3a117`
 - Concluídas: 31 de 36
-- Abertas: TAR-0032 (REVIEW), TAR-0033 (PLANNED), TAR-0034 (PLANNED), TAR-0035 (PLANNED), TAR-0036 (PLANNED)
+- Abertas: TAR-0032 (REVIEW), TAR-0033 (REVIEW), TAR-0034 (REVIEW), TAR-0035 (BLOCKED), TAR-0036 (REVIEW)
 - Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
 <!-- AUTO:END -->
 
@@ -94,3 +94,15 @@
   - No Windows, só o pid raiz é confirmado após `taskkill`.
   - Pedido de aprovação = BLOCKED até `/approval` (PHASE-10).
 - **Próxima operação segura:** PHASE-07 (ver NEXT-STEPS).
+
+### Sessão 23/11/2026 — PHASE-07 parcial (branch `ases/PHASE-07`)
+- **Feito:**
+  - TAR-0032: pesquisa (`docs/PROVIDERS_PESQUISA.md`).
+  - TAR-0033/0034: `@aer/provider-claude` e `@aer/provider-codex`, contrato UNVERIFIED.
+  - TAR-0036: `ases doctor` com estado de contrato, `docs/PROVIDERS.md`.
+  - `/run --consent`: sem aceite nada roda, nem o probe. Paralelismo 1 por provider real. Credenciais isoladas por provider.
+  - `runAgentProcess` comum ao simulador e aos adapters.
+- **Nenhuma chamada real a provider:** sem consentimento para consumir cota. Os testes usam falsos binários com o formato documentado.
+- **Testes:** `npm run verify` 211/211 (darwin-arm64), e mais 2 rodadas 211/211.
+- **Bloqueio:** TAR-0035 BLOCKED (CONSENT_REQUIRED). Precisa de aceite do responsável para o smoke real (prompts mínimos, só leitura, worktree temporária) e de uma posição sobre os termos de uso da assinatura.
+- **Próxima operação segura:** CI desta branch; depois, com aceite, `/run --consent claude,codex` numa fase de smoke, captura das fixtures reais (redigidas) e troca de UNVERIFIED para VERIFIED onde o parser bater.
