@@ -2,7 +2,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { findExecutable, scopedEnv } from '@aer/provider-sdk';
 import {
-  discoverProjectMcp, discoverSkills, evaluate, installClaudePlugin, listClaudePlugins, mcpHealth, operationHash, scanPlugin, skillRoots, verdictOf, type Operation,
+  discoverProjectMcp, discoverSkills, evaluate, installClaudePlugin, listClaudePlugins, mcpEnv, mcpHealth, operationHash, scanPlugin, skillRoots, verdictOf, type Operation,
 } from '@aer/security';
 import type { ExtensionRow } from '@aer/persistence';
 import type { Engine } from './engine.ts';
@@ -80,8 +80,8 @@ async function install(engine: Engine, e: ExtensionRow): Promise<string> {
       engine.mutate((st) => st.setExtensionState(e.id, 'FAILED', 'only stdio health check is supported'));
       return `${e.id}: health check só para stdio nesta fase; FAILED`;
     }
-    // env do processo do AER, sem credenciais de providers; as variáveis próprias do servidor não são repassadas (segredo não sai do arquivo)
-    const h = await mcpHealth(engine.platform, { id: e.name, command: det.command, args: det.args ?? [], cwd: engine.projectRoot, env: scopedEnv('mcp', process.env), timeoutMs: 15_000 });
+    // env por allowlist: nada de credenciais de providers nem as variáveis do .mcp.json (o segredo não sai do arquivo)
+    const h = await mcpHealth(engine.platform, { id: e.name, command: det.command, args: det.args ?? [], cwd: engine.projectRoot, env: mcpEnv(process.env), timeoutMs: 15_000 });
     engine.mutate((st) => { st.setExtensionState(e.id, 'INSTALLED', null); st.setExtensionState(e.id, h.ok && h.reconciled ? 'VERIFIED' : 'FAILED', h.ok ? h.tools.join(', ') : (h.error ?? 'health check failed')); });
     return h.ok ? `${e.id} VERIFIED: ${h.serverInfo ?? '?'} · ferramentas ${h.tools.join(', ') || '(nenhuma)'}` : `${e.id} FAILED: ${h.error}`;
   }

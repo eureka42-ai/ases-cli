@@ -6,7 +6,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { createBaseAdapter, detectPlatform } from '@aer/platform-core';
 import {
   DEFAULT_POLICY, canUse, describeMcpServer, discoverProjectMcp, discoverSkills, evaluate, installClaudePlugin, intersect, listClaudePlugins,
-  mcpHealth, operationHash, parseFrontMatter, pluginCompatibility, scanDirectory, skillRoots, type ApprovalLike, type Operation,
+  mcpEnv, mcpHealth, operationHash, parseFrontMatter, pluginCompatibility, scanDirectory, skillRoots, type ApprovalLike, type Operation,
 } from '../src/index.ts';
 
 const adapter = createBaseAdapter(detectPlatform(), 'test');
@@ -114,6 +114,11 @@ describe('MCP bridge (TAR-0051, AER-REQ-135/136)', () => {
     expect(s.pkg!.envKeys).toEqual(['GITHUB_TOKEN']);
     expect(JSON.stringify(Object.values(s))).not.toMatch(/supersecret/);
     expect(describeMcpServer('x', { command: 'node', env: { A: '1' } }, 'p').manifestSha256).not.toBe(describeMcpServer('x', { command: 'node', env: { A: '2' } }, 'p').manifestSha256);
+  });
+
+  it('MCP env is an allowlist: no provider/AER credentials, no vitest/node internals', () => {
+    const e = mcpEnv({ PATH: '/bin', Path: 'C:\\x', SystemRoot: 'C:\\Windows', HOME: '/h', OPENAI_API_KEY: 'sk-x', ASES_TOKEN: 't', NODE_OPTIONS: '--require x', NODE_CHANNEL_FD: '3', GITHUB_TOKEN: 'g' });
+    expect(Object.keys(e).sort()).toEqual(['HOME', 'PATH', 'Path', 'SystemRoot']);
   });
 
   it('health check: initialize + tools/list under timeout, namespaced tools, tree reconciled; hang and crash fail cleanly', async () => {

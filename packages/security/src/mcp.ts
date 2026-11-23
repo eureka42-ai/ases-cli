@@ -19,6 +19,17 @@ export interface McpServerInfo {
   compatibility: CompatMatrix;
 }
 
+/**
+ * Ambiente do servidor MCP por ALLOWLIST (§12.2 item 2): só o necessário para achar e rodar o executável.
+ * Credenciais de providers, do AER e as variáveis declaradas no .mcp.json não são repassadas.
+ */
+const MCP_ENV_ALLOW = ['PATH', 'PATHEXT', 'SYSTEMROOT', 'WINDIR', 'COMSPEC', 'HOME', 'USERPROFILE', 'TEMP', 'TMP', 'TMPDIR', 'LANG', 'LC_ALL', 'APPDATA', 'LOCALAPPDATA', 'XDG_CACHE_HOME'];
+export function mcpEnv(env: Readonly<Record<string, string | undefined>>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(env)) if (v !== undefined && MCP_ENV_ALLOW.includes(k.toUpperCase())) out[k] = v;
+  return out;
+}
+
 /** Executáveis que podem subir um servidor MCP sem aprovação de exceção; o resto é REVIEW. */
 export const MCP_COMMAND_ALLOWLIST = ['node', 'npx', 'uvx', 'python', 'python3', 'deno', 'bun'];
 const SECRETISH = /(KEY|TOKEN|SECRET|PASSWORD|PASS|AUTH|CREDENTIAL|COOKIE)/i;
