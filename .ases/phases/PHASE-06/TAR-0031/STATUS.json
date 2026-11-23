@@ -4,8 +4,8 @@
   "taskId": "TAR-0031",
   "phaseId": "PHASE-06",
   "title": "/run e /cancel ponta a ponta com ases-tar",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-043",
     "AER-REQ-101",

@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 197 (TaskUpdated, 2026-11-23T14:02:39.004Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 214 (PhaseUpdated, 2026-11-23T14:25:55.368Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -10,7 +10,7 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | PHASE-03 | Dois executáveis e IPC | COMPLETED |
 | PHASE-04 | TUI utilizável + marca Eureka42 | COMPLETED |
 | PHASE-05 | Scheduler, DAG e isolamento Git | COMPLETED |
-| PHASE-06 | Motor de provider e simulador determinístico | RUNNING |
+| PHASE-06 | Motor de provider e simulador determinístico | COMPLETED |
 
 ## Tarefas
 | Tarefa | Fase | Título | Estado | Último teste | Evidência |
@@ -41,10 +41,10 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0024 | PHASE-05 | Fila de merge serializada | COMPLETED | — | .ases/evidence/PHASE-05-verify.md |
 | TAR-0025 | PHASE-05 | Concorrência e recuperação do scheduler | COMPLETED | — | .ases/evidence/PHASE-05-verify.md |
 | TAR-0026 | PHASE-05 | Evidências no banco e corte do .ases/ interino | COMPLETED | — | .ases/evidence/PHASE-05-verify.md |
-| TAR-0027 | PHASE-06 | Contratos do provider-sdk (AgentProvider v1) | REVIEW | — | docs/ADRs/ADR-0012.md<br>.ases/evidence/PHASE-06-verify.md |
-| TAR-0028 | PHASE-06 | Simulador determinístico SIMULATED | REVIEW | — | packages/provider-simulator/test/simulator.test.ts<br>.ases/evidence/PHASE-06-verify.md |
-| TAR-0029 | PHASE-06 | Normalização de streams NDJSON | REVIEW | — | packages/provider-sdk/test/stream.test.ts<br>.ases/evidence/PHASE-06-verify.md |
-| TAR-0030 | PHASE-06 | Ciclo de vida do worker: spawn, timeout, cancelamento e árvore de processos | REVIEW | — | packages/scheduler/test/worker.test.ts<br>packages/platform-core/test/process.test.ts<br>.ases/evidence/PHASE-06-verify.md |
-| TAR-0031 | PHASE-06 | /run e /cancel ponta a ponta com ases-tar | REVIEW | — | test/e2e/run.test.mjs<br>.ases/evidence/PHASE-06-verify.md<br>.ases/evidence/PHASE-06-verify.md |
+| TAR-0027 | PHASE-06 | Contratos do provider-sdk (AgentProvider v1) | COMPLETED | — | docs/ADRs/ADR-0012.md<br>.ases/evidence/PHASE-06-verify.md |
+| TAR-0028 | PHASE-06 | Simulador determinístico SIMULATED | COMPLETED | — | packages/provider-simulator/test/simulator.test.ts<br>.ases/evidence/PHASE-06-verify.md |
+| TAR-0029 | PHASE-06 | Normalização de streams NDJSON | COMPLETED | — | packages/provider-sdk/test/stream.test.ts<br>.ases/evidence/PHASE-06-verify.md |
+| TAR-0030 | PHASE-06 | Ciclo de vida do worker: spawn, timeout, cancelamento e árvore de processos | COMPLETED | — | packages/scheduler/test/worker.test.ts<br>packages/platform-core/test/process.test.ts<br>.ases/evidence/PHASE-06-verify.md |
+| TAR-0031 | PHASE-06 | /run e /cancel ponta a ponta com ases-tar | COMPLETED | — | test/e2e/run.test.mjs<br>.ases/evidence/PHASE-06-verify.md<br>.ases/evidence/PHASE-06-verify.md |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

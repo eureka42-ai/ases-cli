@@ -4,8 +4,8 @@
   "taskId": "TAR-0027",
   "phaseId": "PHASE-06",
   "title": "Contratos do provider-sdk (AgentProvider v1)",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-101",
     "AER-REQ-110"

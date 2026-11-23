@@ -4,8 +4,8 @@
   "taskId": "TAR-0029",
   "phaseId": "PHASE-06",
   "title": "Normalização de streams NDJSON",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-104",
     "AER-REQ-107"

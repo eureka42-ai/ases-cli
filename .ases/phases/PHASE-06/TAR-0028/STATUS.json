@@ -4,8 +4,8 @@
   "taskId": "TAR-0028",
   "phaseId": "PHASE-06",
   "title": "Simulador determinístico SIMULATED",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-102",
     "AER-REQ-103",

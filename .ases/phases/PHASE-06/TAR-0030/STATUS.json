@@ -4,8 +4,8 @@
   "taskId": "TAR-0030",
   "phaseId": "PHASE-06",
   "title": "Ciclo de vida do worker: spawn, timeout, cancelamento e árvore de processos",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-105",
     "AER-REQ-106",

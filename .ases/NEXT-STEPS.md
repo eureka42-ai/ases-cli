@@ -1,13 +1,15 @@
-# Próximos passos (atualizado 23/11/2026, PHASE-06 em REVIEW)
+# Próximos passos (atualizado 23/11/2026, após PHASE-06)
 
 **Local do projeto:** `~/Projetos/eureka42/ases-cli` (clone de `eureka42-ai/ases-cli`, privado). A cópia antiga em `~/Desktop/ASES CLI` está numa pasta sincronizada pelo iCloud e **não deve mais ser usada**: o iCloud criou cópias de conflito de arquivos do `.ases/`, e o banco SQLite corre risco lá. Abra o Claude Code na pasta nova.
 
 **Quem escreve o `.ases/`:** só o engine (`.ases/db/ases.sqlite`, local e não versionado). `scripts/ases-dev.mjs` faz apenas `verify`. Comandos: `ases` (TUI) ou `printf '/comando\n/exit\n' | ases --no-tui` em scripts.
 
-1. **PHASE-06: implementada, em REVIEW** (branch `ases/PHASE-06`, 23/11/2026; ver `.ases/evidence/PHASE-06-verify.md` e ADR-0012).
-   - CI 8/8 verde (run 45192505934). Falta: revisão humana e, depois, TAR-0027..0031 → APPROVED → merge em `main` → COMPLETED, e PHASE-06 → VERIFYING → COMPLETED.
-   - Teste manual: `/task new PHASE-XX t --provider simulator` (ou `simulator:hang|fail|approval|auth-expired|garbage|escape`), `/task move TAR-XXXX READY`, `/run --parallel 2` e `ases-tar` noutro terminal.
-2. **PHASE-07:** Claude Code e Codex oficiais sobre `AgentProvider` (TAR-0032+). Antes de começar, pesquisar flags e termos atuais (sem inventar argumentos).
+1. **PHASE-06: COMPLETED** (23/11/2026, CI 8/8 run 45192505934; `.ases/evidence/PHASE-06-verify.md`, ADR-0012).
+   - Teste manual do simulador: `/task new PHASE-XX t --provider simulator[:hang|fail|approval|auth-expired|garbage|escape]`, depois `/task move TAR-XXXX READY` e `/run --parallel 2`, com `ases-tar` noutro terminal.
+2. **PHASE-07:** Claude Code e Codex oficiais sobre `AgentProvider` (TAR-0032+). Antes de começar:
+   - Pesquisar flags e termos atuais, sem inventar argumentos.
+   - Pedir consentimento antes de qualquer smoke que use a conta/cota do responsável.
+   - Herdados da PHASE-06: capturar stderr redigido; canal de aprovação (PHASE-10); supervisor para agentes órfãos (PHASE-12).
 3. **Pendências do responsável:**
    - Licença (bloqueia publicação).
    - Excluir/apagar a pasta antiga do Desktop quando quiser (tudo está no GitHub; o único arquivo não versionado lá era `.Rhistory`, que não é do projeto).

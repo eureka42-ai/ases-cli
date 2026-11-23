@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
-- Último evento válido: seq 197 em 2026-11-23T14:02:39.004Z
-- Git: branch `ases/PHASE-06`, HEAD `7adb48b`
-- Concluídas: 26 de 31
-- Abertas: TAR-0027 (REVIEW), TAR-0028 (REVIEW), TAR-0029 (REVIEW), TAR-0030 (REVIEW), TAR-0031 (REVIEW)
+- Último evento válido: seq 214 em 2026-11-23T14:25:55.368Z
+- Git: branch `main`, HEAD `343f25a`
+- Concluídas: 31 de 31
+- Abertas: nenhuma
 - Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
 <!-- AUTO:END -->
 
@@ -88,9 +88,9 @@
 - **Testes realmente executados (darwin-arm64, Node 22.19.0):** `npm run verify` → 188/188 PASS, e mais 3 rodadas → 188/188. `ases-dev verify` → 0 problemas.
 - **CI:** run 45191096847 (98d1889) com 4/8 falhas. Corrigidas: `/cancel` no modo linha, backup com nome colidindo entre processos, BUSY no `BEGIN IMMEDIATE`. Run 45192505934 (7adb48b): **8/8 verde** (188, ou 181 + 7 pulados no Windows).
 - **NÃO executados:** providers reais; caminho SIGINT no Windows.
-- **Estado:** TAR-0027..0031 em REVIEW. Esperam revisão humana e não foram autoaprovadas. Branch `ases/PHASE-06` enviada; `main` intocada.
+- **Estado:** aprovadas pelo responsável em 23/11/2026; `ases/PHASE-06` integrada em `main` por fast-forward (343f25a); TAR-0027..0031 e PHASE-06 COMPLETED.
 - **Riscos:**
   - Engine morto com SIGKILL deixa o agente órfão (supervisor na PHASE-12).
   - No Windows, só o pid raiz é confirmado após `taskkill`.
   - Pedido de aprovação = BLOCKED até `/approval` (PHASE-10).
-- **Próxima operação segura:** revisão humana; depois `/task move … APPROVED`, merge da branch em `main` e COMPLETED.
+- **Próxima operação segura:** PHASE-07 (ver NEXT-STEPS).
