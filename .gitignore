@@ -12,3 +12,6 @@ dist/
 
 # worktrees locais de fase/tarefa (CLAUDE.md)
 .worktrees/
+
+# pacote npm gerado (scripts/pack.mjs)
+.pack/

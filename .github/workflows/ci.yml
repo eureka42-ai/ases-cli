@@ -35,6 +35,10 @@ jobs:
           node apps/ases-cli/bin/ases.js --version
           node apps/ases-tar/bin/ases-tar.js --version
           node apps/ases-cli/bin/ases.js doctor --json
+      - name: pacote npm único (autocontido) instalado num prefixo temporário + shells (AER-REQ-004/232, C-OS-05)
+        run: |
+          node scripts/pack.mjs
+          node scripts/pack-smoke.mjs
       - name: hashes das fontes ASES e das referências de marca (AER-REQ-151, AER-REQ-250)
         if: runner.os != 'Windows'
         run: |

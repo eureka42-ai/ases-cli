@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0060",
+  "phaseId": "PHASE-12",
+  "title": "Lifecycle do motor residente: start/stop/status, TUI sai sem perder tarefas",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-231"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

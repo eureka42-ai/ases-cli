@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0062",
+  "phaseId": "PHASE-12",
+  "title": "Matriz CI de OS e arquiteturas com smoke do pacote instalado (bash, zsh, PowerShell)",
+  "state": "RUNNING",
+  "version": 4,
+  "reqs": [
+    "AER-REQ-190",
+    "AER-REQ-233"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

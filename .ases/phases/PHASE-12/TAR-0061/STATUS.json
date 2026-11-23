@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0061",
+  "phaseId": "PHASE-12",
+  "title": "Pacote npm único com os dois bins, instalação, atualização e uninstall limpos",
+  "state": "RUNNING",
+  "version": 4,
+  "reqs": [
+    "AER-REQ-004",
+    "AER-REQ-210"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -17,8 +18,21 @@ export type SourceKey = keyof typeof KNOWN_SOURCES;
 /** Selo obrigatório da fonte consolidada (AER-REQ-153): o AER nunca a apresenta como homologada. */
 export const ASES500_VALIDATION_SEAL = 'ASES-500 consolidada PARA VALIDAÇÃO (reconstrução; não é original homologado)';
 
-/** Pasta `fontes/` distribuída com o AER (vale para src/ e dist/: packages/ases-methodology/<x>/index → raiz/fontes). */
-export const bundledSourcesDir = () => path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../fontes');
+/**
+ * Pasta `fontes/` distribuída com o AER: sobe a partir deste módulo até achar `fontes/` com o ASES-300. Vale no repositório
+ * (packages/ases-methodology/{src,dist}) e no pacote npm instalado (node_modules/@aer/ases-methodology/dist → raiz do pacote).
+ */
+export function bundledSourcesDir(): string {
+  let dir = path.dirname(fileURLToPath(import.meta.url));
+  for (let i = 0; i < 8; i++) {
+    const candidate = path.join(dir, 'fontes');
+    if (existsSync(path.join(candidate, KNOWN_SOURCES.ASES300.file))) return candidate;
+    const up = path.dirname(dir);
+    if (up === dir) break;
+    dir = up;
+  }
+  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../fontes');
+}
 
 export const sha256 = (s: string | Buffer) => createHash('sha256').update(s).digest('hex');
 

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0063",
+  "phaseId": "PHASE-12",
+  "title": "Hardening E2E, docs por SO e auditoria do DoD (P0 sem exceção aberta)",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-190",
+    "AER-REQ-191"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

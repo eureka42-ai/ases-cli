@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 502 (PhaseUpdated, 2026-11-23T20:31:12.341Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 516 (TaskUpdated, 2026-11-23T20:35:43.240Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -16,6 +16,7 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | PHASE-09 | ASES-300/500 e rastreabilidade | COMPLETED |
 | PHASE-10 | Segurança e registry de extensões | COMPLETED |
 | PHASE-11 | Continuidade, métricas e review | COMPLETED |
+| PHASE-12 | Daemon local, portabilidade final e release multiplataforma | RUNNING |
 
 ## Tarefas
 | Tarefa | Fase | Título | Estado | Último teste | Evidência |
@@ -78,5 +79,10 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0056 | PHASE-11 | Revisão independente read-only por outro provider (/review) | COMPLETED | — | .ases/evidence/PHASE-11-verify.md |
 | TAR-0057 | PHASE-11 | Recovery: /resume recupera tentativas interrompidas sem duplicar | COMPLETED | — | .ases/evidence/PHASE-11-verify.md |
 | TAR-0058 | PHASE-11 | Test runs reais (/test com EXEC_TESTS) e gate de troca de provider | COMPLETED | — | .ases/evidence/PHASE-11-verify.md |
+| TAR-0059 | PHASE-12 | ADR do motor residente e supervisores (launchd, systemd, Windows) | PLANNED | — | — |
+| TAR-0060 | PHASE-12 | Lifecycle do motor residente: start/stop/status, TUI sai sem perder tarefas | PLANNED | — | — |
+| TAR-0061 | PHASE-12 | Pacote npm único com os dois bins, instalação, atualização e uninstall limpos | RUNNING | — | — |
+| TAR-0062 | PHASE-12 | Matriz CI de OS e arquiteturas com smoke do pacote instalado (bash, zsh, PowerShell) | RUNNING | — | — |
+| TAR-0063 | PHASE-12 | Hardening E2E, docs por SO e auditoria do DoD (P0 sem exceção aberta) | PLANNED | — | — |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.
