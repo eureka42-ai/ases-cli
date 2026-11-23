@@ -1,3 +1,4 @@
+import { canUse, type Compatibility } from '@aer/security';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { formatAttemptId, type TaskState } from '@aer/contracts';
@@ -62,6 +63,20 @@ export async function runAttempt(d: WorkerDeps, r: { taskId: string; fencingToke
     const why = task.provider ? `PROVIDER_UNKNOWN: ${task.provider}` : 'PROVIDER_NOT_SET: defina --provider na tarefa';
     move('BLOCKED', why);
     return out('BLOCKED', why);
+  }
+  // extensões da tarefa: só VERIFIED e compatíveis com este provider; CLAUDE_ONLY nunca roda em outro (AER-REQ-140, §9.1)
+  for (const extId of task.extensions) {
+    const ext = read((s) => s.getExtension(extId));
+    const why = !ext ? `EXTENSION_NOT_FOUND: ${extId}`
+      : ext.state !== 'VERIFIED' ? `EXTENSION_NOT_VERIFIED: ${extId} (${ext.name}) está ${ext.state}`
+        : (() => {
+          const c = canUse(ext.compatibility as Record<string, Compatibility>, spec.providerId);
+          return c.ok ? null : `EXTENSION_INCOMPATIBLE: ${extId} (${ext.name}) ${c.reason}`;
+        })();
+    if (why) {
+      move('BLOCKED', why);
+      return out('BLOCKED', why, { providerId: provider.id });
+    }
   }
   if (provider.requiresConsent && !d.consented?.has(provider.id)) {
     // sem aceite explícito nada roda, nem o probe: a conta (cota/cobrança) é do usuário (AER-REQ-123)

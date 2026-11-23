@@ -44,6 +44,9 @@
       "path": "packages/ases-methodology/tsconfig.build.json"
     },
     {
+      "path": "packages/security/tsconfig.build.json"
+    },
+    {
       "path": "packages/branding/tsconfig.build.json"
     },
     {

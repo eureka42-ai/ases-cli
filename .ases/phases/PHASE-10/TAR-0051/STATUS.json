@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0051",
+  "phaseId": "PHASE-10",
+  "title": "MCP bridge: discovery, inspeção, allowlist, health sob timeout, namespace",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-135",
+    "AER-REQ-136"
+  ],
+  "dependsOn": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-10-verify.md",
+      "sha256": "8839e8f830e9072e01fe52408260cd4661162d00f28eb5eef96b8e5a046fda6d"
+    }
+  ],
+  "lastTest": null
+}

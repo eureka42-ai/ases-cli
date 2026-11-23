@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
-- Último evento válido: seq 393 em 2026-11-23T19:24:20.081Z
-- Git: branch `main`, HEAD `b0e753b`
-- Concluídas: 47 de 47
-- Abertas: nenhuma
+- Último evento válido: seq 432 em 2026-11-23T19:43:07.246Z
+- Git: branch `ases/PHASE-10`, HEAD `a88b000`
+- Concluídas: 47 de 53
+- Abertas: TAR-0048 (REVIEW), TAR-0049 (REVIEW), TAR-0050 (REVIEW), TAR-0051 (REVIEW), TAR-0052 (REVIEW), TAR-0053 (REVIEW)
 - Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
 <!-- AUTO:END -->
 
@@ -137,4 +137,15 @@
 - **Testes:** `npm run verify` 248/248. O e2e do gate da fase passou.
 - **Fechamento:** aprovado pelo responsável. Fast-forward de `main` para `b0e753b`; TAR-0043..0047 e PHASE-09 COMPLETED. CI Linux/Windows 6/6; o macOS foi cancelado sem runner (15 min na fila).
 - **Próxima operação segura:** iniciar a PHASE-10 numa branch `ases/PHASE-10`.
+
+### Sessão 23/11/2026 — PHASE-10 (branch `ases/PHASE-10`)
+- **Feito:**
+  - `@aer/security`: policy engine com escopos do §12.3, deny-by-default e approvals por hash (validade, uso único, vínculo à tarefa).
+  - Scanner de supply chain; Skills/MCP/plugins (plugins só pelo CLI oficial).
+  - Compatibilidade por provider, com trava no worker (`--ext`).
+  - Migração v4 (approvals, extensions, task_extensions); comandos `/approval` e `/ext`.
+  - SecretStore nativo: Keychain via `security -i` pelo stdin; `secret-tool` no Linux; Windows indisponível de propósito. CLI `ases secret`.
+- **Testes:** `npm run verify` 262/262; os testes de segurança foram repetidos 2×.
+- **Pendente:** revisão humana das TAR-0048..0053.
+- **Próxima operação segura:** CI da branch; aprovação; merge.
 

@@ -23,18 +23,19 @@ Uso:
   ases init [--name <nome>]  cria .ases/ no diretório atual sem sobrescrever nada
   ases doctor [--json]       diagnóstico local (sem login, sem rede, sem custo)
   ases migrate-interim       entrega ao engine um .ases/ criado pelo bootstrap interino (scripts/ases-dev.mjs)
+  ases secret status | set <id> | has <id> | delete <id>   chave de API no cofre nativo (valor pelo stdin; nunca impresso)
 
 Opções:
   --no-color   --no-banner   --no-tui   --theme teal|blue|purple|gold|mono   --logo full|compact|minimal|ascii
   --json       saída estritamente JSON (sem banner/ANSI)   --version   --help
 
 Ainda NÃO implementados (resposta explícita, nunca falso sucesso):
-  status, agents, usage, skills, plugins, mcp, phases, tasks, task, run, resume, checkpoint, export, repair, config, logs
-  (dentro da sessão, /run executa tarefas; providers reais só com /run --consent claude,codex)
+  status, agents, usage, phases, tasks, task, run, resume, checkpoint, export, repair, config, logs
+  (dentro da sessão: /run executa tarefas, providers reais só com /run --consent <ids>; Skills/MCP/plugins: /ext)
 `;
 
 const PLANNED: Record<string, string> = {
-  status: 'PHASE-04', agents: 'PHASE-07', usage: 'PHASE-11', skills: 'PHASE-10', plugins: 'PHASE-10', mcp: 'PHASE-10',
+  status: 'PHASE-04', agents: 'PHASE-07', usage: 'PHASE-11', skills: 'na sessão: /ext', plugins: 'na sessão: /ext', mcp: 'na sessão: /ext',
   phases: 'PHASE-04', tasks: 'PHASE-04', task: 'PHASE-04', run: 'PHASE-05', resume: 'PHASE-11', checkpoint: 'PHASE-05',
   export: 'PHASE-11', repair: 'PHASE-11', config: 'PHASE-04', logs: 'PHASE-04',
 };
@@ -75,6 +76,28 @@ async function main(argv: string[]): Promise<number> {
     const { created, manifest } = initProject(process.cwd(), adapter, values.name);
     if (values.json) console.log(JSON.stringify({ projectId: manifest.projectId, created }));
     else console.log(created.length ? `.ases/ inicializada (${manifest.projectId}); ${created.length} arquivo(s) criado(s)` : `.ases/ já existia (${manifest.projectId}); nada foi alterado`);
+    return 0;
+  }
+  if (cmd === 'secret') {
+    // chaves de API explícitas no cofre nativo (§12.2 item 8): o valor vem do stdin e nunca é impresso
+    const [, op, keyId] = positionals;
+    const store = adapter.getSecretStore();
+    if (op === 'status') {
+      console.log(JSON.stringify(await store.probe()));
+      return 0;
+    }
+    if (!keyId || !['set', 'has', 'delete'].includes(op ?? '')) throw new UsageError('usage: ases secret status | set <keyId> (value via stdin) | has <keyId> | delete <keyId>');
+    if (op === 'set') {
+      if (process.stdin.isTTY) process.stderr.write('Cole o valor e tecle Enter (não aparece na tela):\n');
+      const value = await readSecretFromStdin();
+      if (!value) throw new UsageError('empty value');
+      await store.create(keyId, value);
+      console.log(`${keyId}: guardada no cofre ${(await store.probe()).backend}`);
+    } else if (op === 'has') console.log(`${keyId}: ${(await store.get(keyId)) === undefined ? 'ausente' : 'presente'}`);
+    else {
+      await store.delete(keyId);
+      console.log(`${keyId}: removida`);
+    }
     return 0;
   }
   if (cmd === 'doctor') {
@@ -145,6 +168,36 @@ async function main(argv: string[]): Promise<number> {
 }
 
 class UsageError extends Error {}
+
+/** Lê o segredo do stdin sem eco quando é um terminal; por pipe, lê tudo e tira só o \n final. */
+async function readSecretFromStdin(): Promise<string> {
+  const stdin = process.stdin;
+  if (!stdin.isTTY) {
+    let data = '';
+    for await (const chunk of stdin) data += String(chunk);
+    return data.replace(/\r?\n$/, '');
+  }
+  return new Promise((resolve) => {
+    let v = '';
+    stdin.setRawMode(true);
+    stdin.resume();
+    const onData = (b: Buffer) => {
+      for (const ch of b.toString('utf8')) {
+        if (ch === '\r' || ch === '\n' || ch === '\u0004') {
+          stdin.setRawMode(false);
+          stdin.pause();
+          stdin.off('data', onData);
+          process.stderr.write('\n');
+          resolve(v);
+          return;
+        }
+        if (ch === '\u0003') process.exit(130);
+        v = ch === '\u007f' ? v.slice(0, -1) : v + ch;
+      }
+    };
+    stdin.on('data', onData);
+  });
+}
 
 /** AER-REQ-116/119: cada provider é sondado isoladamente; a falha de um não impede os outros. */
 async function probeProviders(adapter: Awaited<ReturnType<typeof loadPlatformAdapter>>) {

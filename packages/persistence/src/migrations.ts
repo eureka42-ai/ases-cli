@@ -237,4 +237,53 @@ CREATE TRIGGER events_append_only_delete BEFORE DELETE ON events
   );
   `,
   },
+  // PHASE-10 (ADR-0015): approvals vinculados a hash, registry de extensões e vínculo tarefa→extensão.
+  {
+    version: 4,
+    name: 'security-extensions',
+    sql: `
+  CREATE TABLE approvals (
+    project_id TEXT NOT NULL REFERENCES projects(id),
+    id TEXT NOT NULL CHECK (id GLOB 'APR-[0-9][0-9][0-9][0-9]*'),
+    scope TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    operation_hash TEXT NOT NULL CHECK (length(operation_hash) = 64),
+    description TEXT NOT NULL,
+    task_id TEXT,
+    state TEXT NOT NULL CHECK (state IN ('PENDING','GRANTED','DENIED','EXPIRED','CONSUMED')),
+    requested_at TEXT NOT NULL,
+    decided_by TEXT,
+    decided_at TEXT,
+    expires_at TEXT,
+    PRIMARY KEY (project_id, id)
+  );
+  CREATE INDEX idx_approvals_hash ON approvals(project_id, operation_hash);
+  CREATE TABLE extensions (
+    project_id TEXT NOT NULL REFERENCES projects(id),
+    id TEXT NOT NULL CHECK (id GLOB 'EXT-[0-9][0-9][0-9][0-9]*'),
+    kind TEXT NOT NULL CHECK (kind IN ('SKILL','MCP','PLUGIN')),
+    name TEXT NOT NULL,
+    origin TEXT NOT NULL,
+    scope TEXT NOT NULL,
+    manifest_sha256 TEXT NOT NULL,
+    state TEXT NOT NULL CHECK (state IN ('DISCOVERED','INSPECTED','APPROVED','INSTALLED','VERIFIED','FAILED','REJECTED')),
+    verdict TEXT,
+    findings TEXT NOT NULL DEFAULT '[]',
+    compatibility TEXT NOT NULL DEFAULT '{}',
+    detail TEXT NOT NULL DEFAULT '{}',
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (project_id, id),
+    UNIQUE (project_id, kind, name, origin)
+  );
+  CREATE TABLE task_extensions (
+    project_id TEXT NOT NULL,
+    task_id TEXT NOT NULL,
+    extension_id TEXT NOT NULL,
+    PRIMARY KEY (project_id, task_id, extension_id),
+    FOREIGN KEY (project_id, task_id) REFERENCES tasks(project_id, id),
+    FOREIGN KEY (project_id, extension_id) REFERENCES extensions(project_id, id)
+  );
+  `,
+  },
 ];
+

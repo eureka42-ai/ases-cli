@@ -95,6 +95,10 @@ export class Engine {
   }
 
   /** Raiz do projeto (para comandos que validam caminhos de evidência). */
+  get platform(): PlatformAdapter {
+    return this.adapter;
+  }
+
   get projectRoot(): string {
     return this.root;
   }

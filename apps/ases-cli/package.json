@@ -16,6 +16,7 @@
     "@aer/provider-claude": "0.0.0",
     "@aer/ases-methodology": "0.0.0",
     "@aer/provider-acp": "0.0.0",
+    "@aer/security": "0.0.0",
     "@aer/provider-codex": "0.0.0",
     "@aer/provider-sdk": "0.0.0",
     "@aer/provider-simulator": "0.0.0",

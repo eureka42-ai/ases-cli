@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0048",
+  "phaseId": "PHASE-10",
+  "title": "Policy engine: escopos, deny-by-default, approvals por hash com escopo e validade (/approval)",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-161",
+    "AER-REQ-162",
+    "AER-REQ-169",
+    "AER-REQ-173"
+  ],
+  "dependsOn": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-10-verify.md",
+      "sha256": "8839e8f830e9072e01fe52408260cd4661162d00f28eb5eef96b8e5a046fda6d"
+    },
+    {
+      "path": "docs/ADRs/ADR-0015.md",
+      "sha256": "b331af1a3ef15c6d73b92c1e653d97b3994b019d6ea6ce1abe689bb76ead6f72"
+    }
+  ],
+  "lastTest": null
+}

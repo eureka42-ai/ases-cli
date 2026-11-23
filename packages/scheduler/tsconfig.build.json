@@ -9,7 +9,7 @@
   "include": [
     "src"
   ],
-  "references": [
+  "references": [{ "path": "../security/tsconfig.build.json" }, 
     {
       "path": "../contracts/tsconfig.build.json"
     },

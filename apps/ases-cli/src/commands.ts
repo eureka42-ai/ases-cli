@@ -5,11 +5,12 @@ import { PHASE_STATES, TASK_STATES, type PhaseState, type TaskState } from '@aer
 import { plan } from '@aer/scheduler';
 import type { Engine } from './engine.ts';
 import { METHODOLOGY_COMMANDS, METHODOLOGY_HELP, handleMethodology } from './methodology-commands.ts';
+import { SECURITY_COMMANDS, SECURITY_HELP, handleSecurity } from './security-commands.ts';
 
 export const PLANNED_SLASH: Record<string, string> = {
   '/agent': 'PHASE-07', '/auto': 'sem fase alocada, AER-REQ-083', '/manual': 'sem fase alocada, AER-REQ-083', '/hybrid': 'sem fase alocada, AER-REQ-083', '/parallel': 'use /run --parallel N', '/usage': 'PHASE-11',
-  '/plan': 'sem fase alocada, §13.5', '/skills': 'PHASE-10', '/plugins': 'PHASE-10', '/mcp': 'PHASE-10', '/review': 'PHASE-11', '/diff': 'PHASE-05',
-  '/checkpoint': 'PHASE-05', '/resume': 'PHASE-11', '/approval': 'PHASE-10', '/safe-mode': 'PHASE-10', '/history': 'PHASE-04', '/dependencies': 'PHASE-06',
+  '/plan': 'sem fase alocada, §13.5', '/skills': 'use /ext', '/plugins': 'use /ext', '/mcp': 'use /ext', '/review': 'PHASE-11', '/diff': 'PHASE-05',
+  '/checkpoint': 'PHASE-05', '/resume': 'PHASE-11', '/safe-mode': 'sem fase alocada', '/history': 'PHASE-04', '/dependencies': 'PHASE-06',
 };
 
 export const SLASH_HELP = `Comandos:
@@ -19,7 +20,7 @@ export const SLASH_HELP = `Comandos:
   /task TAR-XXXX                  detalhe de uma tarefa
   /phase new <título>             cria fase
   /phase move PHASE-XX <ESTADO> [motivo]
-  /task new PHASE-XX <título> [--reqs AER-REQ-1,AER-REQ-2] [--provider simulator[:cenário]] [--resources r1,r2]
+  /task new PHASE-XX <título> [--reqs AER-REQ-1,AER-REQ-2] [--provider simulator[:cenário]] [--resources r1,r2] [--ext EXT-1]
   /task move TAR-XXXX <ESTADO> [motivo]
   /dep add TAR-A TAR-B            TAR-A passa a depender de TAR-B (ciclo é recusado)
   /evidence add TAR-XXXX <arquivo> [nota]   registra evidência (caminho dentro do projeto + SHA-256)
@@ -30,7 +31,9 @@ export const SLASH_HELP = `Comandos:
   /cancel TAR-XXXX                cancela uma tarefa em execução (encerra a árvore de processos do agente)
   /help   /exit
 
-${METHODOLOGY_HELP}`;
+${METHODOLOGY_HELP}
+
+${SECURITY_HELP}`;
 
 /** Executa um comando da sessão; mesmo código no modo linha e na TUI. 'EXIT' pede encerramento; /run devolve Promise. */
 export function handleLine(engine: Engine, line: string, unicode = true): string | Promise<string> | undefined {
@@ -74,9 +77,11 @@ export function handleLine(engine: Engine, line: string, unicode = true): string
         const reqs = opt('--reqs');
         const provider = opt('--provider');
         const resources = opt('--resources');
+        const exts = opt('--ext');
         return `criada ${engine.mutate((st) => st.createTask({
           phaseId, title: words.join(' '),
           ...(reqs ? { reqs: reqs.split(',') } : {}), ...(provider ? { provider } : {}), ...(resources ? { resources: resources.split(',') } : {}),
+          ...(exts ? { extensions: exts.split(',') } : {}),
         }))}`;
       }
       if (sub === 'move') {
@@ -149,6 +154,7 @@ export function handleLine(engine: Engine, line: string, unicode = true): string
       return engine.cancelTask(sub) ? `${sub}: cancelamento pedido; o resultado aparece quando a árvore de processos for encerrada` : `${sub} não está em execução neste engine`;
     default:
       if (METHODOLOGY_COMMANDS.has(cmd)) return handleMethodology(engine, cmd, sub, rest);
+      if (SECURITY_COMMANDS.has(cmd)) return handleSecurity(engine, cmd, sub, rest);
       if (cmd in PLANNED_SLASH) return `${cmd}: ainda não implementado (planejado: ${PLANNED_SLASH[cmd]})`;
       return `comando desconhecido: ${cmd} (/help)`;
   }

@@ -30,7 +30,11 @@ describe('built bins (TAR-0011, AER-REQ-004, AER-REQ-245, AER-REQ-247)', () => {
     expect(report.platform).toBe(process.platform);
     expect(report.providers.map((x) => x.id)).toEqual(['simulator', 'claude', 'codex', 'kimi', 'opencode', 'google']);
     expect(report.providers.every((x) => ['SIMULATED', 'UNVERIFIED', 'VERIFIED'].includes(x.contract))).toBe(true);
-    expect(report.secretStore.available).toBe(false);
+    // macOS: Keychain nativo; Windows: indisponível de propósito (sem CLI que receba o segredo fora do argv); Linux: depende de D-Bus/secret-tool
+    const backend = { darwin: 'macos-keychain', win32: 'windows-credential-manager', linux: 'linux-secret-service' }[process.platform];
+    expect(report.secretStore.backend).toBe(backend);
+    if (process.platform === 'darwin') expect(report.secretStore.available).toBe(true);
+    if (process.platform === 'win32') expect(report.secretStore.available).toBe(false);
   });
 
   it('init is non-destructive on a second run (AER-REQ-011)', () => {

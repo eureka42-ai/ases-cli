@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "@aer/contracts": "0.0.0",
+    "@aer/security": "0.0.0",
     "@aer/git-bridge": "0.0.0",
     "@aer/persistence": "0.0.0",
     "@aer/provider-sdk": "0.0.0"

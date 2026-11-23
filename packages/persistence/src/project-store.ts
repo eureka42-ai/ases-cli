@@ -47,6 +47,8 @@ export interface TaskRow {
   dependsOn: string[];
   resources: string[];
   provider: string | null;
+  /** extensões (EXT-XXXX) que a tarefa usa; o worker só inicia se forem VERIFIED e compatíveis com o provider */
+  extensions: string[];
 }
 
 export interface CreateTaskInput {
@@ -59,6 +61,7 @@ export interface CreateTaskInput {
   dependsOn?: string[];
   /** recursos compartilhados (schema, migração, porta...): duas tarefas com o mesmo recurso não rodam juntas */
   resources?: string[];
+  extensions?: string[];
   provider?: string;
 }
 
@@ -194,6 +197,49 @@ export interface ChangeRow {
   createdAt: string;
 }
 
+// ===== PHASE-10: approvals e extensões (ADR-0015) =====
+export type ApprovalState = 'PENDING' | 'GRANTED' | 'DENIED' | 'EXPIRED' | 'CONSUMED';
+export interface ApprovalRow {
+  id: string;
+  scope: string;
+  subject: string;
+  operationHash: string;
+  description: string;
+  taskId: string | null;
+  state: ApprovalState;
+  decidedBy: string | null;
+  expiresAt: string | null;
+}
+export type ExtensionState = 'DISCOVERED' | 'INSPECTED' | 'APPROVED' | 'INSTALLED' | 'VERIFIED' | 'FAILED' | 'REJECTED';
+export interface ExtensionRow {
+  id: string;
+  kind: 'SKILL' | 'MCP' | 'PLUGIN';
+  name: string;
+  origin: string;
+  scope: string;
+  manifestSha256: string;
+  state: ExtensionState;
+  verdict: string | null;
+  findings: { code: string; severity: string; path: string; detail: string }[];
+  compatibility: Record<string, string>;
+  detail: Record<string, unknown>;
+}
+export interface ExtensionInput {
+  kind: ExtensionRow['kind'];
+  name: string;
+  origin: string;
+  scope: string;
+  manifestSha256: string;
+  verdict: string;
+  findings: ExtensionRow['findings'];
+  compatibility: Record<string, string>;
+  detail?: Record<string, unknown>;
+}
+const EXT_EDGES: Record<ExtensionState, readonly ExtensionState[]> = {
+  DISCOVERED: ['INSPECTED', 'REJECTED'], INSPECTED: ['APPROVED', 'REJECTED'], APPROVED: ['INSTALLED', 'FAILED', 'REJECTED'],
+  INSTALLED: ['VERIFIED', 'FAILED', 'REJECTED'], VERIFIED: ['REJECTED'], FAILED: ['INSPECTED', 'REJECTED'], REJECTED: ['INSPECTED'],
+};
+
 export class ProjectStore {
   readonly projectId: string;
   readonly info: Omit<OpenResult, 'db'>;
@@ -320,6 +366,10 @@ export class ProjectStore {
       reqs.forEach((req, i) => {
         this.db.prepare('INSERT INTO task_requirements (project_id, task_id, req_namespace, req_id) VALUES (?, ?, ?, ?)').run(this.projectId, id, namespaces[i]!, req);
       });
+      for (const e of new Set(input.extensions ?? [])) {
+        if (!this.db.prepare('SELECT 1 FROM extensions WHERE project_id = ? AND id = ?').get(this.projectId, e)) throw new StoreError('NOT_FOUND', `extension ${e} not found`);
+        this.db.prepare('INSERT INTO task_extensions (project_id, task_id, extension_id) VALUES (?, ?, ?)').run(this.projectId, id, e);
+      }
       for (const dep of new Set(input.dependsOn ?? [])) {
         if (!this.db.prepare('SELECT 1 FROM tasks WHERE project_id = ? AND id = ?').get(this.projectId, dep)) throw new StoreError('NOT_FOUND', `dependency ${dep} not found`);
         this.db.prepare('INSERT INTO task_dependencies (project_id, task_id, depends_on_task_id) VALUES (?, ?, ?)').run(this.projectId, id, dep);
@@ -381,6 +431,7 @@ export class ProjectStore {
     const reqs = this.db.prepare('SELECT req_id FROM task_requirements WHERE project_id = ? AND task_id = ? ORDER BY req_id');
     const deps = this.db.prepare('SELECT depends_on_task_id d FROM task_dependencies WHERE project_id = ? AND task_id = ? ORDER BY d');
     const res = this.db.prepare('SELECT resource FROM task_resources WHERE project_id = ? AND task_id = ? ORDER BY resource');
+    const exts = this.db.prepare('SELECT extension_id e FROM task_extensions WHERE project_id = ? AND task_id = ? ORDER BY e');
     return rows.map((r) => ({
       id: String(r.id), phaseId: String(r.phase_id), title: String(r.title), description: String(r.description), state: r.state as TaskState,
       priority: Number(r.priority), risk: r.risk as Risk, version: Number(r.version),
@@ -388,6 +439,7 @@ export class ProjectStore {
       dependsOn: (deps.all(this.projectId, r.id as string) as Row[]).map((x) => String(x.d)),
       resources: (res.all(this.projectId, r.id as string) as Row[]).map((x) => String(x.resource)),
       provider: (r.provider as string | null) ?? null,
+      extensions: (exts.all(this.projectId, r.id as string) as Row[]).map((x) => String(x.e)),
     }));
   }
 
@@ -839,6 +891,122 @@ export class ProjectStore {
 
   listChanges(): ChangeRow[] {
     return (this.db.prepare('SELECT id FROM changes WHERE project_id = ? ORDER BY id').all(this.projectId) as Row[]).map((r) => this.getChange(String(r.id))!);
+  }
+
+  // ===== PHASE-10: approvals vinculados a hash (AER-REQ-162/173) =====
+
+  private toApproval(r: Row): ApprovalRow {
+    const expired = r.state === 'GRANTED' && r.expires_at !== null && Date.parse(String(r.expires_at)) <= Date.parse(this.now());
+    return {
+      id: String(r.id), scope: String(r.scope), subject: String(r.subject), operationHash: String(r.operation_hash), description: String(r.description),
+      taskId: (r.task_id as string | null) ?? null, state: expired ? 'EXPIRED' : (r.state as ApprovalState), decidedBy: (r.decided_by as string | null) ?? null, expiresAt: (r.expires_at as string | null) ?? null,
+    };
+  }
+
+  listApprovals(): ApprovalRow[] {
+    return (this.db.prepare('SELECT * FROM approvals WHERE project_id = ? ORDER BY id').all(this.projectId) as Row[]).map((r) => this.toApproval(r));
+  }
+
+  getApproval(id: string): ApprovalRow | undefined {
+    const r = this.db.prepare('SELECT * FROM approvals WHERE project_id = ? AND id = ?').get(this.projectId, id) as Row | undefined;
+    return r ? this.toApproval(r) : undefined;
+  }
+
+  /** Pede aprovação para uma operação exata. Pedido igual ainda aberto (ou concedido e válido) é reaproveitado. */
+  requestApproval(i: { scope: string; subject: string; operationHash: string; description: string; taskId?: string | null }): ApprovalRow {
+    if (!/^[0-9a-f]{64}$/.test(i.operationHash)) throw new StoreError('INVALID_INPUT', 'operationHash must be a sha256 hex');
+    return this.inWriteTx(() => {
+      const same = this.listApprovals().find((a) => a.operationHash === i.operationHash && a.scope === i.scope && a.taskId === (i.taskId ?? null) && (a.state === 'PENDING' || a.state === 'GRANTED'));
+      if (same) return same;
+      const n = Number((this.db.prepare('SELECT count(*) n FROM approvals WHERE project_id = ?').get(this.projectId) as Row).n) + 1;
+      const id = `APR-${String(n).padStart(4, '0')}`;
+      this.db.prepare(`INSERT INTO approvals (project_id, id, scope, subject, operation_hash, description, task_id, state, requested_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING', ?)`)
+        .run(this.projectId, id, i.scope, i.subject, i.operationHash, i.description, i.taskId ?? null, this.now());
+      this.appendEvent({ eventType: 'ApprovalRequested', taskId: i.taskId ?? null, payload: { id, scope: i.scope, subject: i.subject, operationHash: i.operationHash, description: i.description } });
+      return this.getApproval(id)!;
+    });
+  }
+
+  /** Decisão humana. Concessão tem validade (padrão 60 min, máx. 24 h) e é de uso único (consumeApproval). */
+  decideApproval(id: string, decision: 'GRANTED' | 'DENIED', by: string, ttlMinutes = 60): ApprovalRow {
+    if (!by.trim()) throw new StoreError('INVALID_INPUT', 'who decides is required');
+    if (!Number.isInteger(ttlMinutes) || ttlMinutes < 1 || ttlMinutes > 24 * 60) throw new StoreError('INVALID_INPUT', 'ttl must be 1..1440 minutes');
+    return this.inWriteTx(() => {
+      const a = this.getApproval(id);
+      if (!a) throw new StoreError('NOT_FOUND', `approval ${id} not found`);
+      if (a.state !== 'PENDING') throw new StoreError('INVALID_TRANSITION', `${id} is ${a.state}, not PENDING`);
+      const now = this.now();
+      const expires = decision === 'GRANTED' ? new Date(Date.parse(now) + ttlMinutes * 60_000).toISOString() : null;
+      this.db.prepare('UPDATE approvals SET state = ?, decided_by = ?, decided_at = ?, expires_at = ? WHERE project_id = ? AND id = ?').run(decision, by.trim(), now, expires, this.projectId, id);
+      this.appendEvent({ eventType: decision === 'GRANTED' ? 'ApprovalGranted' : 'ApprovalDenied', taskId: a.taskId, payload: { id, scope: a.scope, subject: a.subject, operationHash: a.operationHash, decidedBy: by.trim(), expiresAt: expires } });
+      return this.getApproval(id)!;
+    });
+  }
+
+  consumeApproval(id: string): void {
+    this.inWriteTx(() => {
+      const a = this.getApproval(id);
+      if (!a || a.state !== 'GRANTED') throw new StoreError('INVALID_TRANSITION', `${id} is not a valid granted approval`);
+      this.db.prepare("UPDATE approvals SET state = 'CONSUMED' WHERE project_id = ? AND id = ?").run(this.projectId, id);
+    });
+  }
+
+  // ===== PHASE-10: registry de extensões (§9.6: DISCOVERED → INSPECTED → APPROVED → INSTALLED → VERIFIED | FAILED) =====
+
+  private toExtension(r: Row): ExtensionRow {
+    return {
+      id: String(r.id), kind: r.kind as ExtensionRow['kind'], name: String(r.name), origin: String(r.origin), scope: String(r.scope), manifestSha256: String(r.manifest_sha256),
+      state: r.state as ExtensionState, verdict: (r.verdict as string | null) ?? null, findings: JSON.parse(String(r.findings)) as ExtensionRow['findings'],
+      compatibility: JSON.parse(String(r.compatibility)) as Record<string, string>, detail: JSON.parse(String(r.detail)) as Record<string, unknown>,
+    };
+  }
+
+  listExtensions(): ExtensionRow[] {
+    return (this.db.prepare('SELECT * FROM extensions WHERE project_id = ? ORDER BY id').all(this.projectId) as Row[]).map((r) => this.toExtension(r));
+  }
+
+  getExtension(id: string): ExtensionRow | undefined {
+    const r = this.db.prepare('SELECT * FROM extensions WHERE project_id = ? AND id = ?').get(this.projectId, id) as Row | undefined;
+    return r ? this.toExtension(r) : undefined;
+  }
+
+  /**
+   * Registra o resultado de discovery + inspeção. Se o manifesto mudou (update), a extensão volta a INSPECTED e
+   * precisa de nova aprovação — nada é reativado automaticamente (AER-REQ-138).
+   */
+  upsertExtension(i: ExtensionInput): { id: string; changed: boolean } {
+    return this.inWriteTx(() => {
+      const cur = this.db.prepare('SELECT * FROM extensions WHERE project_id = ? AND kind = ? AND name = ? AND origin = ?').get(this.projectId, i.kind, i.name, i.origin) as Row | undefined;
+      const now = this.now();
+      const json = [JSON.stringify(i.findings), JSON.stringify(i.compatibility), JSON.stringify(i.detail ?? {})];
+      if (!cur) {
+        const n = Number((this.db.prepare('SELECT count(*) n FROM extensions WHERE project_id = ?').get(this.projectId) as Row).n) + 1;
+        const id = `EXT-${String(n).padStart(4, '0')}`;
+        this.db.prepare(`INSERT INTO extensions (project_id, id, kind, name, origin, scope, manifest_sha256, state, verdict, findings, compatibility, detail, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, 'INSPECTED', ?, ?, ?, ?, ?)`).run(this.projectId, id, i.kind, i.name, i.origin, i.scope, i.manifestSha256, i.verdict, ...json, now);
+        this.appendEvent({ eventType: 'ExtensionDiscovered', payload: { id, kind: i.kind, name: i.name, origin: i.origin, manifestSha256: i.manifestSha256 } });
+        this.appendEvent({ eventType: 'ExtensionScanned', payload: { id, verdict: i.verdict, findings: i.findings.map((f) => `${f.severity}:${f.code}`) } });
+        return { id, changed: true };
+      }
+      const id = String(cur.id);
+      const changed = cur.manifest_sha256 !== i.manifestSha256;
+      const state = changed ? 'INSPECTED' : String(cur.state);
+      this.db.prepare('UPDATE extensions SET scope = ?, manifest_sha256 = ?, state = ?, verdict = ?, findings = ?, compatibility = ?, detail = ?, updated_at = ? WHERE project_id = ? AND id = ?')
+        .run(i.scope, i.manifestSha256, state, i.verdict, ...json, now, this.projectId, id);
+      if (changed) this.appendEvent({ eventType: 'ExtensionScanned', payload: { id, verdict: i.verdict, findings: i.findings.map((f) => `${f.severity}:${f.code}`), manifestChanged: true, previousState: String(cur.state) } });
+      return { id, changed };
+    });
+  }
+
+  setExtensionState(id: string, to: ExtensionState, note: string | null = null): void {
+    this.inWriteTx(() => {
+      const e = this.getExtension(id);
+      if (!e) throw new StoreError('NOT_FOUND', `extension ${id} not found`);
+      if (!EXT_EDGES[e.state].includes(to)) throw new StoreError('INVALID_TRANSITION', `${id}: ${e.state} → ${to} not allowed`);
+      if (to === 'APPROVED' && e.verdict === 'UNSAFE') throw new StoreError('INVALID_TRANSITION', `${id} is UNSAFE (${e.findings.filter((f) => f.severity === 'HIGH').map((f) => f.code).join(', ')}); it cannot be approved`);
+      this.db.prepare('UPDATE extensions SET state = ?, updated_at = ? WHERE project_id = ? AND id = ?').run(to, this.now(), this.projectId, id);
+      this.appendEvent({ eventType: to === 'INSTALLED' || to === 'VERIFIED' ? 'ExtensionInstalled' : 'ExtensionScanned', payload: { id, from: e.state, to, note } });
+    });
   }
 
   /** Snapshot consistente + cursor numa única transação de leitura (AER-REQ-074, §10.3). */

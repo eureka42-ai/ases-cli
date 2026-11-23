@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0050",
+  "phaseId": "PHASE-10",
+  "title": "Skill registry: discovery, frontmatter seguro, hash, preview, import por referência",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-131",
+    "AER-REQ-132",
+    "AER-REQ-133",
+    "AER-REQ-140"
+  ],
+  "dependsOn": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-10-verify.md",
+      "sha256": "8839e8f830e9072e01fe52408260cd4661162d00f28eb5eef96b8e5a046fda6d"
+    }
+  ],
+  "lastTest": null
+}

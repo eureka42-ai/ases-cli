@@ -16,12 +16,17 @@
 4. **PHASE-09: COMPLETED** (23/11/2026). Aprovada pelo responsável e integrada em `main` (`b0e753b`).
    - ASES-300/500 executável (ADR-0014, `docs/METODOLOGIA.md`); o gate da fase foi verificado no e2e.
    - CI Linux/Windows 6/6 (run 45245602246); o macOS foi cancelado pelo GitHub sem runner (só local, 248/248).
-   - **Próximo:** PHASE-10 (segurança: `/approval`, registry de Skills/MCP/plugins, SecretStore nativo).
-5. **Decisões do responsável (23/11/2026):**
+
+5. **PHASE-10: em andamento** (branch `ases/PHASE-10`). TAR-0048..0053 estão em REVIEW, aguardando aprovação.
+   - Entregas: policy engine com approvals por hash (`/approval`), registry de extensões (`/ext`), SecretStore nativo (`ases secret`). Detalhes no ADR-0015.
+   - Gate verificado no e2e (`.ases/evidence/PHASE-10-verify.md`).
+   - **Limites:** extensões ainda não são carregadas nas sessões dos providers (só a trava de compatibilidade); Windows sem SecretStore; hooks do AER não implementados.
+   - **Próximo:** aprovação; merge; PHASE-11 (continuidade: handoff, métricas, revisão cruzada, `resume`).
+6. **Decisões do responsável (23/11/2026):**
    - **Licença:** CC BY-NC-ND 4.0, Open Access (`LICENSE`; `package.json` com `CC-BY-NC-ND-4.0`). AER-REQ-210 atendido.
    - **Termos dos providers:** o responsável declarou que todos os vendors autorizaram a orquestração. A declaração está registrada; os documentos de autorização não estão no repositório.
    - **Pasta antiga do Desktop:** o responsável vai apagar.
    - **Pendente:** conferir o limite de gasto/cota de Actions da organização `eureka42-ai`, porque os jobs macOS ficam na fila sem máquina.
-6. **Restauração a partir do espelho** (clone novo sem banco → `DB_MISSING`): planejada no Project Passport (PHASE-11). Até lá, este Mac é o dono do banco.
+7. **Restauração a partir do espelho** (clone novo sem banco → `DB_MISSING`): planejada no Project Passport (PHASE-11). Até lá, este Mac é o dono do banco.
 
 Verificação rápida: `npm run verify && node scripts/ases-dev.mjs verify`.

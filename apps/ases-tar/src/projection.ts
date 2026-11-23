@@ -21,7 +21,7 @@ export function applyEvent(snap: Snapshot, e: EventEnvelope): Snapshot {
     case 'TaskCreated':
       if (e.taskId && e.phaseId && !snap.tasks.some((t) => t.id === e.taskId)) {
         // prioridade/risco/dependências não vêm no evento: o detalhe busca a linha completa via task.get
-        const t: TaskRow = { id: e.taskId, phaseId: e.phaseId, title: String(p.title), description: '', state: 'PLANNED', priority: 50, risk: 'MODERATE', version: 1, reqs: (p.reqs as string[] | undefined) ?? [], dependsOn: [], resources: [], provider: null };
+        const t: TaskRow = { id: e.taskId, phaseId: e.phaseId, title: String(p.title), description: '', state: 'PLANNED', priority: 50, risk: 'MODERATE', version: 1, reqs: (p.reqs as string[] | undefined) ?? [], dependsOn: [], resources: [], provider: null, extensions: [] };
         next.tasks = [...snap.tasks, t].sort((a, b) => a.id.localeCompare(b.id));
       }
       break;

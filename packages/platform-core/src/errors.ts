@@ -10,7 +10,8 @@ export class NotImplementedError extends Error {
   }
 }
 
-export type PlatformErrorCode = 'UNSUPPORTED_PLATFORM' | 'IPC_PATH_TOO_LONG' | 'SECRET_STORE_UNAVAILABLE' | 'INSECURE_PATH' | 'SPAWN_FAILED' | 'INVALID_PID';
+export type PlatformErrorCode = 'UNSUPPORTED_PLATFORM' | 'IPC_PATH_TOO_LONG' | 'SECRET_STORE_UNAVAILABLE' | 'INSECURE_PATH' | 'SPAWN_FAILED' | 'INVALID_PID'
+  | 'INVALID_KEY_ID' | 'INVALID_SECRET' | 'SECRET_STORE_FAILED';
 
 export class PlatformError extends Error {
   readonly code: PlatformErrorCode;
