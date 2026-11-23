@@ -5,7 +5,7 @@
 **Quem escreve o `.ases/`:** só o engine (`.ases/db/ases.sqlite`, local e não versionado). `scripts/ases-dev.mjs` faz apenas `verify`. Comandos: `ases` (TUI) ou `printf '/comando\n/exit\n' | ases --no-tui` em scripts.
 
 1. **PHASE-06: implementada, em REVIEW** (branch `ases/PHASE-06`, 23/11/2026; ver `.ases/evidence/PHASE-06-verify.md` e ADR-0012).
-   - Falta: revisão humana, commit, CI nos 8 alvos e, depois, TAR-0027..0031 → APPROVED → merge → COMPLETED e PHASE-06 → VERIFYING → COMPLETED.
+   - CI 8/8 verde (run 45192505934). Falta: revisão humana e, depois, TAR-0027..0031 → APPROVED → merge em `main` → COMPLETED, e PHASE-06 → VERIFYING → COMPLETED.
    - Teste manual: `/task new PHASE-XX t --provider simulator` (ou `simulator:hang|fail|approval|auth-expired|garbage|escape`), `/task move TAR-XXXX READY`, `/run --parallel 2` e `ases-tar` noutro terminal.
 2. **PHASE-07:** Claude Code e Codex oficiais sobre `AgentProvider` (TAR-0032+). Antes de começar, pesquisar flags e termos atuais (sem inventar argumentos).
 3. **Pendências do responsável:**

@@ -45,6 +45,6 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0028 | PHASE-06 | Simulador determinístico SIMULATED | REVIEW | — | packages/provider-simulator/test/simulator.test.ts<br>.ases/evidence/PHASE-06-verify.md |
 | TAR-0029 | PHASE-06 | Normalização de streams NDJSON | REVIEW | — | packages/provider-sdk/test/stream.test.ts<br>.ases/evidence/PHASE-06-verify.md |
 | TAR-0030 | PHASE-06 | Ciclo de vida do worker: spawn, timeout, cancelamento e árvore de processos | REVIEW | — | packages/scheduler/test/worker.test.ts<br>packages/platform-core/test/process.test.ts<br>.ases/evidence/PHASE-06-verify.md |
-| TAR-0031 | PHASE-06 | /run e /cancel ponta a ponta com ases-tar | REVIEW | — | test/e2e/run.test.mjs<br>.ases/evidence/PHASE-06-verify.md |
+| TAR-0031 | PHASE-06 | /run e /cancel ponta a ponta com ases-tar | REVIEW | — | test/e2e/run.test.mjs<br>.ases/evidence/PHASE-06-verify.md<br>.ases/evidence/PHASE-06-verify.md |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

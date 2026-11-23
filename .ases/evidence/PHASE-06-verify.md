@@ -37,7 +37,19 @@ Linux 3/3 e macOS Node 24 passaram. Falharam:
 
 Depois das correções, local: `npm run verify` 188/188; os testes de concorrência e o E2E do `/run` passaram 15 vezes seguidas (antes, 1 falha em 15).
 
+## CI run 45192505934 (commit 7adb48b): 8/8 verde
+| alvo / Node | testes |
+|---|---|
+| darwin-arm64 22.x / 24.x | 188 passed (188) |
+| linux-x64 22.x / 24.x | 188 passed (188) |
+| linux-arm64 22.x | 188 passed (188) |
+| win32-x64 22.x / 24.x | 181 passed, 7 skipped (188) |
+| win32-arm64 22.x | 181 passed, 7 skipped (188) |
+
+Os 7 pulados no Windows são anteriores a esta fase: 3 E2E em pty, 3 só-POSIX (0700, 0600, socket órfão) e o teste do iCloud Desktop (d17d37b). Ficam **NOT_RUN** no Windows.
+Os 4 testes de processo desta fase (`process.test.ts`, inclusive o neto encerrado via `taskkill /T`), o worker e o E2E do `/run` (com `/cancel`) **rodaram e passaram** nos três Windows.
+
 ## NÃO executados (NOT_RUN, não é PASS)
-- Windows: resultado do CI com as correções pendente no momento desta evidência.
+- O caminho SIGINT do E2E não roda no Windows (o SO não entrega SIGINT a processo filho).
 - No Windows, `terminateProcessTree` confirma apenas o pid raiz após `taskkill /T`.
 - Providers reais: nenhum (PHASE-07). Nenhuma IA, rede ou custo foi usado; toda saída de agente é `SIMULATED`.
