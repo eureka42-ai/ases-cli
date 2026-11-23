@@ -4,8 +4,8 @@
   "taskId": "TAR-0039",
   "phaseId": "PHASE-08",
   "title": "Adapter OpenCode (opencode acp)",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-101",
     "AER-REQ-103",

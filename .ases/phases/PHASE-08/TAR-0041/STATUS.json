@@ -4,8 +4,8 @@
   "taskId": "TAR-0041",
   "phaseId": "PHASE-08",
   "title": "Fixtures de teste e smoke opt-in",
-  "state": "REVIEW",
-  "version": 7,
+  "state": "COMPLETED",
+  "version": 10,
   "reqs": [
     "AER-REQ-123",
     "AER-REQ-125"

@@ -4,8 +4,8 @@
   "taskId": "TAR-0042",
   "phaseId": "PHASE-08",
   "title": "Documentação de paridade dos cinco providers",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-119",
     "AER-REQ-130"

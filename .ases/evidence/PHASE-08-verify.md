@@ -28,3 +28,13 @@ boundaries: OK
   opencode   READY          1.19.6   UNVERIFIED version -> 1.19.6; auth: checked at session/new
   google     NOT_INSTALLED  -        UNVERIFIED gemini not found in PATH
 ```
+
+## Atualização: fechamento (23/11/2026)
+- **Smoke real com consentimento:** `.ases/evidence/TAR-0041-smoke-real.md`.
+  - **VERIFIED:** Kimi 1.50.0, OpenCode 2.4.1 e Antigravity 1.5.13 (provider `google`).
+  - **O Gemini CLI não é usado:** o login de conta Google foi encerrado para planos individuais.
+- **`npm run verify` local:** 234/234.
+- **CI do commit `71b8082`** (run 45232756904):
+  - Linux e Windows: 6/6.
+  - **macOS: NOT_RUN** (os jobs ficaram na fila, sem máquina).
+- **Aprovação:** feita pelo responsável. `main` avançou por fast-forward para `a5cd051`, já com a licença CC BY-NC-ND 4.0.

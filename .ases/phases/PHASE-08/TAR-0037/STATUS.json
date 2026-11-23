@@ -4,8 +4,8 @@
   "taskId": "TAR-0037",
   "phaseId": "PHASE-08",
   "title": "Pesquisa de flags, ACP e termos (Kimi, OpenCode, Google)",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-101",
     "AER-REQ-103",

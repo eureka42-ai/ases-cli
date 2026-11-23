@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
-- Último evento válido: seq 316 em 2026-11-23T17:19:10.878Z
-- Git: branch `ases/PHASE-08`, HEAD `e812267`
-- Concluídas: 36 de 42
-- Abertas: TAR-0037 (REVIEW), TAR-0038 (REVIEW), TAR-0039 (REVIEW), TAR-0040 (REVIEW), TAR-0041 (REVIEW), TAR-0042 (REVIEW)
+- Último evento válido: seq 336 em 2026-11-23T18:19:31.796Z
+- Git: branch `main`, HEAD `a5cd051`
+- Concluídas: 42 de 42
+- Abertas: nenhuma
 - Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
 <!-- AUTO:END -->
 
@@ -125,5 +125,6 @@
   - O Gemini CLI não loga mais em planos individuais (migração para o Antigravity), e o provider `google` passou a usar `agy acp --sandbox` → **VERIFIED 1.5.13**.
   - OpenCode e Antigravity juntos pelo motor: os dois em REVIEW, com commit.
   - `npm run verify` 234/234.
-- **Próxima operação segura:** CI da branch; aprovação do responsável; merge em `main`.
+- **Fechamento:** aprovado pelo responsável. A licença CC BY-NC-ND 4.0 foi aplicada. Fast-forward de `main` para `a5cd051`; TAR-0037..0042 e PHASE-08 COMPLETED.
+- **Próxima operação segura:** iniciar a PHASE-09 numa branch `ases/PHASE-09`.
 

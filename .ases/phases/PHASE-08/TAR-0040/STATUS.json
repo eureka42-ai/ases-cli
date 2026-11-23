@@ -4,8 +4,8 @@
   "taskId": "TAR-0040",
   "phaseId": "PHASE-08",
   "title": "Adapter Google (Gemini CLI) com capability honesta",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-101",
     "AER-REQ-103",
