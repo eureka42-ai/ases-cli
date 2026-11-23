@@ -1,10 +1,14 @@
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs';
+import path from 'node:path';
 import { PHASE_STATES, TASK_STATES, type PhaseState, type TaskState } from '@aer/contracts';
+import { plan } from '@aer/scheduler';
 import type { Engine } from './engine.ts';
 
 export const PLANNED_SLASH: Record<string, string> = {
-  '/agent': 'PHASE-07', '/auto': 'PHASE-05', '/manual': 'PHASE-05', '/hybrid': 'PHASE-05', '/parallel': 'PHASE-05', '/usage': 'PHASE-11',
+  '/agent': 'PHASE-07', '/auto': 'PHASE-06', '/manual': 'PHASE-06', '/hybrid': 'PHASE-06', '/parallel': 'PHASE-06', '/usage': 'PHASE-11',
   '/plan': 'PHASE-09', '/skills': 'PHASE-10', '/plugins': 'PHASE-10', '/mcp': 'PHASE-10', '/review': 'PHASE-11', '/diff': 'PHASE-05',
-  '/checkpoint': 'PHASE-05', '/resume': 'PHASE-11', '/approval': 'PHASE-10', '/safe-mode': 'PHASE-10', '/history': 'PHASE-04', '/dependencies': 'PHASE-05',
+  '/checkpoint': 'PHASE-05', '/resume': 'PHASE-11', '/approval': 'PHASE-10', '/safe-mode': 'PHASE-10', '/history': 'PHASE-04', '/dependencies': 'PHASE-06',
 };
 
 export const SLASH_HELP = `Comandos:
@@ -16,6 +20,9 @@ export const SLASH_HELP = `Comandos:
   /phase move PHASE-XX <ESTADO> [motivo]
   /task new PHASE-XX <título>     cria tarefa
   /task move TAR-XXXX <ESTADO> [motivo]
+  /dep add TAR-A TAR-B            TAR-A passa a depender de TAR-B (ciclo é recusado)
+  /evidence add TAR-XXXX <arquivo> [nota]   registra evidência (caminho dentro do projeto + SHA-256)
+  /schedule                       mostra a ordem do scheduler e por quê (não reserva nada)
   /help   /exit`;
 
 /** Executa um comando da sessão; mesmo código no modo linha e na TUI. 'EXIT' pede encerramento. */
@@ -67,6 +74,33 @@ export function handleLine(engine: Engine, line: string, unicode = true): string
       // shortcut: varre só os primeiros 1000 eventos; trocar por consulta indexada por task_id quando o histórico crescer
       return [`${t.id} ${unicode ? '—' : '-'} ${t.title}`, `  fase ${t.phaseId} · estado ${t.state} · v${t.version} · prioridade ${t.priority} · risco ${t.risk}`,
         `  requisitos ${t.reqs.join(', ') || '—'} · depende de ${t.dependsOn.join(', ') || '—'}`, '  progresso: indeterminado (sem milestones, AER-REQ-098)', ...history].join('\n');
+    }
+    case '/dep': {
+      const [a = '', b = ''] = rest;
+      if (sub !== 'add' || !a || !b) return 'uso: /dep add TAR-A TAR-B  (TAR-A depende de TAR-B)';
+      engine.mutate((st) => st.addDependency(a, b));
+      return `${a} agora depende de ${b}`;
+    }
+    case '/evidence': {
+      const [id = '', file = '', ...note] = rest;
+      if (sub !== 'add' || !id || !file) return 'uso: /evidence add TAR-XXXX <arquivo> [nota]';
+      const root = realpathSync.native(engine.projectRoot);
+      const abs = path.resolve(root, file);
+      if (!existsSync(abs) || !statSync(abs).isFile()) return `arquivo não encontrado: ${file}`;
+      const real = realpathSync.native(abs);
+      if (!real.startsWith(root + path.sep)) return `evidência precisa estar dentro do projeto: ${file}`;
+      const rel = path.relative(root, real).split(path.sep).join('/');
+      const sha = createHash('sha256').update(readFileSync(real)).digest('hex');
+      engine.mutate((st) => st.recordArtifact(id, { kind: 'EVIDENCE', relativePath: rel, sha256: sha, ...(note.length ? { note: note.join(' ') } : {}) }));
+      return `evidência ${rel} (sha256 ${sha.slice(0, 12)}…) registrada em ${id}`;
+    }
+    case '/schedule': {
+      const r = plan(s.listTasks(), s.activeLeases());
+      const lines = [
+        ...r.eligible.map((c, i) => `${i + 1}. ${c.explanation}`),
+        ...r.waiting.map((w) => `   ${w.taskId} espera: ${w.reason}`),
+      ];
+      return lines.length ? lines.join('\n') : 'nenhuma tarefa READY (use /task move TAR-XXXX READY)';
     }
     default:
       if (cmd in PLANNED_SLASH) return `${cmd}: ainda não implementado (planejado: ${PLANNED_SLASH[cmd]})`;

@@ -30,6 +30,9 @@
     },
     {
       "path": "../../packages/tui-shared/tsconfig.build.json"
+    },
+    {
+      "path": "../../packages/scheduler/tsconfig.build.json"
     }
   ]
 }

@@ -2,9 +2,12 @@ import readline from 'node:readline';
 import { parseArgs } from 'node:util';
 import { VERSIONS } from '@aer/contracts';
 import { LOGO_MODES, THEMES, pickLogoMode, renderBrand, type LogoMode, type ThemeName } from '@aer/branding';
-import { sqliteVersion } from '@aer/persistence';
+import { copyFileSync, mkdirSync, readFileSync } from 'node:fs';
+import path from 'node:path';
+import { ProjectStore, exportHistory, importLegacy, sqliteVersion } from '@aer/persistence';
 import { targetStatus } from '@aer/platform-core';
-import { findProjectRoot, initProject, loadPlatformAdapter, readManifest } from '@aer/project-store';
+import { findProjectRoot, initProject, isInterimProject, loadPlatformAdapter, paths, readInterimProject, readManifest } from '@aer/project-store';
+import { writeReports } from './reports.ts';
 import { Engine } from './engine.ts';
 import { handleLine } from './commands.ts';
 import { runTui } from './tui.tsx';
@@ -15,6 +18,7 @@ Uso:
   ases [opções]              sessão interativa: engine local + TUI (fora de TTY ou com --no-tui: modo linha)
   ases init [--name <nome>]  cria .ases/ no diretório atual sem sobrescrever nada
   ases doctor [--json]       diagnóstico local (sem login, sem rede, sem custo)
+  ases migrate-interim       entrega ao engine um .ases/ criado pelo bootstrap interino (scripts/ases-dev.mjs)
 
 Opções:
   --no-color   --no-banner   --no-tui   --theme teal|blue|purple|gold|mono   --logo full|compact|minimal|ascii
@@ -82,6 +86,38 @@ async function main(argv: string[]): Promise<number> {
     };
     if (values.json) console.log(JSON.stringify(report));
     else for (const [k, v] of Object.entries(report)) console.log(`${k}: ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`);
+    return 0;
+  }
+  if (cmd === 'migrate-interim') {
+    const root = findProjectRoot(process.cwd());
+    if (!root || !isInterimProject(root)) {
+      console.error('Nada a migrar: não há .ases/ interino (sem banco) neste diretório ou acima.');
+      return 2;
+    }
+    const manifest = readManifest(root);
+    const interim = readInterimProject(root);
+    if (interim.missingEvidence.length) {
+      console.error(`Evidências ausentes (não serão importadas):\n  ${interim.missingEvidence.join('\n  ')}`);
+    }
+    // backup verificável do espelho interino antes de qualquer escrita (AER-REQ-018)
+    const backupDir = path.join(paths(root).ases, 'backups');
+    mkdirSync(backupDir, { recursive: true });
+    const backup = path.join(backupDir, `HISTORY.interim.${new Date().toISOString().replace(/[:.]/g, '-')}.jsonl`);
+    copyFileSync(paths(root).history, backup);
+    adapter.ensurePrivateDir(paths(root).dbDir);
+    const r = importLegacy(paths(root).db, { id: manifest.projectId, name: manifest.name }, interim.events, interim, 'scripts/ases-dev.mjs');
+    const store = ProjectStore.open(paths(root).db, { id: manifest.projectId, name: manifest.name }, { actor: 'ases migrate-interim' });
+    try {
+      exportHistory(store, paths(root).history);
+      const before = readFileSync(backup, 'utf8');
+      const after = readFileSync(paths(root).history, 'utf8');
+      if (!after.startsWith(before)) throw new Error(`mirror check failed: regenerated HISTORY.jsonl does not start with the interim history (backup kept at ${backup})`);
+      writeReports(root, store);
+    } finally {
+      store.close();
+    }
+    const out = { ...r, backup: path.relative(root, backup), mirror: 'interim history preserved byte for byte as prefix' };
+    console.log(values.json ? JSON.stringify(out) : `migrado: ${r.events} eventos, ${r.phases} fases, ${r.tasks} tarefas, ${r.artifacts} evidências; backup ${out.backup}. Agora use \`ases\` neste projeto.`);
     return 0;
   }
   if (cmd && cmd in PLANNED) {

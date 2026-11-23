@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { existsSync, lstatSync, realpathSync } from 'node:fs';
+import { existsSync, lstatSync, readlinkSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -79,14 +79,24 @@ export function resolveInside(worktree: string, rel: string): string {
   const target = path.resolve(root, rel);
   const inside = (p: string) => p === root || p.startsWith(root + path.sep);
   if (!inside(target)) throw new GitError('PATH_ESCAPE', `path escapes worktree: ${rel}`);
-  // o componente existente mais profundo, resolvido, também precisa estar dentro (symlink de diretório ou do próprio arquivo)
+  // sobe até o componente mais profundo que existe SEM seguir links (lstat): um symlink quebrado também conta,
+  // porque escrever nele criaria o arquivo no destino do link, fora da worktree
+  const present = (p: string) => {
+    try {
+      lstatSync(p);
+      return true;
+    } catch {
+      return false;
+    }
+  };
   let probe = target;
-  while (!existsSync(probe) && probe !== root) probe = path.dirname(probe);
-  const real = realpathSync.native(probe);
-  if (!inside(real)) throw new GitError('PATH_ESCAPE', `path resolves outside worktree through a symlink: ${rel}`);
-  if (probe === target && lstatSync(target).isSymbolicLink() && !inside(realpathSync.native(target))) {
-    throw new GitError('PATH_ESCAPE', `symlink points outside worktree: ${rel}`);
+  while (!present(probe) && probe !== root) probe = path.dirname(probe);
+  if (lstatSync(probe).isSymbolicLink()) {
+    const dest = existsSync(probe) ? realpathSync.native(probe) : path.resolve(path.dirname(probe), readlinkSync(probe));
+    if (!inside(dest)) throw new GitError('PATH_ESCAPE', `symlink points outside worktree: ${rel}`);
   }
+  const real = realpathSync.native(existsSync(probe) ? probe : path.dirname(probe));
+  if (!inside(real)) throw new GitError('PATH_ESCAPE', `path resolves outside worktree through a symlink: ${rel}`);
   return target;
 }
 

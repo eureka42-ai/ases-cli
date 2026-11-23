@@ -10,7 +10,7 @@ export const EVENT_TYPES = [
   'ProviderOutputChunk', 'ProviderToolCallObserved', 'ProviderToolResultObserved', 'ProviderUsageObserved',
   'ApprovalRequested', 'ApprovalGranted', 'ApprovalDenied', 'ExtensionDiscovered', 'ExtensionScanned', 'ExtensionInstalled',
   'TestRunStarted', 'TestRunCompleted', 'GitCheckpointCreated', 'HandoffCreated', 'RecoveryStarted', 'RecoveryCompleted',
-  'SecurityViolationBlocked', 'AuditExported',
+  'SecurityViolationBlocked', 'AuditExported', 'LegacyImported',
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
@@ -27,6 +27,7 @@ export const CRITICAL_PAYLOADS = {
   TaskUpdated: z.strictObject({ from: z.enum(TASK_STATES), to: z.enum(TASK_STATES), reason: z.string().nullable() }),
   PhaseUpdated: z.strictObject({ from: z.enum(PHASE_STATES), to: z.enum(PHASE_STATES), reason: z.string().nullable() }),
   TaskDependencyAdded: z.strictObject({ dependsOn: taskId }),
+  LegacyImported: z.strictObject({ source: z.string().min(1), events: z.number().int().min(0), phases: z.number().int().min(0), tasks: z.number().int().min(0), artifacts: z.number().int().min(0) }),
   TaskReserved: z.strictObject({ ownerId: z.string().min(1), fencingToken: z.number().int().min(1), expiresAt: z.iso.datetime(), explanation: z.string() }),
   AttemptStarted: z.strictObject({ providerId: z.string().min(1), fencingToken: z.number().int().min(1), branch: z.string().nullable(), baseCommit: z.string().nullable() }),
   AttemptExited: z.strictObject({ state: z.enum(['EXITED', 'FAILED', 'CANCELLED', 'UNKNOWN']), exitCode: z.number().int().nullable(), failureCode: z.string().nullable() }),

@@ -1,6 +1,6 @@
 # DATA — persistência do AER
 
-> Situação: PHASE-02. Decisões em `docs/ADRs/ADR-0002.md`. Código: `packages/persistence`.
+> Situação: PHASE-05 (schema v2). Decisões em `docs/ADRs/ADR-0002.md`. Código: `packages/persistence`.
 
 ## Arquivo e pragmas
 - Banco do projeto: `.ases/db/ases.sqlite` (gitignored; o engine cria e conecta na PHASE-03).
@@ -18,7 +18,18 @@
 | `task_requirements` | namespace `AER` (`AER-REQ-NNN`) ou `ASES` (`REQ-NNN`), sem renumerar |
 | `events` | `seq` AUTOINCREMENT sem lacunas; `event_id UNIQUE`; `json_valid(payload_json)`; triggers bloqueiam UPDATE/DELETE |
 
-Tabelas de attempts, leases, worktrees, approvals, providers e extensões entram nas fases que as usam.
+### Schema v2 (PHASE-05, ADR-0004)
+| Tabela | Invariantes |
+|---|---|
+| `tasks.fencing_seq`, `tasks.provider` | token monotônico por tarefa; provider para limite por provider |
+| `task_leases` | 1 por tarefa; `expires_at` decide se está vivo; removido ao sair de RESERVED/RUNNING/VERIFYING |
+| `task_resources` | recurso compartilhado: duas tarefas com o mesmo recurso não têm lease simultâneo |
+| `attempts` | `ATT-NNNN` por tarefa, branch/base/worktree, estado RUNNING→EXITED/FAILED/CANCELLED/UNKNOWN |
+| `locks` | travas nomeadas com expiração (fila de merge) |
+| `artifacts` | evidência: caminho relativo + SHA-256 |
+| `test_runs` | comando, exit code, contagens, ambiente e horários reais |
+
+Approvals, providers e extensões entram nas fases que os usam.
 
 ## Regras de escrita
 - Transição: `UPDATE ... WHERE version = ?` com exatamente uma linha afetada, mais o evento `TaskUpdated`/`PhaseUpdated`, na mesma transação.
@@ -31,7 +42,7 @@ Migrações versionadas, aplicadas em `BEGIN IMMEDIATE`, com a versão relida de
 ## Espelho JSONL
 `exportHistory(store, file)` reconstrói `HISTORY.jsonl` por `seq` (temp + rename). `verifyHistory(file)` acusa lacuna, duplicata, JSON inválido e hash adulterado. A falha de export não afeta transações já confirmadas: basta reexportar.
 
-## Corte do histórico interino (PHASE-03)
+## Corte do histórico interino (feito na PHASE-05: `ases migrate-interim`)
 O `.ases/HISTORY.jsonl` atual foi escrito por `scripts/ases-dev.mjs` e passa no `verifyHistory`. No corte para o engine:
 - importar preservando `eventId` (os `seq` coincidem num banco vazio);
 - não validar contra `CRITICAL_PAYLOADS`, porque o `TaskUpdated` interino usa `{from,to,evidence,note}` e não `{from,to,reason}`;

@@ -26,7 +26,7 @@ export function tick(store: ProjectStore, o: TickOptions): TickResult {
   if (!Number.isInteger(o.maxParallel) || o.maxParallel < 1) throw new StoreError('INVALID_INPUT', 'maxParallel must be >= 1');
   const expired = store.expireLeases();
   const tasks = store.listTasks(o.phaseId);
-  const { eligible, waiting } = plan(store.listTasks(), store.activeLeases());
+  const { eligible } = plan(store.listTasks(), store.activeLeases());
   const inScope = new Set(tasks.map((t) => t.id));
   const reserved: TickResult['reserved'] = [];
   const skipped: TickResult['skipped'] = [];
@@ -41,5 +41,7 @@ export function tick(store: ProjectStore, o: TickOptions): TickResult {
       else throw err;
     }
   }
+  // motivos de espera recalculados depois das reservas, para refletir o estado que o usuário vai ver
+  const { waiting } = plan(store.listTasks(), store.activeLeases());
   return { expired, reserved, skipped, waiting: waiting.filter((w) => inScope.has(w.taskId)) };
 }

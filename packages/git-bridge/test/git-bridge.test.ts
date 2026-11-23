@@ -48,9 +48,14 @@ describe('path safety (AER-REQ-060, AER-REQ-164)', () => {
       symlinkSync(outside, path.join(wt.path, 'link-dir'));
       symlinkSync(path.join(outside, 'f'), path.join(wt.path, 'link-file'));
       expect(() => resolveInside(wt.path, 'link-dir/x.txt')).toThrow(/symlink/);
-      expect(() => resolveInside(wt.path, 'link-file')).toThrow(/symlink/);
+      expect(() => resolveInside(wt.path, 'link-file')).toThrow(/symlink/); // symlink quebrado para fora
+      writeFileSync(path.join(outside, 'existe'), 'x');
+      symlinkSync(path.join(outside, 'existe'), path.join(wt.path, 'link-ok-target'));
+      expect(() => resolveInside(wt.path, 'link-ok-target')).toThrow(/symlink/);
+      symlinkSync('real', path.join(wt.path, 'link-interno'));
       mkdirSync(path.join(wt.path, 'real'));
       expect(resolveInside(wt.path, 'real/ok.txt')).toBe(path.join(wt.path, 'real', 'ok.txt'));
+      expect(resolveInside(wt.path, 'link-interno/ok.txt')).toBe(path.join(wt.path, 'link-interno', 'ok.txt')); // link que fica dentro é permitido
     }
   });
 });

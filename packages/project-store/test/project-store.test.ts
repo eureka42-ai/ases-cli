@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, wr
 import os from 'node:os';
 import path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
-import { findProjectRoot, initProject, isInterimProject, loadPlatformAdapter, paths, readSession } from '../src/index.ts';
+import { findProjectRoot, historyState, initProject, isInterimProject, loadPlatformAdapter, paths, readSession } from '../src/index.ts';
 
 const tmp = mkdtempSync(path.join(os.tmpdir(), 'aer proj ã '));
 afterAll(() => rmSync(tmp, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
@@ -47,6 +47,11 @@ describe('ases init (TAR-0011, AER-REQ-011, AER-REQ-017)', () => {
     expect(isInterimProject(root)).toBe(false);
     writeFileSync(paths(root).history, `${JSON.stringify({ actor: 'ases-dev-interim', seq: 1 })}\n`);
     expect(isInterimProject(root)).toBe(true);
+    writeFileSync(paths(root).history, `${JSON.stringify({ actor: 'ases-dev-interim', seq: 1 })}\n${JSON.stringify({ actor: 'ases', seq: 2 })}\n`);
+    expect(historyState(root)).toBe('DB_MISSING'); // histórico do engine sem banco: não pode recriar
+    writeFileSync(paths(root).db, ''); // depois do corte existe banco: deixa de ser interino
+    expect(isInterimProject(root)).toBe(false);
+    expect(historyState(root)).toBe('OK');
   });
 
   it('reports a missing engine session clearly', () => {

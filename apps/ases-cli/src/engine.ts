@@ -4,7 +4,8 @@ import { VERSIONS, type PhaseState, type TaskState } from '@aer/contracts';
 import { IpcServer, type Handler } from '@aer/ipc';
 import { ProjectStore, exportHistory, type CreateTaskInput, type Risk } from '@aer/persistence';
 import type { PlatformAdapter } from '@aer/platform-core';
-import { ProjectError, isInterimProject, paths, readManifest, sessionFile, writeSession } from '@aer/project-store';
+import { ProjectError, historyState, isInterimProject, paths, readManifest, sessionFile, writeSession } from '@aer/project-store';
+import { writeReports } from './reports.ts';
 
 const str = (v: unknown, name: string): string => {
   if (typeof v !== 'string' || !v) throw Object.assign(new Error(`${name} is required`), { code: 'INVALID_INPUT' });
@@ -39,8 +40,11 @@ export class Engine {
   }
 
   static async start(root: string, adapter: PlatformAdapter): Promise<Engine> {
+    if (historyState(root) === 'DB_MISSING') {
+      throw new ProjectError('DB_MISSING', '.ases/HISTORY.jsonl has engine history but .ases/db/ases.sqlite is missing (fresh clone or another worktree). Refusing to start: a new database would overwrite the versioned history. Copy the database from the machine that owns it; restore from the mirror arrives with Project Passport (PHASE-11).');
+    }
     if (isInterimProject(root)) {
-      throw new ProjectError('INTERIM_PROJECT', '.ases/ is still managed by scripts/ases-dev.mjs (interim bootstrap); the engine refuses to become a second writer');
+      throw new ProjectError('INTERIM_PROJECT', '.ases/ is still managed by scripts/ases-dev.mjs (interim bootstrap); run `ases migrate-interim` once to hand it over to the engine');
     }
     const manifest = readManifest(root);
     const endpoint = adapter.createLocalIpcEndpoint(manifest.projectId);
@@ -75,6 +79,11 @@ export class Engine {
     }
   }
 
+  /** Raiz do projeto (para comandos que validam caminhos de evidência). */
+  get projectRoot(): string {
+    return this.root;
+  }
+
   get info() {
     return { projectId: this.store.projectId, name: this.projectName, journalMode: this.store.info.journalMode, lastSeq: this.store.lastSeq(), monitors: this.server.connectionCount };
   }
@@ -104,6 +113,7 @@ export class Engine {
     try {
       // shortcut: reescreve o espelho inteiro a cada mutação; trocar por append incremental quando o histórico crescer
       exportHistory(this.store, paths(this.root).history);
+      writeReports(this.root, this.store);
       this.mirrorError = undefined;
     } catch (err) {
       this.mirrorError = (err as Error).message; // transação já confirmada; espelho fica pendente (§6.4)

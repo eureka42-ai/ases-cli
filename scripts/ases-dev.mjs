@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // Ferramenta INTERINA de estado .ases/ do próprio AER (TAR-0004), sem dependências.
+// APOSENTADA como escritor após o corte (TAR-0026, `ases migrate-interim`): com banco presente só `verify` roda.
 // shortcut: HISTORY.jsonl é escrito direto aqui porque o event store SQLite ainda não existe;
 // na PHASE-02 este histórico é importado como seed e passa a ser espelho derivado do banco (§6.1).
 //
@@ -326,6 +327,10 @@ function cmdVerify(root) {
 function main(argv) {
   const opts = parseArgs(argv);
   const [cmd, id, state] = opts.positional;
+  // TAR-0026: depois de `ases migrate-interim` o engine é o único escritor; este script só verifica
+  if (cmd !== 'verify' && existsSync(path.join(opts.root, '.ases', 'db', 'ases.sqlite'))) {
+    throw new UsageError('este .ases/ agora é gerido pelo engine (.ases/db/ases.sqlite existe): use `ases` (ou `ases --no-tui`); `verify` continua disponível');
+  }
   if (cmd === 'init') {
     const created = cmdInit(opts.root, opts.plan);
     console.log(created.length ? `created ${created.length} file(s):\n  ${created.join('\n  ')}` : 'nothing to create (.ases/ already initialized)');
