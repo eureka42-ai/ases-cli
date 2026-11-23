@@ -20,6 +20,12 @@
       "path": "packages/persistence/tsconfig.build.json"
     },
     {
+      "path": "packages/git-bridge/tsconfig.build.json"
+    },
+    {
+      "path": "packages/scheduler/tsconfig.build.json"
+    },
+    {
       "path": "packages/branding/tsconfig.build.json"
     },
     {

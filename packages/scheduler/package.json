@@ -1,0 +1,10 @@
+{
+  "name": "@aer/scheduler",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": { "@aer/contracts": "0.0.0", "@aer/git-bridge": "0.0.0", "@aer/persistence": "0.0.0" },
+  "exports": {
+    ".": { "source": "./src/index.ts", "types": "./src/index.ts", "default": "./dist/index.js" }
+  }
+}
