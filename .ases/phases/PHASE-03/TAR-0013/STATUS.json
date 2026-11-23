@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0013",
+  "phaseId": "PHASE-03",
+  "title": "Cliente IPC e assinatura de eventos",
+  "state": "REVIEW",
+  "reqs": [
+    "AER-REQ-070",
+    "AER-REQ-074",
+    "AER-REQ-075",
+    "AER-REQ-076",
+    "AER-REQ-077"
+  ],
+  "tests": [
+    "packages/ipc/test/*.test.ts"
+  ],
+  "evidence": [
+    ".ases/evidence/PHASE-03-verify.md",
+    "packages/ipc/test/ipc.test.ts",
+    "docs/API.md"
+  ],
+  "notes": []
+}

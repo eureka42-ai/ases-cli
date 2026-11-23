@@ -1,17 +1,21 @@
-# Próximos passos (atualizado 22/11/2026, fim da PHASE-02 técnica)
+# Próximos passos (atualizado 22/11/2026, fim da PHASE-03 técnica)
 
-1. **Revisão humana da PHASE-02** (branch `ases/PHASE-02`, worktree `.worktrees/PHASE-02`, tarefas em REVIEW). Aprovado:
-   `git -C "<repo>" merge --ff-only ases/PHASE-02`; depois `set TAR-0006..0010 APPROVED → MERGING → COMPLETED` via `scripts/ases-dev.mjs` e `set PHASE-02 COMPLETED`; por fim remover o worktree (`git worktree remove .worktrees/PHASE-02`).
-2. **Decisões pendentes do responsável** (continuam abertas):
-   - Renomear `branding/references/Estudo de Marca Eureka42: Quatro Variações.png`, inválido no Windows.
+1. **Revisão humana da PHASE-03** (branch `ases/PHASE-03`, worktree `.worktrees/PHASE-03`, tarefas em REVIEW). Aprovado:
+   - `git merge --ff-only ases/PHASE-03` em `main`;
+   - TAR-0011..0015 `APPROVED → MERGING → COMPLETED` e `PHASE-03 COMPLETED` via `scripts/ases-dev.mjs --root <repo>`;
+   - `git worktree remove .worktrees/PHASE-03`.
+2. **Experimentar** (macOS), num projeto qualquer, fora deste repositório:
+   - `npm run build` no repo AER;
+   - no projeto: `node <repo>/apps/ases-cli/bin/ases.js init`, depois `node <repo>/apps/ases-cli/bin/ases.js`;
+   - noutro terminal, na mesma pasta: `node <repo>/apps/ases-tar/bin/ases-tar.js`.
+   (`npm link` deixaria `ases`/`ases-tar` globais, mas é instalação global e exige aprovação.)
+3. **Decisões pendentes do responsável:**
+   - Renomear o PNG com `:` (inválido no Windows).
    - Licença.
-   - Remoto Git para rodar o CI.
-3. **PHASE-03** (TAR-0011..0015), em novo worktree `ases/PHASE-03`:
-   - `apps/ases-cli` e `apps/ases-tar` (bins `ases`/`ases-tar`, `--version`/`--help` sem ANSI em pipe/NO_COLOR).
-   - Build JS (`tsc` com `rewriteRelativeImportExtensions`) para os bins.
-   - `ases init` usando `ProjectStore` em `.ases/db/ases.sqlite` com permissões `0700/0600` via `PlatformAdapter`.
-   - Importar `.ases/HISTORY.jsonl` interino como seed (regras em `docs/DATA.md`) e aposentar `scripts/ases-dev.mjs` como escritor.
-   - IPC UDS JSON-RPC (`rpc.handshake`, `project.snapshot`, `project.subscribe`), com endpoint read-only para o `ases-tar`.
-   - E2E com dois processos reais: evento emitido no `ases` e visto no `ases-tar`.
+   - Remoto Git/CI.
+4. **PHASE-04** (TAR-0016..0020): TUI Ink, que exige aprovar as dependências `ink` + `react`.
+   - `tui-shared`, home/chat do `ases`, live/overview/task detail do `ases-tar`.
+   - Teclado (`Tab`/`?`/`Esc`), resize, 40x16/80x24/120x35, `NO_COLOR`.
+5. **Corte do `.ases/` deste repositório para o engine:** exige tabelas `artifacts`/`test_runs` (evidência no banco). Importar `HISTORY.jsonl` como seed (`docs/DATA.md`) e aposentar `scripts/ases-dev.mjs` como escritor. Propor na PHASE-05.
 
 Verificação rápida: `npm run verify && node scripts/ases-dev.mjs verify`.

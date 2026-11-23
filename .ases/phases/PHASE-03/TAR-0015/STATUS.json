@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0015",
+  "phaseId": "PHASE-03",
+  "title": "E2E com dois processos reais",
+  "state": "REVIEW",
+  "reqs": [
+    "AER-REQ-090",
+    "AER-REQ-091",
+    "AER-REQ-093",
+    "AER-REQ-094",
+    "AER-REQ-099",
+    "AER-REQ-191"
+  ],
+  "tests": [
+    "test/e2e/two-processes.test.mjs"
+  ],
+  "evidence": [
+    ".ases/evidence/PHASE-03-verify.md",
+    "test/e2e/two-processes.test.mjs"
+  ],
+  "notes": []
+}

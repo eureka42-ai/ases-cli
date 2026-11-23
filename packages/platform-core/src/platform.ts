@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { realpathSync } from 'node:fs';
+import { chmodSync, lstatSync, mkdirSync, realpathSync, renameSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { NotImplementedError, PlatformError } from './errors.ts';
@@ -82,10 +82,31 @@ export function createBaseAdapter(id: PlatformId, secretBackend: string, deps: P
     createLocalIpcEndpoint: (projectId) => createLocalIpcEndpoint(id, deps, projectId),
     getSecretStore: () => unavailableSecretStore(secretBackend, 'native SecretStore planned for PHASE-10/PHASE-15'),
     getTerminalCapabilities: (stream) => getTerminalCapabilities(id, deps.env, stream),
+    ensurePrivateDir: (dir) => ensurePrivateDir(id, dir),
     spawnManagedProcess: todo('spawnManagedProcess', 'PHASE-06'),
     getProcessTree: todo('getProcessTree', 'PHASE-06'),
     terminateProcessTree: todo('terminateProcessTree', 'PHASE-06/PHASE-15'),
     getUserNotifier: todo('getUserNotifier', 'PHASE-12'),
     getBackgroundSupervisor: todo('getBackgroundSupervisor', 'PHASE-12'),
   };
+}
+
+/**
+ * Cria (se preciso) um diretório só do usuário atual (AER-REQ-014/202).
+ * POSIX: 0700, dono = uid atual, nunca symlink. Windows: herda a ACL do perfil.
+ */
+export function ensurePrivateDir(id: PlatformId, dir: string): void {
+  mkdirSync(dir, { recursive: true, mode: 0o700 });
+  if (id === 'win32') return; // shortcut: DACL não é verificada no Windows; validar com icacls/API na PHASE-15
+  const st = lstatSync(dir);
+  if (st.isSymbolicLink() || !st.isDirectory()) throw new PlatformError('INSECURE_PATH', `not a real directory: ${dir}`);
+  if (typeof process.getuid === 'function' && st.uid !== process.getuid()) throw new PlatformError('INSECURE_PATH', `directory not owned by current user: ${dir}`);
+  if ((st.mode & 0o077) !== 0) chmodSync(dir, 0o700);
+}
+
+/** Escrita atômica de arquivo privado (0600 em POSIX), p.ex. o token de sessão do engine. */
+export function writePrivateFile(file: string, content: string): void {
+  const tmp = `${file}.${process.pid}.tmp`;
+  writeFileSync(tmp, content, { encoding: 'utf8', mode: 0o600 });
+  renameSync(tmp, file);
 }

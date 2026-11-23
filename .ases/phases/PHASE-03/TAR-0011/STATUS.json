@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0011",
+  "phaseId": "PHASE-03",
+  "title": "CLI shell ases/ases-tar + build + marca mínima",
+  "state": "REVIEW",
+  "reqs": [
+    "AER-REQ-004",
+    "AER-REQ-011",
+    "AER-REQ-240",
+    "AER-REQ-241",
+    "AER-REQ-245",
+    "AER-REQ-247"
+  ],
+  "tests": [
+    "test/e2e/bins.test.mjs",
+    "packages/branding/test/*.test.ts"
+  ],
+  "evidence": [
+    ".ases/evidence/PHASE-03-verify.md",
+    "test/e2e/bins.test.mjs",
+    "packages/branding/test/branding.test.ts"
+  ],
+  "notes": [
+    {
+      "at": "2026-11-23T00:33:45.310Z",
+      "text": "util.parseArgs no lugar do Commander (ADR-0003)"
+    }
+  ]
+}

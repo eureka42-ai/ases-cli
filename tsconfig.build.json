@@ -1,0 +1,38 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "packages/contracts/tsconfig.build.json"
+    },
+    {
+      "path": "packages/platform-core/tsconfig.build.json"
+    },
+    {
+      "path": "packages/platform-macos/tsconfig.build.json"
+    },
+    {
+      "path": "packages/platform-windows/tsconfig.build.json"
+    },
+    {
+      "path": "packages/platform-linux/tsconfig.build.json"
+    },
+    {
+      "path": "packages/persistence/tsconfig.build.json"
+    },
+    {
+      "path": "packages/branding/tsconfig.build.json"
+    },
+    {
+      "path": "packages/ipc/tsconfig.build.json"
+    },
+    {
+      "path": "packages/project-store/tsconfig.build.json"
+    },
+    {
+      "path": "apps/ases-cli/tsconfig.build.json"
+    },
+    {
+      "path": "apps/ases-tar/tsconfig.build.json"
+    }
+  ]
+}

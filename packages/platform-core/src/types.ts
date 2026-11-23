@@ -35,6 +35,7 @@ export interface PlatformAdapter {
   createLocalIpcEndpoint(projectId: string): LocalIpcEndpoint;
   getSecretStore(): SecretStore;
   getTerminalCapabilities(stream: TerminalStream): TerminalCapabilities;
+  ensurePrivateDir(dir: string): void;
   spawnManagedProcess(command: string, args: readonly string[], options: { cwd: string }): never;
   getProcessTree(pid: number): never;
   terminateProcessTree(pid: number): never;

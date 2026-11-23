@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const OS_SPECIFIC = ['@aer/platform-macos', '@aer/platform-windows', '@aer/platform-linux'];
 const PORTABLE = ['contracts', 'core', 'scheduler', 'provider-sdk', 'persistence', 'event-log', 'tui-shared'];
-const UI_ALLOWED = ['tui-shared', 'branding'];
+const UI_ALLOWED = ['tui-shared', 'branding', 'ases-cli', 'ases-tar'];
 const UI_LIBS = ['ink', 'react'];
 
 const IMPORT_RE = /(?:import|export)\s[^'"]*?from\s*['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)|import\s+['"]([^'"]+)['"]|require\(\s*['"]([^'"]+)['"]\s*\)/g;
@@ -26,9 +26,10 @@ const pkgOf = (spec) => spec.split('/').slice(0, spec.startsWith('@') ? 2 : 1).j
 
 export function checkBoundaries(root) {
   const violations = [];
-  const pkgsDir = path.join(root, 'packages');
-  for (const pkg of readdirSync(pkgsDir)) {
-    const src = path.join(pkgsDir, pkg, 'src');
+  const units = ['packages', 'apps'].flatMap((d) => {
+    try { return readdirSync(path.join(root, d)).map((pkg) => [pkg, path.join(root, d, pkg, 'src')]); } catch { return []; }
+  });
+  for (const [pkg, src] of units) {
     try { statSync(src); } catch { continue; }
     for (const file of walk(src)) {
       const rel = path.relative(root, file);

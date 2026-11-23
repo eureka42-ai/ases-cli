@@ -1,12 +1,13 @@
 # STATUS AER
 
-Último evento: seq 53 (PhaseUpdated, 2026-11-23T00:19:35.204Z)
+Último evento: seq 72 (PhaseUpdated, 2026-11-23T00:33:45.813Z)
 
 ## Fases
 | Fase | Título | Estado | Evidência |
 |---|---|---|---|
 | PHASE-01 | Repositório e bootstrap seguro | COMPLETED | .ases/evidence/PHASE-01-verify.md |
 | PHASE-02 | SQLite + eventos + estados | COMPLETED | .ases/evidence/PHASE-02-verify.md |
+| PHASE-03 | Dois executáveis e IPC | VERIFYING | .ases/evidence/PHASE-03-verify.md |
 
 ## Tarefas
 | Tarefa | Fase | Título | Estado | Evidência |
@@ -21,5 +22,10 @@
 | TAR-0008 | PHASE-02 | Máquina de estados de tarefa e fase | COMPLETED | .ases/evidence/PHASE-02-verify.md<br>packages/contracts/test/state-machine.test.ts<br>packages/persistence/test/store.test.ts |
 | TAR-0009 | PHASE-02 | Exportação JSONL e recuperação | COMPLETED | .ases/evidence/PHASE-02-verify.md<br>packages/persistence/test/export.test.ts<br>docs/DATA.md |
 | TAR-0010 | PHASE-02 | Suíte transacional multiprocesso | COMPLETED | .ases/evidence/PHASE-02-verify.md<br>packages/persistence/test/multiprocess.test.ts |
+| TAR-0011 | PHASE-03 | CLI shell ases/ases-tar + build + marca mínima | REVIEW | .ases/evidence/PHASE-03-verify.md<br>test/e2e/bins.test.mjs<br>packages/branding/test/branding.test.ts |
+| TAR-0012 | PHASE-03 | Servidor IPC local (UDS / Named Pipe) | REVIEW | .ases/evidence/PHASE-03-verify.md<br>packages/ipc/test/ipc.test.ts<br>docs/ADRs/ADR-0003.md |
+| TAR-0013 | PHASE-03 | Cliente IPC e assinatura de eventos | REVIEW | .ases/evidence/PHASE-03-verify.md<br>packages/ipc/test/ipc.test.ts<br>docs/API.md |
+| TAR-0014 | PHASE-03 | Monitor somente leitura | REVIEW | .ases/evidence/PHASE-03-verify.md<br>packages/ipc/test/ipc.test.ts |
+| TAR-0015 | PHASE-03 | E2E com dois processos reais | REVIEW | .ases/evidence/PHASE-03-verify.md<br>test/e2e/two-processes.test.mjs |
 
 Estados sem evidência listada não foram verificados. NOT_RUN ≠ PASS.

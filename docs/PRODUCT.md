@@ -20,8 +20,10 @@ Engenheiro individual, líder técnico, colaborador externo e auditor (§1.5).
 ## Fora de escopo (§1.4)
 Web/PWA/Electron, pool de cotas entre assinaturas, reutilização de credenciais, execução irreversível sem aprovação, cluster/SaaS.
 
-## Situação atual (22/11/2026)
-Na PHASE-01 existem apenas a fundação, os contratos e o esqueleto do `PlatformAdapter`. **Os comandos `ases` e `ases-tar` ainda não existem.** Matriz de SO: macOS arm64 testado localmente (unit/integração); Windows e Linux **NOT_RUN**.
+## Situação atual (22/11/2026, PHASE-03)
+- Existem `ases` (engine embutido + sessão em modo linha + `init`/`doctor`) e `ases-tar` (monitor somente leitura em texto/JSONL), comunicando por IPC local.
+- Sem TUI Ink ainda (PHASE-04) e sem providers de IA (PHASE-07): texto livre no `ases` responde que o chat não está implementado e nada é enviado.
+- Matriz de SO: macOS arm64 testado localmente (unit, integração, E2E com processos reais); Windows e Linux **NOT_RUN**.
 
 ## Pendências
 - Licença (bloqueia publicação, AER-REQ-210).

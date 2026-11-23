@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0012",
+  "phaseId": "PHASE-03",
+  "title": "Servidor IPC local (UDS / Named Pipe)",
+  "state": "REVIEW",
+  "reqs": [
+    "AER-REQ-014",
+    "AER-REQ-071",
+    "AER-REQ-072",
+    "AER-REQ-078",
+    "AER-REQ-080",
+    "AER-REQ-228"
+  ],
+  "tests": [
+    "packages/ipc/test/*.test.ts"
+  ],
+  "evidence": [
+    ".ases/evidence/PHASE-03-verify.md",
+    "packages/ipc/test/ipc.test.ts",
+    "docs/ADRs/ADR-0003.md"
+  ],
+  "notes": []
+}

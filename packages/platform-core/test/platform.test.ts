@@ -1,9 +1,9 @@
-import { mkdtempSync, mkdirSync, rmSync, symlinkSync } from 'node:fs';
+import { chmodSync, mkdtempSync, mkdirSync, readFileSync, rmSync, statSync, symlinkSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import {
-  NotImplementedError, PlatformError, createBaseAdapter, createLocalIpcEndpoint, detectPlatform,
+  NotImplementedError, PlatformError, createBaseAdapter, createLocalIpcEndpoint, detectPlatform, ensurePrivateDir, writePrivateFile,
   getRuntimeDir, getTerminalCapabilities, normalizeProjectPath, type PlatformDeps,
 } from '../src/index.ts';
 
@@ -95,5 +95,31 @@ describe('base adapter', () => {
 
   it('reports unimplemented capabilities honestly', () => {
     expect(() => adapter.terminateProcessTree(1)).toThrow(NotImplementedError);
+  });
+});
+
+describe('private dirs and files (AER-REQ-014, AER-REQ-202)', () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'aer-priv-'));
+  afterAll(() => rmSync(root, { recursive: true, force: true }));
+  const posix = process.platform !== 'win32';
+
+  it.runIf(posix)('creates 0700 dirs, tightens loose ones and rejects symlinks', () => {
+    const dir = path.join(root, 'a', 'b');
+    ensurePrivateDir('darwin', dir);
+    expect(statSync(dir).mode & 0o777).toBe(0o700);
+    chmodSync(dir, 0o755);
+    ensurePrivateDir('darwin', dir);
+    expect(statSync(dir).mode & 0o777).toBe(0o700);
+    const link = path.join(root, 'link');
+    symlinkSync(dir, link);
+    expect(() => ensurePrivateDir('darwin', link)).toThrow(/not a real directory/);
+  });
+
+  it.runIf(posix)('writes private files as 0600 atomically', () => {
+    const f = path.join(root, 'session.json');
+    writePrivateFile(f, '{"a":1}');
+    writePrivateFile(f, '{"a":2}');
+    expect(statSync(f).mode & 0o777).toBe(0o600);
+    expect(readFileSync(f, 'utf8')).toBe('{"a":2}');
   });
 });

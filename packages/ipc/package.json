@@ -1,0 +1,10 @@
+{
+  "name": "@aer/ipc",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": { "@aer/contracts": "0.0.0", "@aer/platform-core": "0.0.0" },
+  "exports": {
+    ".": { "source": "./src/index.ts", "types": "./src/index.ts", "default": "./dist/index.js" }
+  }
+}

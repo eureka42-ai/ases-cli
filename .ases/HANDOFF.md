@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado por scripts/ases-dev.mjs refresh; não editar) -->
-- Último evento válido: seq 53 em 2026-11-23T00:19:35.204Z
-- Git: branch `main`, HEAD `9e4fa8b`
+- Último evento válido: seq 72 em 2026-11-23T00:33:45.813Z
+- Git: branch `ases/PHASE-03`, HEAD `b41ef16`
 - Concluídas: TAR-0001, TAR-0002, TAR-0003, TAR-0004, TAR-0005, TAR-0006, TAR-0007, TAR-0008, TAR-0009, TAR-0010
-- Abertas: nenhuma
+- Abertas: TAR-0011 (REVIEW), TAR-0012 (REVIEW), TAR-0013 (REVIEW), TAR-0014 (REVIEW), TAR-0015 (REVIEW)
 - Comando para retomar: `node scripts/ases-dev.mjs refresh` e ler `.ases/NEXT-STEPS.md` (o `ases resume` ainda não existe)
 <!-- AUTO:END -->
 
@@ -30,3 +30,18 @@
 - **Defeito real achado e corrigido:** lacuna de `seq` com `ON CONFLICT DO NOTHING` + AUTOINCREMENT.
 - **NÃO executados:** Windows/Linux reais; CI.
 - **Riscos:** `node:sqlite` experimental (aviso suprimido; ADR-0002); o banco ainda não está conectado ao `.ases/` real deste projeto (corte na PHASE-03).
+
+### Sessão 22/11/2026 — PHASE-03 (branch `ases/PHASE-03`)
+- **Feito:**
+  - `packages/ipc` (JSON-RPC NDJSON, handshake, papéis control/monitor, subscribe sem corrida, backpressure, timeouts).
+  - `packages/project-store` (`init` não destrutivo, sessão `0600`, loader do adapter).
+  - `packages/branding` (marca mínima).
+  - `apps/ases-cli` (engine embutido como escritor único + modo linha + `init`/`doctor`) e `apps/ases-tar` (texto/JSONL, filtros, reconexão).
+  - Build `tsc -b`; ADR-0003; `docs/API.md`.
+- **Testes realmente executados (macOS arm64, Node 22.19.0):**
+  - `npm run verify` → 101/101 PASS (3 execuções seguidas).
+  - E2E com processos reais: evento do `ases` visto no `ases-tar`, segundo `ases` recusado, crash por SIGKILL + reinício sem lacuna/duplicata, filtro `--task`, saída JSONL/texto sem ANSI.
+  - Pty via `script`: cor, `NO_COLOR` e fallback ASCII conferidos.
+- **Defeitos reais corrigidos:** `ases` não saía após `/exit` com stdin em pipe; pty com 0 colunas.
+- **NÃO executados:** Windows/Linux reais; terminal interativo humano; CI.
+- **Riscos:** Named Pipe sem ACL verificada (Windows); `.ases/` deste repo continua interino (engine recusa abri-lo); espelho JSONL reescrito inteiro a cada mutação.

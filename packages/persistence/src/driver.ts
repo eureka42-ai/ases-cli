@@ -23,3 +23,12 @@ function loadDriver(): typeof DatabaseSyncType {
 
 export type Database = DatabaseSyncType;
 export const openSqlite = (file: string): Database => new (loadDriver())(file);
+
+export function sqliteVersion(): string {
+  const db = openSqlite(':memory:');
+  try {
+    return String((db.prepare('SELECT sqlite_version() AS v').get() as { v: unknown }).v);
+  } finally {
+    db.close();
+  }
+}

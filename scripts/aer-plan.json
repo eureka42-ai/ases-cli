@@ -24,7 +24,8 @@
     },
     {
       "id": "PHASE-03",
-      "title": "Dois executáveis e IPC"
+      "title": "Dois executáveis e IPC",
+      "gate": "ases e ases-tar em processos distintos; evento emitido no ases aparece no ases-tar; ases-tar não consegue mutar; reconexão sem lacuna/duplicata"
     },
     {
       "id": "PHASE-04",
@@ -339,6 +340,137 @@
       ],
       "tests": [
         "packages/persistence/test/multiprocess.test.ts"
+      ]
+    },
+    {
+      "id": "TAR-0011",
+      "phase": "PHASE-03",
+      "title": "CLI shell ases/ases-tar + build + marca mínima",
+      "priority": 95,
+      "risk": "MODERATE",
+      "dependencies": [],
+      "reqs": [
+        "AER-REQ-004",
+        "AER-REQ-011",
+        "AER-REQ-240",
+        "AER-REQ-241",
+        "AER-REQ-245",
+        "AER-REQ-247"
+      ],
+      "scope": "apps/ases-cli e apps/ases-tar (util.parseArgs), build tsc -b, ases init não destrutivo, --version/--help, cabeçalho ⌘ Eureka42 com NO_COLOR/ASCII",
+      "acceptance": [
+        "bins executam a partir do build JS",
+        "init duas vezes preserva arquivos",
+        "--json/pipe sem ANSI nem banner"
+      ],
+      "tests": [
+        "test/e2e/bins.test.mjs",
+        "packages/branding/test/*.test.ts"
+      ]
+    },
+    {
+      "id": "TAR-0012",
+      "phase": "PHASE-03",
+      "title": "Servidor IPC local (UDS / Named Pipe)",
+      "priority": 80,
+      "risk": "MODERATE",
+      "dependencies": [
+        "TAR-0011"
+      ],
+      "reqs": [
+        "AER-REQ-014",
+        "AER-REQ-071",
+        "AER-REQ-072",
+        "AER-REQ-078",
+        "AER-REQ-080",
+        "AER-REQ-228"
+      ],
+      "scope": "packages/ipc: JSON-RPC 2.0 em frames NDJSON com limite, handshake versão/projeto/token, runtime dir privado, detecção de engine já ativo",
+      "acceptance": [
+        "listener só em UDS/pipe, sem TCP",
+        "versão incompatível recebe VERSION_MISMATCH",
+        "frame acima do limite é negado",
+        "handshake com timeout"
+      ],
+      "tests": [
+        "packages/ipc/test/*.test.ts"
+      ]
+    },
+    {
+      "id": "TAR-0013",
+      "phase": "PHASE-03",
+      "title": "Cliente IPC e assinatura de eventos",
+      "priority": 80,
+      "risk": "MODERATE",
+      "dependencies": [
+        "TAR-0012"
+      ],
+      "reqs": [
+        "AER-REQ-070",
+        "AER-REQ-074",
+        "AER-REQ-075",
+        "AER-REQ-076",
+        "AER-REQ-077"
+      ],
+      "scope": "cliente com timeout por chamada, snapshot+subscribe fromSeq, backlog sem corrida, leitor lento não trava o engine",
+      "acceptance": [
+        "evento aparece 1 vez",
+        "reconexão recupera lacuna sem duplicar",
+        "consumidor lento recebe resyncRequired"
+      ],
+      "tests": [
+        "packages/ipc/test/*.test.ts"
+      ]
+    },
+    {
+      "id": "TAR-0014",
+      "phase": "PHASE-03",
+      "title": "Monitor somente leitura",
+      "priority": 90,
+      "risk": "HIGH",
+      "dependencies": [
+        "TAR-0012"
+      ],
+      "reqs": [
+        "AER-REQ-073",
+        "AER-REQ-079",
+        "AER-REQ-170"
+      ],
+      "scope": "token de monitor separado do de controle; métodos mutantes negados no servidor, inclusive montados à mão",
+      "acceptance": [
+        "RPC mutante com token de monitor → FORBIDDEN",
+        "sem token → UNAUTHENTICATED"
+      ],
+      "tests": [
+        "packages/ipc/test/*.test.ts"
+      ]
+    },
+    {
+      "id": "TAR-0015",
+      "phase": "PHASE-03",
+      "title": "E2E com dois processos reais",
+      "priority": 85,
+      "risk": "HIGH",
+      "dependencies": [
+        "TAR-0013",
+        "TAR-0014"
+      ],
+      "reqs": [
+        "AER-REQ-090",
+        "AER-REQ-091",
+        "AER-REQ-093",
+        "AER-REQ-094",
+        "AER-REQ-099",
+        "AER-REQ-191"
+      ],
+      "scope": "spawn de ases e ases-tar reais; evento criado no ases visto no ases-tar; derrubar e reabrir o ases; filtros --task/--phase",
+      "acceptance": [
+        "PIDs distintos",
+        "evento visto em ordem de seq",
+        "RECONNECTING e retomada sem duplicata"
+      ],
+      "tests": [
+        "test/e2e/two-processes.test.mjs"
       ]
     }
   ]
