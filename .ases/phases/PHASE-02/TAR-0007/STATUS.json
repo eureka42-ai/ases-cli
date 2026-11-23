@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0007",
+  "phaseId": "PHASE-02",
+  "title": "Event store transacional",
+  "state": "REVIEW",
+  "reqs": [
+    "AER-REQ-061",
+    "AER-REQ-062",
+    "AER-REQ-063",
+    "AER-REQ-064",
+    "AER-REQ-065",
+    "AER-REQ-069",
+    "AER-REQ-074"
+  ],
+  "tests": [
+    "packages/persistence/test/events.test.ts"
+  ],
+  "evidence": [
+    ".ases/evidence/PHASE-02-verify.md",
+    "packages/persistence/test/store.test.ts"
+  ],
+  "notes": [
+    {
+      "at": "2026-11-23T00:17:05.073Z",
+      "text": "corrigida lacuna de seq por ON CONFLICT DO NOTHING + AUTOINCREMENT"
+    }
+  ]
+}

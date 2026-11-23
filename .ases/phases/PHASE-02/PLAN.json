@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "phaseId": "PHASE-02",
+  "tasks": [
+    {
+      "id": "TAR-0006",
+      "dependencies": []
+    },
+    {
+      "id": "TAR-0007",
+      "dependencies": [
+        "TAR-0006"
+      ]
+    },
+    {
+      "id": "TAR-0008",
+      "dependencies": [
+        "TAR-0006"
+      ]
+    },
+    {
+      "id": "TAR-0009",
+      "dependencies": [
+        "TAR-0007"
+      ]
+    },
+    {
+      "id": "TAR-0010",
+      "dependencies": [
+        "TAR-0007",
+        "TAR-0008"
+      ]
+    }
+  ]
+}

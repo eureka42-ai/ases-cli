@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createLinuxAdapter } from '../src/index.js';
+import { createLinuxAdapter } from '../src/index.ts';
 
 describe('createLinuxAdapter', () => {
   it('reports platform linux and the expected IPC transport', () => {

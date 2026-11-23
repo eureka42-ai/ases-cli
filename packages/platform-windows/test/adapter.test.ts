@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createWindowsAdapter } from '../src/index.js';
+import { createWindowsAdapter } from '../src/index.ts';
 
 describe('createWindowsAdapter', () => {
   it('reports platform win32 and the expected IPC transport', () => {

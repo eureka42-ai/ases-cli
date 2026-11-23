@@ -1,3 +1,3 @@
-export * from './types.js';
-export * from './errors.js';
-export * from './platform.js';
+export * from './types.ts';
+export * from './errors.ts';
+export * from './platform.ts';

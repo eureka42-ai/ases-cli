@@ -5,7 +5,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import {
   NotImplementedError, PlatformError, createBaseAdapter, createLocalIpcEndpoint, detectPlatform,
   getRuntimeDir, getTerminalCapabilities, normalizeProjectPath, type PlatformDeps,
-} from '../src/index.js';
+} from '../src/index.ts';
 
 const mac: PlatformDeps = { env: {}, tmpdir: '/var/folders/ab/xyz/T', homedir: '/Users/u', username: 'u' };
 const linux: PlatformDeps = { env: {}, tmpdir: '/tmp', homedir: '/home/u', username: 'u' };

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   ManifestSchema, formatAttemptId, formatPhaseId, formatTaskId, parsePhaseId, parseTaskId,
-} from '../src/index.js';
+} from '../src/index.ts';
 
 describe('ids (AER-REQ-021, AER-REQ-031)', () => {
   it('formats with padding and widens past the default width', () => {

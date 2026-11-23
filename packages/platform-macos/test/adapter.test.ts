@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createMacosAdapter } from '../src/index.js';
+import { createMacosAdapter } from '../src/index.ts';
 
 describe('createMacosAdapter', () => {
   it('reports platform darwin and the expected IPC transport', () => {

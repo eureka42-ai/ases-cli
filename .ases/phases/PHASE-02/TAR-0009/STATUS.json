@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0009",
+  "phaseId": "PHASE-02",
+  "title": "Exportação JSONL e recuperação",
+  "state": "REVIEW",
+  "reqs": [
+    "AER-REQ-036",
+    "AER-REQ-067",
+    "AER-REQ-068",
+    "AER-REQ-192"
+  ],
+  "tests": [
+    "packages/persistence/test/export.test.ts"
+  ],
+  "evidence": [
+    ".ases/evidence/PHASE-02-verify.md",
+    "packages/persistence/test/export.test.ts",
+    "docs/DATA.md"
+  ],
+  "notes": []
+}

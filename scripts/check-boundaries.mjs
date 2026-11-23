@@ -42,6 +42,7 @@ export function checkBoundaries(root) {
         if (PORTABLE.includes(pkg) && OS_SPECIFIC.includes(target)) add('portable-imports-os-specific', spec);
         if (pkg.startsWith('platform-') && pkg !== 'platform-core' && OS_SPECIFIC.includes(target) && target !== `@aer/${pkg}`) add('platform-cross-import', spec);
         if (!UI_ALLOWED.includes(pkg) && UI_LIBS.includes(target)) add('ui-lib-outside-tui', spec);
+        if (spec === 'node:sqlite' && pkg !== 'persistence') add('sqlite-outside-persistence', spec); // ADR-0002
       }
       if (SHELL_TRUE_RE.test(text)) add('no-shell-true', 'shell: true');
       if (EXEC_IMPORT_RE.test(text)) add('no-child-process-exec', 'exec/execSync import');

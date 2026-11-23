@@ -2,10 +2,10 @@ import { createHash } from 'node:crypto';
 import { realpathSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { NotImplementedError, PlatformError } from './errors.js';
+import { NotImplementedError, PlatformError } from './errors.ts';
 import type {
   LocalIpcEndpoint, PlatformAdapter, PlatformDeps, PlatformId, SecretStore, TerminalCapabilities, TerminalStream,
-} from './types.js';
+} from './types.ts';
 
 // sun_path: 104 bytes no macOS, 108 no Linux (incluindo NUL). Usamos o menor para os dois.
 const MAX_UDS_PATH_BYTES = 103;

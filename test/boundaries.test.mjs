@@ -12,6 +12,7 @@ describe('architecture boundaries (AER-REQ-006, AER-REQ-226, AER-REQ-109)', () =
       'contracts:contracts-imports-nothing-internal',
       'core:no-shell-true',
       'core:portable-imports-os-specific',
+      'core:sqlite-outside-persistence',
       'platform-linux:platform-cross-import',
       'provider-claude:no-child-process-exec',
       'provider-claude:ui-lib-outside-tui',

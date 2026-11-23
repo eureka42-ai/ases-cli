@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado por scripts/ases-dev.mjs refresh; não editar) -->
-- Último evento válido: seq 19 em 2026-11-23T00:10:38.446Z
-- Git: branch `main`, HEAD `277c38a`
+- Último evento válido: seq 37 em 2026-11-23T00:17:05.420Z
+- Git: branch `ases/PHASE-02`, HEAD `01fe653`
 - Concluídas: TAR-0001, TAR-0002, TAR-0003, TAR-0004, TAR-0005
-- Abertas: nenhuma
+- Abertas: TAR-0006 (REVIEW), TAR-0007 (REVIEW), TAR-0008 (REVIEW), TAR-0009 (REVIEW), TAR-0010 (REVIEW)
 - Comando para retomar: `node scripts/ases-dev.mjs refresh` e ler `.ases/NEXT-STEPS.md` (o `ases resume` ainda não existe)
 <!-- AUTO:END -->
 
@@ -19,3 +19,14 @@
 - **Decisões aprovadas:** npm workspaces em vez de pnpm; `npm install` local.
 - **Riscos:** `.npmrc` com `legacy-peer-deps` (bug do npm 10.9), então peers precisam ser declarados à mão; nome de arquivo com `:` quebra o checkout no Windows; histórico JSONL interino (não é SQLite).
 - **Próxima operação segura:** revisão humana, depois primeiro commit, ver `NEXT-STEPS.md`.
+
+### Sessão 22/11/2026 — PHASE-02 (branch `ases/PHASE-02`)
+- **Feito:**
+  - ADR-0002 (`node:sqlite`).
+  - `@aer/persistence`: migração v1, backup `VACUUM INTO`, `ProjectStore` com CAS + evento na mesma transação, IDs globais, eventos append-only (triggers), idempotência por `eventId`, snapshot com cursor, paginação, export/verify JSONL.
+  - Contratos: hash canônico, envelope de evento, payloads críticos, máquina de estados §5.1/§5.2.
+  - Código passou a usar imports `.ts` (type stripping nativo do Node ≥ 22.18; `engines` atualizado).
+- **Testes realmente executados (macOS arm64, Node 22.19.0, SQLite 3.50.4):** `npm run verify` → 64/64 PASS. Suíte multiprocesso (8 escritores, corrida de 10, crash antes do COMMIT) → PASS 3x seguidas.
+- **Defeito real achado e corrigido:** lacuna de `seq` com `ON CONFLICT DO NOTHING` + AUTOINCREMENT.
+- **NÃO executados:** Windows/Linux reais; CI.
+- **Riscos:** `node:sqlite` experimental (aviso suprimido; ADR-0002); o banco ainda não está conectado ao `.ases/` real deste projeto (corte na PHASE-03).

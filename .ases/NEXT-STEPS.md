@@ -1,14 +1,17 @@
-# Próximos passos (atualizado 22/11/2026, fim da sessão PHASE-01)
+# Próximos passos (atualizado 22/11/2026, fim da PHASE-02 técnica)
 
-1. **Revisão humana da PHASE-01** (tarefas em REVIEW). Aprovado, fazer o primeiro commit em `main` e então:
-   `node scripts/ases-dev.mjs set TAR-000N COMPLETED --evidence .ases/evidence/PHASE-01-verify.md` (N=1..5) e `set PHASE-01 COMPLETED`.
-2. **Decisões pendentes do responsável:**
-   - Renomear `branding/references/Estudo de Marca Eureka42: Quatro Variações.png` (o `:` é inválido no Windows), atualizando os manifestos de hash.
-   - Licença (bloqueia publicação; não bloqueia desenvolvimento).
-   - Remoto Git para rodar o CI (`.github/workflows/ci.yml`, hoje NOT_RUN).
-3. **PHASE-02** (só depois do commit, que é pré-requisito de worktree): criar as tarefas TAR-0006..0010 em `scripts/aer-plan.json` e rodar `node scripts/ases-dev.mjs init` (só cria o que falta).
-   - Primeiro o ADR-0002, sobre o driver SQLite: `node:sqlite` (Node 22.19, experimental) vs pacote nativo com prebuilds. Critério: rodar nos três SO sem flag `--experimental`.
-   - Depois `packages/persistence` + `packages/event-log`: migração 1 (phases antes de tasks), transação estado+evento, `seq` monotônica, importação de `.ases/HISTORY.jsonl` como seed.
-4. **PHASE-03**: `apps/ases-cli` e `apps/ases-tar` (bins), IPC UDS usando `createLocalIpcEndpoint`, evento visto no segundo terminal.
+1. **Revisão humana da PHASE-02** (branch `ases/PHASE-02`, worktree `.worktrees/PHASE-02`, tarefas em REVIEW). Aprovado:
+   `git -C "<repo>" merge --ff-only ases/PHASE-02`; depois `set TAR-0006..0010 APPROVED → MERGING → COMPLETED` via `scripts/ases-dev.mjs` e `set PHASE-02 COMPLETED`; por fim remover o worktree (`git worktree remove .worktrees/PHASE-02`).
+2. **Decisões pendentes do responsável** (continuam abertas):
+   - Renomear `branding/references/Estudo de Marca Eureka42: Quatro Variações.png`, inválido no Windows.
+   - Licença.
+   - Remoto Git para rodar o CI.
+3. **PHASE-03** (TAR-0011..0015), em novo worktree `ases/PHASE-03`:
+   - `apps/ases-cli` e `apps/ases-tar` (bins `ases`/`ases-tar`, `--version`/`--help` sem ANSI em pipe/NO_COLOR).
+   - Build JS (`tsc` com `rewriteRelativeImportExtensions`) para os bins.
+   - `ases init` usando `ProjectStore` em `.ases/db/ases.sqlite` com permissões `0700/0600` via `PlatformAdapter`.
+   - Importar `.ases/HISTORY.jsonl` interino como seed (regras em `docs/DATA.md`) e aposentar `scripts/ases-dev.mjs` como escritor.
+   - IPC UDS JSON-RPC (`rpc.handshake`, `project.snapshot`, `project.subscribe`), com endpoint read-only para o `ases-tar`.
+   - E2E com dois processos reais: evento emitido no `ases` e visto no `ases-tar`.
 
-Verificação rápida a qualquer momento: `npm run verify && node scripts/ases-dev.mjs verify`.
+Verificação rápida: `npm run verify && node scripts/ases-dev.mjs verify`.
