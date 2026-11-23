@@ -2,7 +2,7 @@
 
 <!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
 - Último evento válido: seq 316 em 2026-11-23T17:19:10.878Z
-- Git: branch `ases/PHASE-08`, HEAD `ac72abf`
+- Git: branch `ases/PHASE-08`, HEAD `e812267`
 - Concluídas: 36 de 42
 - Abertas: TAR-0037 (REVIEW), TAR-0038 (REVIEW), TAR-0039 (REVIEW), TAR-0040 (REVIEW), TAR-0041 (REVIEW), TAR-0042 (REVIEW)
 - Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
@@ -120,5 +120,10 @@
   - **OpenCode:** chave de API expirada → `AUTH_EXPIRED`. A classificação foi corrigida.
   - **Gemini:** a instalação global foi bloqueada pelo controle de permissões desta sessão; o responsável instala.
   - `npm run verify` 229/229.
-- **Próxima operação segura:** CI da branch; aprovação do responsável; merge. Repetir o smoke do OpenCode e do Google quando houver chave nova e Gemini instalado.
+- **Depois:**
+  - O responsável renovou a chave do OpenCode, que foi atualizado para a 2.4.1. Essa versão removeu `acp --cwd` → adapter ajustado → **VERIFIED 2.4.1**.
+  - O Gemini CLI não loga mais em planos individuais (migração para o Antigravity), e o provider `google` passou a usar `agy acp --sandbox` → **VERIFIED 1.5.13**.
+  - OpenCode e Antigravity juntos pelo motor: os dois em REVIEW, com commit.
+  - `npm run verify` 234/234.
+- **Próxima operação segura:** CI da branch; aprovação do responsável; merge em `main`.
 

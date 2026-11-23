@@ -9,15 +9,13 @@
 2. **PHASE-07: COMPLETED** (23/11/2026). Aprovada pelo responsável e integrada em `main` (`ca47806`).
    - CI Linux/Windows 6/6 (run 45220306651). macOS não rodou no CI (os jobs ficaram na fila sem máquina); verificado só localmente, darwin-arm64, 215/215.
    - Claude 2.1.330 e Codex 0.170.0 VERIFIED com smoke real (`.ases/evidence/TAR-0035-smoke-real.md`). Termos para **distribuição** ainda não confirmados com os vendors.
-3. **PHASE-08: em andamento** (branch `ases/PHASE-08`). TAR-0037 a 0042 estão em REVIEW, aguardando aprovação.
-   - **Smoke real** (`.ases/evidence/TAR-0041-smoke-real.md`):
-     - Kimi **VERIFIED** em 1.50.0, inclusive pelo motor;
-     - OpenCode com `AUTH_EXPIRED` (a chave de API expirou);
-     - Google não instalado.
-   - **Pendências do responsável para completar a matriz:**
-     - criar uma chave nova no OpenCode Console;
-     - instalar o Gemini CLI (`npm i -g @google/gemini-cli`) e fazer login.
-     - Depois disso, repetir o smoke dos dois.
+3. **PHASE-08: em andamento** (branch `ases/PHASE-08`). TAR-0037 a 0042 estão em REVIEW, aguardando aprovação do responsável.
+   - **Smoke real** (`.ases/evidence/TAR-0041-smoke-real.md`), pelo adapter e pelo motor, com os contratos VERIFIED:
+     - Kimi 1.50.0;
+     - OpenCode 2.4.1;
+     - Google via Antigravity CLI (`agy`) 1.5.13.
+   - **Matriz dos cinco ecossistemas completa** (`docs/PROVIDERS.md`). Os termos de uso para distribuição seguem UNKNOWN.
+   - **Próximo:** aprovação; merge em `main`; PHASE-08 COMPLETED; depois PHASE-09 (ASES-300/500 e rastreabilidade).
 4. **Pendências do responsável:**
    - Licença (bloqueia publicação).
    - Excluir/apagar a pasta antiga do Desktop quando quiser (tudo está no GitHub; o único arquivo não versionado lá era `.Rhistory`, que não é do projeto).

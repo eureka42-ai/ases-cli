@@ -18,6 +18,10 @@
     {
       "path": ".ases/evidence/PHASE-08-verify.md",
       "sha256": "ea9253d4a516e0b6d5b9f2d4e544fb0ddf8f5d5770cf0a97e9cb15b60866af84"
+    },
+    {
+      "path": ".ases/evidence/TAR-0041-smoke-real.md",
+      "sha256": "bf8f715182838c4c10ab50b4e41a59b063ee3c0e66f7d00c9e9752e66ffd3803"
     }
   ],
   "lastTest": null

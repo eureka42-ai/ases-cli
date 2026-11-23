@@ -44,7 +44,13 @@ A config pode ter `permission` com `allow`, `ask` ou `deny` por ferramenta (docu
 - **UNVERIFIED:** a variável `OPENCODE_CONFIG_CONTENT` não apareceu na página de permissões. Precisa ser confirmada no smoke real.
 - **Se o OpenCode não pedir permissão,** o diff da worktree continua sendo a fonte autoritativa, e o achado deve ser registrado.
 
-## Google (Gemini CLI)
+## Google: Antigravity CLI (atualização de 23/11/2026)
+- **Gemini CLI:** o Google anunciou em 19/05/2026 a transição para o Antigravity CLI. Planos individuais (gratuito, AI Pro e Ultra) perderam o acesso por login de conta ao Gemini CLI em 18/06/2026; continuam só chaves de API pagas. O responsável confirmou que o `gemini` 0.70.0 não loga.
+- **Antigravity CLI** (`agy` 1.5.13, já instalado em `~/.local/bin/agy`): `agy acp` é o servidor ACP v1 oficial, que se identifica como "Antigravity ACP Server". O AER usa `--sandbox`, que liga as restrições de terminal do agente.
+- **Flag proibida no AER:** `--dangerously-skip-permissions`.
+- **Termos:** o fórum oficial tem uma pergunta aberta sobre se ligar o `agy` a editores via ACP está em conformidade. O `agy acp` é documentado pelo próprio Google para editores ACP (Zed, JetBrains). Status para orquestração por terceiros: **UNKNOWN**; uso local autorizado pelo responsável.
+
+## Google (Gemini CLI), histórico
 - **Interface documentada:** o modo ACP é `gemini --acp`; `--experimental-acp` é o nome antigo.
 - **Não instalado neste Mac.** Instalar é dependência nova, que exige a revisão do responsável (CLAUDE.md).
 - **Estado do adapter:** `NOT_INSTALLED` quando falta o binário. Se instalado, fica `UNSUPPORTED_VERSION` com "nenhuma versão testada", até haver smoke real. Não inventamos compatibilidade (§PHASE-08 Gate).
@@ -57,6 +63,12 @@ Os termos de Moonshot (Kimi), OpenCode (Zen/Go) e Google para orquestração por
 - consentimento explícito por run (`/run --consent kimi,opencode`);
 - paralelismo 1 por provider;
 - o AER nunca faz login nem lê arquivos de credencial.
+
+## Fontes (Antigravity)
+- [Transitioning Gemini CLI to Antigravity CLI (Google Developers Blog)](https://developers.googleblog.com/en/an-important-update-transitioning-gemini-cli-to-antigravity-cli/)
+- [Antigravity CLI: ACP](https://antigravity.google/docs/cli/acp/)
+- [Antigravity CLI: headless](https://antigravity.google/docs/cli/headless)
+- [Fórum: pergunta sobre ToS de pontes ACP para o agy](https://discuss.ai.google.dev/t/clarification-request-is-local-ipc-pty-wrapping-of-agy-cli-for-open-standard-editor-bridges-e-g-acp-tos-compliant/175905)
 
 ## Fontes
 - [ACP: tool calls (v1)](https://agentclientprotocol.com/protocol/v1/tool-calls.md)

@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
 import { createBaseAdapter, detectPlatform } from '@aer/platform-core';
 import type { AgentStreamEvent } from '@aer/provider-sdk';
-import { AcpProvider, AcpSession, GEMINI_SPEC, KIMI_SPEC, OPENCODE_SPEC, decidePermission, insideWorktree, type AcpSpec } from '../src/index.ts';
+import { AcpProvider, AcpSession, ANTIGRAVITY_SPEC, KIMI_SPEC, OPENCODE_SPEC, decidePermission, insideWorktree, type AcpSpec } from '../src/index.ts';
 
 // FALSO servidor ACP (fixtures/fake-acp.mjs). Nenhum Kimi/OpenCode/Gemini real é chamado.
 const fake = fileURLToPath(new URL('./fixtures/fake-acp.mjs', import.meta.url));
@@ -108,11 +108,11 @@ describe('AcpProvider with a fake ACP server', () => {
     expect(ev.at(-1)).toMatchObject({ type: 'exit', reconciled: true });
   });
 
-  it('opencode: acp --cwd <worktree> and permission forced to ask via OPENCODE_CONFIG_CONTENT', async () => {
+  it('opencode 2.4.x: plain `acp` and permission forced to ask via OPENCODE_CONFIG_CONTENT', async () => {
     rmSync(log, { force: true });
-    const { wt } = await run(provider(OPENCODE_SPEC, { FAKE_VERSION: '1.19.6' }));
+    await run(provider(OPENCODE_SPEC, { FAKE_VERSION: '2.4.1' }));
     const first = calls()[0];
-    expect(first.args).toEqual(['acp', '--cwd', wt]);
+    expect(first.args).toEqual(['acp']); // 2.4.1 removeu --cwd; o diretório vem do processo e do session/new
     expect(first.envKeys).toContain('OPENCODE_CONFIG_CONTENT');
   });
 });
@@ -141,7 +141,24 @@ describe('AcpSession against REAL captured output (TAR-0041)', () => {
     expect(sent.filter((m) => m.result?.outcome).map((m) => m.result!.outcome!.optionId)).toEqual(['reject']);
     expect(JSON.stringify(ev)).not.toContain('ls -la');
   });
-  it('gemini 0.70.0 without login: real -32000 at session/new → NOT_AUTHENTICATED', () => {
+  for (const [label, base] of [['opencode 2.4.1', 'opencode-2.4.1'], ['antigravity 1.5.13', 'antigravity-1.5.13']] as const) {
+    it(`${label} write: permission asked, edit granted once inside the worktree, file_change, end_turn`, () => {
+      const { ev, s, sent } = replay(`real-${base}-write.jsonl`);
+      expect(ev.filter((e) => e.type === 'status' && e.status === 'UNRECOGNIZED_EVENT')).toEqual([]);
+      expect(ev).toContainEqual(expect.objectContaining({ type: 'status', status: 'PERMISSION_GRANTED' }));
+      expect(ev.filter((e) => e.type === 'file_change')).toEqual([{ type: 'file_change', relativePath: 'hello.txt', kind: 'modify' }]);
+      const picked = sent.filter((m) => m.result?.outcome).map((m) => m.result!.outcome!.optionId);
+      expect(picked).toHaveLength(1);
+      expect(s.state).toMatchObject({ phase: 'done', stopReason: 'end_turn' });
+    });
+    it(`${label} shell: execute denied once; the command text never reaches the log`, () => {
+      const { ev } = replay(`real-${base}-shell-denied.jsonl`);
+      expect(ev).toContainEqual(expect.objectContaining({ type: 'status', status: 'PERMISSION_DENIED' }));
+      expect(ev.filter((e) => e.type === 'status' && e.status === 'UNRECOGNIZED_EVENT')).toEqual([]);
+      expect(JSON.stringify(ev)).not.toContain('ls -la');
+    });
+  }
+  it('gemini-cli 0.70.0 without login (histórico: antes da troca para o agy): real -32000 at session/new → NOT_AUTHENTICATED', () => {
     const { ev, s } = replay('real-gemini-0.70.0-not-authenticated.jsonl');
     expect(ev.filter((e) => e.type === 'error').map((e) => (e as { code: string }).code)).toEqual(['NOT_AUTHENTICATED']);
     expect(ev[0]).toEqual({ type: 'status', status: 'INIT', detail: 'gemini-cli 0.70.0' });
@@ -156,18 +173,21 @@ describe('AcpSession against REAL captured output (TAR-0041)', () => {
 });
 
 describe('probe (no prompt, no login)', () => {
-  it('kimi VERIFIED only at the captured 1.50.0; opencode UNVERIFIED; outside the range → UNSUPPORTED_VERSION', async () => {
+  it('VERIFIED only at the captured versions (kimi 1.50.0, opencode 2.4.1); outside the range → UNSUPPORTED_VERSION', async () => {
     expect(await provider(KIMI_SPEC).probe()).toMatchObject({ availability: 'READY', version: '1.50.0', contractStatus: 'VERIFIED', simulated: false });
     expect(await provider(KIMI_SPEC, { FAKE_VERSION: '1.50.1' }).probe()).toMatchObject({ availability: 'READY', contractStatus: 'UNVERIFIED' });
     expect(await provider(KIMI_SPEC, { FAKE_VERSION: '1.51.0' }).probe()).toMatchObject({ availability: 'UNSUPPORTED_VERSION' });
-    expect(await provider(OPENCODE_SPEC, { FAKE_VERSION: '1.19.6' }).probe()).toMatchObject({ availability: 'READY', contractStatus: 'UNVERIFIED' });
+    expect(await provider(OPENCODE_SPEC, { FAKE_VERSION: '1.19.6' }).probe()).toMatchObject({ availability: 'UNSUPPORTED_VERSION' });
+    expect(await provider(OPENCODE_SPEC, { FAKE_VERSION: '2.4.1' }).probe()).toMatchObject({ availability: 'READY', contractStatus: 'VERIFIED' });
+    expect(await provider(OPENCODE_SPEC, { FAKE_VERSION: '2.4.2' }).probe()).toMatchObject({ availability: 'READY', contractStatus: 'UNVERIFIED' });
   });
 
-  it('google: NOT_INSTALLED without gemini; 0.70.x READY/UNVERIFIED; other versions UNSUPPORTED_VERSION; --acp argv', async () => {
-    const missing = new AcpProvider(adapter, GEMINI_SPEC, { env: { PATH: root } });
+  it('google (Antigravity agy): NOT_INSTALLED without agy; 1.5.x READY; other versions UNSUPPORTED_VERSION; acp --sandbox, never --dangerously-*', async () => {
+    const missing = new AcpProvider(adapter, ANTIGRAVITY_SPEC, { env: { PATH: root } });
     expect(await missing.probe()).toMatchObject({ availability: 'NOT_INSTALLED', providerId: 'google' });
-    expect(await provider(GEMINI_SPEC, { FAKE_VERSION: '0.70.0' }).probe()).toMatchObject({ availability: 'READY', contractStatus: 'UNVERIFIED' });
-    expect(await provider(GEMINI_SPEC, { FAKE_VERSION: '0.40.0' }).probe()).toMatchObject({ availability: 'UNSUPPORTED_VERSION' });
-    expect(GEMINI_SPEC.acpArgs('/w')).toEqual(['--acp']);
+    expect(await provider(ANTIGRAVITY_SPEC, { FAKE_VERSION: '1.5.13' }).probe()).toMatchObject({ availability: 'READY', providerId: 'google', contractStatus: 'VERIFIED' });
+    expect(await provider(ANTIGRAVITY_SPEC, { FAKE_VERSION: '0.70.0' }).probe()).toMatchObject({ availability: 'UNSUPPORTED_VERSION' });
+    expect(ANTIGRAVITY_SPEC.acpArgs('/w')).toEqual(['acp', '--sandbox']);
+    expect(ANTIGRAVITY_SPEC.acpArgs('/w').join(' ')).not.toMatch(/dangerously/);
   });
 });

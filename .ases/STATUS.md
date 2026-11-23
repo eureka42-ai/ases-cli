@@ -55,9 +55,9 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0036 | PHASE-07 | Matriz de limitações e doctor VERIFIED/SIMULATED/UNKNOWN | COMPLETED | — | docs/PROVIDERS.md<br>test/e2e/providers.test.mjs<br>.ases/evidence/PHASE-07-verify.md |
 | TAR-0037 | PHASE-08 | Pesquisa de flags, ACP e termos (Kimi, OpenCode, Google) | REVIEW | — | docs/PROVIDERS_PESQUISA_PHASE08.md |
 | TAR-0038 | PHASE-08 | Cliente ACP comum e adapter Kimi (kimi acp) | REVIEW | — | .ases/evidence/PHASE-08-verify.md |
-| TAR-0039 | PHASE-08 | Adapter OpenCode (opencode acp) | REVIEW | — | .ases/evidence/PHASE-08-verify.md |
-| TAR-0040 | PHASE-08 | Adapter Google (Gemini CLI) com capability honesta | REVIEW | — | .ases/evidence/PHASE-08-verify.md |
-| TAR-0041 | PHASE-08 | Fixtures de teste e smoke opt-in | REVIEW | — | .ases/evidence/TAR-0041-smoke-real.md |
+| TAR-0039 | PHASE-08 | Adapter OpenCode (opencode acp) | REVIEW | — | .ases/evidence/PHASE-08-verify.md<br>.ases/evidence/TAR-0041-smoke-real.md |
+| TAR-0040 | PHASE-08 | Adapter Google (Gemini CLI) com capability honesta | REVIEW | — | .ases/evidence/PHASE-08-verify.md<br>.ases/evidence/TAR-0041-smoke-real.md |
+| TAR-0041 | PHASE-08 | Fixtures de teste e smoke opt-in | REVIEW | — | .ases/evidence/TAR-0041-smoke-real.md<br>.ases/evidence/TAR-0041-smoke-real.md |
 | TAR-0042 | PHASE-08 | Documentação de paridade dos cinco providers | REVIEW | — | docs/PROVIDERS.md<br>docs/ADRs/ADR-0013.md |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

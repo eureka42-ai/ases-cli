@@ -9,7 +9,7 @@ import { defaultDeps, syncedFolderHint, targetStatus } from '@aer/platform-core'
 import { findProjectRoot, initProject, isInterimProject, loadPlatformAdapter, paths, readInterimProject, readManifest } from '@aer/project-store';
 import { ClaudeCodeProvider } from '@aer/provider-claude';
 import { CodexProvider } from '@aer/provider-codex';
-import { createGeminiProvider, createKimiProvider, createOpenCodeProvider } from '@aer/provider-acp';
+import { createAntigravityProvider, createKimiProvider, createOpenCodeProvider } from '@aer/provider-acp';
 import { SimulatorProvider } from '@aer/provider-simulator';
 import { writeReports } from './reports.ts';
 import { Engine } from './engine.ts';
@@ -148,7 +148,7 @@ class UsageError extends Error {}
 
 /** AER-REQ-116/119: cada provider é sondado isoladamente; a falha de um não impede os outros. */
 async function probeProviders(adapter: Awaited<ReturnType<typeof loadPlatformAdapter>>) {
-  const providers = [new SimulatorProvider(adapter), new ClaudeCodeProvider(adapter), new CodexProvider(adapter), createKimiProvider(adapter), createOpenCodeProvider(adapter), createGeminiProvider(adapter)];
+  const providers = [new SimulatorProvider(adapter), new ClaudeCodeProvider(adapter), new CodexProvider(adapter), createKimiProvider(adapter), createOpenCodeProvider(adapter), createAntigravityProvider(adapter)];
   return Promise.all(providers.map(async (p) => {
     try {
       const r = await p.probe();

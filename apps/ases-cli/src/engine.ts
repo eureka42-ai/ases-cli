@@ -7,7 +7,7 @@ import type { PlatformAdapter } from '@aer/platform-core';
 import type { AgentProvider } from '@aer/provider-sdk';
 import { ClaudeCodeProvider } from '@aer/provider-claude';
 import { CodexProvider } from '@aer/provider-codex';
-import { createGeminiProvider, createKimiProvider, createOpenCodeProvider } from '@aer/provider-acp';
+import { createAntigravityProvider, createKimiProvider, createOpenCodeProvider } from '@aer/provider-acp';
 import { SimulatorProvider } from '@aer/provider-simulator';
 import { runQueue, type AttemptOutcome } from '@aer/scheduler';
 import { ProjectError, historyState, isInterimProject, paths, readManifest, sessionFile, writeSession } from '@aer/project-store';
@@ -50,7 +50,7 @@ export class Engine {
     this.lastPublished = store.lastSeq();
     this.providers = {
       simulator: new SimulatorProvider(adapter), claude: new ClaudeCodeProvider(adapter), codex: new CodexProvider(adapter),
-      kimi: createKimiProvider(adapter), opencode: createOpenCodeProvider(adapter), google: createGeminiProvider(adapter),
+      kimi: createKimiProvider(adapter), opencode: createOpenCodeProvider(adapter), google: createAntigravityProvider(adapter),
     };
   }
 

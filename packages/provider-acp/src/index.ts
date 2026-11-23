@@ -73,6 +73,7 @@ export interface AcpSessionState {
 }
 
 /** nome para o log: o kind do ACP ou, se o agente não manda (kimi 1.50.0), a 1ª palavra do título ('WriteFile', 'Shell') */
+const safeTitle = (t: ToolInfo) => (t.kind === 'execute' ? '[comando omitido]' : redactText(t.title ?? '', 120).text);
 const toolName = (t: ToolInfo) => t.kind ?? (t.title?.split(/[\s:]/)[0] || 'unknown').slice(0, 60);
 const locationsOf = (v: unknown): string[] => (Array.isArray(v) ? v.map((l) => str(obj(l)?.path)).filter((x): x is string => !!x) : []);
 /** caminhos dos blocos `{type: 'diff', path}` do content (kimi 1.50.0 não manda kind/locations; o alvo vem só no diff) */
@@ -177,6 +178,7 @@ export class AcpSession {
         case 'available_commands_update':
         case 'current_mode_update':
         case 'plan':
+        case 'session_info_update': // antigravity 1.5.13: título da sessão gerado pelo agente; sem efeito para o AER
         case 'usage_update': // opencode: {used, size, cost} = ocupação da janela de contexto, não tokens consumidos; não vira uso
           return [];
         case 'tool_call': {
@@ -184,7 +186,7 @@ export class AcpSession {
           const t: ToolInfo = { kind: str(u.kind), title: str(u.title), locations: locationsOf(u.locations) };
           this.tools.set(tid, t);
           // só kind e caminhos: rawInput (conteúdo, comandos) não vai para o log (§12.2)
-          return [...this.flush(), { type: 'tool_call', name: toolName(t), safeArguments: { title: redactText(t.title ?? '', 120).text, paths: t.locations } }];
+          return [...this.flush(), { type: 'tool_call', name: toolName(t), safeArguments: { title: safeTitle(t), paths: t.locations } }];
         }
         case 'tool_call_update': {
           const tid = str(u.toolCallId) ?? '?';
@@ -195,7 +197,7 @@ export class AcpSession {
           this.tools.set(tid, t);
           const status = str(u.status);
           if (status !== 'completed' && status !== 'failed') return [];
-          const out: AgentStreamEvent[] = [{ type: 'tool_result', name: toolName(t), success: status === 'completed', safeSummary: redactText(`${status} ${t.title ?? ''}`, 300).text }];
+          const out: AgentStreamEvent[] = [{ type: 'tool_result', name: toolName(t), success: status === 'completed', safeSummary: redactText(`${status} ${safeTitle(t)}`, 300).text }];
           if (status === 'completed' && t.kind === 'edit') for (const l of t.locations) out.push({ type: 'file_change', relativePath: relativeTo(this.req.workingDirectory, l), kind: 'modify' });
           return out;
         }
@@ -347,8 +349,8 @@ export class AcpProvider implements AgentProvider {
 
 /** Versões com fixture real capturada (TAR-0041, 23/11/2026): kimi com escrita concedida e shell negado. */
 export const KIMI_VERIFIED_VERSIONS: readonly string[] = ['1.50.0'];
-/** opencode 1.19.6: só o caminho de chave expirada foi capturado; sucesso não verificado → continua UNVERIFIED. */
-export const OPENCODE_VERIFIED_VERSIONS: readonly string[] = [];
+/** opencode 2.4.1: escrita concedida e shell negado capturados (23/11/2026). A 1.19.6 só teve o erro de chave expirada. */
+export const OPENCODE_VERIFIED_VERSIONS: readonly string[] = ['2.4.1'];
 
 export const KIMI_SPEC: AcpSpec = {
   id: 'kimi', binary: 'kimi', label: 'Kimi Code CLI',
@@ -359,21 +361,29 @@ export const KIMI_SPEC: AcpSpec = {
 
 export const OPENCODE_SPEC: AcpSpec = {
   id: 'opencode', binary: 'opencode', label: 'OpenCode',
-  acpArgs: (cwd) => ['acp', '--cwd', cwd], versionArgs: ['--version'],
-  supported: { min: '1.19.6', maxExclusive: '1.20.0' }, verifiedVersions: OPENCODE_VERIFIED_VERSIONS,
+  // 2.4.1 removeu `acp --cwd` (com a flag, imprime a ajuda e não sobe o servidor): o diretório vem do cwd do processo e do session/new
+  acpArgs: () => ['acp'], versionArgs: ['--version'],
+  supported: { min: '2.4.1', maxExclusive: '2.5.0' }, verifiedVersions: OPENCODE_VERIFIED_VERSIONS,
   loginHint: 'run `opencode auth login` yourself; the AER never logs in for you',
   // shortcut: OPENCODE_CONFIG_CONTENT ainda não confirmado em execução real (TAR-0041); sem ele, a config do usuário decide
   env: { OPENCODE_CONFIG_CONTENT: JSON.stringify({ permission: { edit: 'ask', bash: 'ask', webfetch: 'ask' } }) },
 };
 
-/** Google: `gemini --acp` (documentado). 0.70.0: handshake ACP v1 real verificado (23/11/2026); prompt ainda não → UNVERIFIED. */
-export const GEMINI_SPEC: AcpSpec = {
-  id: 'google', binary: 'gemini', label: 'Gemini CLI',
-  acpArgs: () => ['--acp'], versionArgs: ['--version'],
-  supported: { min: '0.70.0', maxExclusive: '0.71.0' }, verifiedVersions: [],
-  loginHint: 'run `gemini` and log in yourself; the AER never logs in for you',
+/**
+ * Google: Antigravity CLI (`agy acp`, oficial). O Gemini CLI deixou de aceitar login de conta Google para planos
+ * individuais em 18/06/2026 (migração para o Antigravity); por isso o provider `google` usa o `agy`.
+ * `--sandbox` liga as restrições de terminal do próprio agente (defesa extra; o AER já nega `execute`).
+ * `--dangerously-skip-permissions` é proibido (§12) e nunca é passado.
+ */
+/** agy 1.5.13: escrita concedida e shell negado capturados (23/11/2026). */
+export const ANTIGRAVITY_VERIFIED_VERSIONS: readonly string[] = ['1.5.13'];
+export const ANTIGRAVITY_SPEC: AcpSpec = {
+  id: 'google', binary: 'agy', label: 'Antigravity CLI',
+  acpArgs: () => ['acp', '--sandbox'], versionArgs: ['--version'],
+  supported: { min: '1.5.13', maxExclusive: '1.6.0' }, verifiedVersions: ANTIGRAVITY_VERIFIED_VERSIONS,
+  loginHint: 'run `agy` and log in with Google yourself; the AER never logs in for you',
 };
 
 export const createKimiProvider = (platform: ProcessPlatform, o?: AcpOptions) => new AcpProvider(platform, KIMI_SPEC, o);
 export const createOpenCodeProvider = (platform: ProcessPlatform, o?: AcpOptions) => new AcpProvider(platform, OPENCODE_SPEC, o);
-export const createGeminiProvider = (platform: ProcessPlatform, o?: AcpOptions) => new AcpProvider(platform, GEMINI_SPEC, o);
+export const createAntigravityProvider = (platform: ProcessPlatform, o?: AcpOptions) => new AcpProvider(platform, ANTIGRAVITY_SPEC, o);
