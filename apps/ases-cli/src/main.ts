@@ -155,18 +155,21 @@ async function interactive(root: string, adapter: Awaited<ReturnType<typeof load
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: process.stdin.isTTY === true, prompt: 'ases> ' });
   let stopping = false;
-  const stop = async (why: string) => {
-    if (stopping) return;
+  let stopped: Promise<void> | undefined;
+  // idempotente: a segunda chamada (p.ex. o 'close' disparado pelo próprio rl.close) espera o mesmo encerramento
+  const stop = (why: string): Promise<void> => (stopped ??= (async () => {
     stopping = true;
     rl.close();
     const r = await engine.stop();
     // §6.4/AER-REQ-090: diz claramente o que aconteceu com o motor e com as tarefas ao sair
     console.log(`${why}: engine encerrado. ${exitNote(r.cancelled)}; estado salvo até seq ${r.lastSeq}.`);
-  };
-  // comandos em fila: /run termina antes do próximo (um script `/run` + `/exit` espera o run acabar)
-  let queue: Promise<void> = Promise.resolve();
+  })());
+  // /run roda em segundo plano (os outros comandos, inclusive /cancel, seguem respondendo); /exit e o fim da entrada
+  // esperam os runs em andamento, então um script `/run` + `/exit` só sai quando o run termina
+  const inflight = new Set<Promise<unknown>>();
+  const settle = () => Promise.allSettled([...inflight]);
   const done = new Promise<void>((resolve) => {
-    rl.on('close', () => void queue.then(() => stop('fim da entrada')).then(resolve));
+    rl.on('close', () => void settle().then(() => stop('fim da entrada')).then(resolve));
     process.once('SIGTERM', () => void stop('SIGTERM').then(resolve));
     rl.on('SIGINT', () => void stop('Ctrl+C').then(resolve));
     process.once('SIGINT', () => void stop('SIGINT').then(resolve));
@@ -177,22 +180,22 @@ async function interactive(root: string, adapter: Awaited<ReturnType<typeof load
     console.log(`erro${e.code ? ` ${e.code}` : ''}: ${e.message}`);
   };
   rl.on('line', (line) => {
-    queue = queue.then(async () => {
-      if (stopping) return;
-      try {
-        const out = handleLine(engine, line.trim());
-        if (out === 'EXIT') {
-          await stop('/exit');
-          return;
-        }
-        if (out instanceof Promise) console.log('executando... (acompanhe no ases-tar)');
-        const text = await out;
-        if (text) console.log(text);
-      } catch (err) {
-        report(err);
+    if (stopping) return;
+    try {
+      const out = handleLine(engine, line.trim());
+      if (out === 'EXIT') {
+        void settle().then(() => stop('/exit'));
+        return;
       }
-      if (!stopping && process.stdin.isTTY) rl.prompt();
-    });
+      if (out instanceof Promise) {
+        console.log('executando em segundo plano (acompanhe no ases-tar; /cancel TAR-XXXX cancela)');
+        const p = out.then((text) => console.log(text), report).finally(() => inflight.delete(p));
+        inflight.add(p);
+      } else if (out) console.log(out);
+    } catch (err) {
+      report(err);
+    }
+    if (!stopping && process.stdin.isTTY) rl.prompt();
   });
   await done;
   process.stdin.destroy(); // rl.close() não solta um stdin em pipe; sem isso o processo não termina após /exit

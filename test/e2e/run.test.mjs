@@ -50,15 +50,29 @@ describe('PHASE-06 gate: /run with the simulator, watched live by ases-tar (TAR-
     // checkout principal: só os relatórios do engine em .ases/ mudam; a saída do agente fica na branch da tentativa
     expect(git('status', '--porcelain').stdout.split('\n').filter((l) => l && !l.slice(3).startsWith('.ases/'))).toEqual([]);
 
-    // /cancel de uma tarefa pendurada: árvore encerrada, tarefa CANCELLED
+    // /cancel de uma tarefa pendurada (todos os SOs): o modo linha segue respondendo durante o /run
     ases.send('/task new PHASE-01 D --provider simulator:hang');
     ases.send('/task move TAR-0004 READY');
     ases.send('/run PHASE-01');
     await tar.waitFor('stdout', (s) => jsonl(s).some((e) => e.eventType === 'TaskStarted' && e.taskId === 'TAR-0004'));
-    // a fila do modo linha espera o /run; o cancelamento vem de um sinal ao processo (como Ctrl+C)
+    ases.send('/cancel TAR-0004');
+    await ases.waitFor('stdout', (s) => /TAR-0004 ATT-0001 simulator \[SIMULATED\] (→|->) CANCELLED/.test(s), 15_000);
+    await tar.waitFor('stdout', (s) => jsonl(s).some((e) => e.eventType === 'TaskUpdated' && e.taskId === 'TAR-0004' && e.payload.to === 'CANCELLED'));
+
+    if (process.platform === 'win32') {
+      // o Windows não entrega SIGINT a um processo filho (kill = encerramento forçado); sai por /exit
+      ases.send('/exit');
+      expect(await ases.exited).toEqual({ code: 0, signal: null });
+      return;
+    }
+    // Ctrl+C/SIGINT com tarefa rodando: cancela, reconcilia e informa
+    ases.send('/task new PHASE-01 E --provider simulator:hang');
+    ases.send('/task move TAR-0005 READY');
+    ases.send('/run PHASE-01');
+    await tar.waitFor('stdout', (s) => jsonl(s).some((e) => e.eventType === 'TaskStarted' && e.taskId === 'TAR-0005'));
     ases.child.kill('SIGINT');
     expect(await ases.exited).toEqual({ code: 0, signal: null });
     expect(ases.out.stdout).toMatch(/1 tarefa\(s\) em execução cancelada\(s\), árvore de processos encerrada/);
-    await tar.waitFor('stdout', (s) => jsonl(s).some((e) => e.eventType === 'TaskUpdated' && e.taskId === 'TAR-0004' && e.payload.to === 'CANCELLED'));
+    await tar.waitFor('stdout', (s) => jsonl(s).some((e) => e.eventType === 'TaskUpdated' && e.taskId === 'TAR-0005' && e.payload.to === 'CANCELLED'));
   }, 60_000);
 });

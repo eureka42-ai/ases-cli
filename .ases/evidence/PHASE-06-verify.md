@@ -26,7 +26,18 @@ Suíte completa repetida mais 3 vezes: 188/188 nas três. Depois das execuções
 2. Otimização própria (pular o espelho quando o `seq` não muda) deixava STATUS.md velho, porque `recordArtifact` não gera evento (pego pelo `cutover.test.mjs`) → revertida; o worker ganhou um caminho de leitura que não republica.
 3. `engine.info.lastSeq` depois de `stop()` leria um banco fechado → `stop()` devolve o seq final.
 
+## CI run 45191096847 (commit 98d1889): 4/8 falharam, corrigido em seguida
+Linux 3/3 e macOS Node 24 passaram. Falharam:
+- **Windows (3 alvos), `test/e2e/run.test.mjs`:** o teste mandava SIGINT ao `ases`; o Windows não entrega SIGINT, o processo era morto.
+  O teste expôs um defeito de produto: no modo linha, `/cancel` ficava na fila atrás do `/run`.
+  Correção: `/run` roda em segundo plano, `/cancel` responde na hora, e `/exit` e o fim da entrada esperam os runs. O E2E usa `/cancel` em todos os SOs; o caminho por SIGINT só roda fora do Windows.
+- **macOS Node 22, `migrations.test.ts` (PHASE-02):** dois processos migrando no mesmo milissegundo geravam o mesmo nome de backup e o `VACUUM INTO` colidia (`table projects already exists`).
+  Reprodução local: 9 erros em 40 rodadas de 6 processos. Correção: nome com pid e sufixo aleatório. Depois da correção: 0 erros em 40 rodadas.
+- **Windows arm64, `multiprocess.test.ts` (PHASE-02):** `BEGIN IMMEDIATE` devolveu BUSY sem passar pelo `busy_timeout`. Correção: `ProjectStore.tx` usa o mesmo `withBusyRetry` da abertura.
+
+Depois das correções, local: `npm run verify` 188/188; os testes de concorrência e o E2E do `/run` passaram 15 vezes seguidas (antes, 1 falha em 15).
+
 ## NÃO executados (NOT_RUN, não é PASS)
-- Windows e Linux: nenhum teste desta fase rodou neles (o CI não foi disparado; branch não enviada).
+- Windows: resultado do CI com as correções pendente no momento desta evidência.
 - No Windows, `terminateProcessTree` confirma apenas o pid raiz após `taskkill /T`.
 - Providers reais: nenhum (PHASE-07). Nenhuma IA, rede ou custo foi usado; toda saída de agente é `SIMULATED`.

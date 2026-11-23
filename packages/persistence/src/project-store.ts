@@ -3,7 +3,7 @@ import {
   EVENT_TYPES, PHASE_STATES, TASK_STATES, canTransitionPhase, canTransitionTask, formatAttemptId, formatPhaseId, formatTaskId,
   payloadSha256, validatePayload, type EventEnvelope, type EventType, type PhaseState, type TaskState,
 } from '@aer/contracts';
-import { openDatabase, type OpenResult } from './database.ts';
+import { openDatabase, withBusyRetry, type OpenResult } from './database.ts';
 import type { Database } from './driver.ts';
 import { StoreError } from './errors.ts';
 
@@ -179,7 +179,8 @@ export class ProjectStore {
   /** Transação de escrita (BEGIN IMMEDIATE): commit se fn retornar, rollback se lançar. */
   tx<T>(fn: () => T): T {
     if (this.inTx) throw new StoreError('NESTED_TRANSACTION', 'nested transactions are not supported');
-    this.db.exec('BEGIN IMMEDIATE');
+    // BEGIN IMMEDIATE pode devolver BUSY sem passar pelo busy_timeout com vários processos (CI Windows arm64, run 45191096847)
+    withBusyRetry(() => this.db.exec('BEGIN IMMEDIATE'));
     this.inTx = true;
     try {
       const result = fn();

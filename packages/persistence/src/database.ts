@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { openSqlite, type Database } from './driver.ts';
 import { StoreError } from './errors.ts';
@@ -19,7 +20,7 @@ const sleepSync = (ms: number) => Atomics.wait(new Int32Array(new SharedArrayBuf
  * Abrir/migrar com vários processos ao mesmo tempo: a troca de journal_mode e o primeiro BEGIN IMMEDIATE podem
  * devolver BUSY sem passar pelo busy_timeout (visto no CI Windows, run 45095965102). Repete com espera curta até 10 s.
  */
-function withBusyRetry<T>(fn: () => T, budgetMs = 10_000): T {
+export function withBusyRetry<T>(fn: () => T, budgetMs = 10_000): T {
   const t0 = Date.now();
   for (let delay = 10; ; delay = Math.min(delay * 2, 250)) {
     try {
@@ -33,7 +34,9 @@ function withBusyRetry<T>(fn: () => T, budgetMs = 10_000): T {
 const quote = (s: string) => `'${s.replaceAll("'", "''")}'`;
 
 function backup(db: Database, file: string, version: number): string {
-  const target = `${file}.bak-v${version}-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+  // pid + aleatório: dois processos migrando no mesmo milissegundo escreviam no MESMO arquivo e o VACUUM INTO de um
+  // colidia com o do outro ("table projects already exists", reproduzido localmente e no CI run 45191096847)
+  const target = `${file}.bak-v${version}-${new Date().toISOString().replace(/[:.]/g, '-')}-${process.pid}-${randomBytes(3).toString('hex')}`;
   db.exec(`VACUUM INTO ${quote(target)}`);
   const check = openSqlite(target);
   try {
