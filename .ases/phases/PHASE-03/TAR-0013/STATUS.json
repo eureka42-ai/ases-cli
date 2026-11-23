@@ -1,9 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0013",
   "phaseId": "PHASE-03",
   "title": "Cliente IPC e assinatura de eventos",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
     "AER-REQ-070",
     "AER-REQ-074",
@@ -11,22 +13,22 @@
     "AER-REQ-076",
     "AER-REQ-077"
   ],
-  "tests": [
-    "packages/ipc/test/*.test.ts"
+  "dependsOn": [
+    "TAR-0012"
   ],
   "evidence": [
-    ".ases/evidence/PHASE-03-verify.md",
-    "packages/ipc/test/ipc.test.ts",
-    "docs/API.md"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T00:41:02.268Z",
-      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
+      "path": ".ases/evidence/PHASE-03-verify.md",
+      "sha256": "edc1d8123fb5fada1141b5212052084e914d9970e543f05f4a56b248f6f5bdcf"
     },
     {
-      "at": "2026-11-23T00:41:02.377Z",
-      "text": "fast-forward de ases/PHASE-03 em main (31f5473)"
+      "path": "packages/ipc/test/ipc.test.ts",
+      "sha256": "7e4bf00323a3d1e5377c90f97254c221046a95f5c2ab21256a51b8fd1ff1fa7f"
+    },
+    {
+      "path": "docs/API.md",
+      "sha256": "5217b79af3fd77e854368a2690beeef950c5bdd3707dceca81edb67314d6520f"
     }
-  ]
+  ],
+  "lastTest": null
 }

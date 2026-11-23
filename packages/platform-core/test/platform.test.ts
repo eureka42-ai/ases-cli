@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import {
-  NotImplementedError, PlatformError, assertSupportedTarget, createBaseAdapter, createLocalIpcEndpoint, detectPlatform, ensurePrivateDir, targetStatus, writePrivateFile,
+  NotImplementedError, PlatformError, assertSupportedTarget, createBaseAdapter, createLocalIpcEndpoint, detectPlatform, ensurePrivateDir, syncedFolderHint, targetStatus, writePrivateFile,
   getRuntimeDir, getTerminalCapabilities, normalizeProjectPath, type PlatformDeps,
 } from '../src/index.ts';
 
@@ -139,5 +139,22 @@ describe('supported targets (CHANGE-0001)', () => {
     expect(targetStatus('linux', 'arm64')).toBe('CONDITIONAL');
     expect(() => assertSupportedTarget('darwin', 'x64')).toThrow(/macOS Intel está fora do escopo/);
     expect(() => assertSupportedTarget('linux', 'ia32')).toThrow(PlatformError);
+  });
+});
+
+describe('synced folder hint (SQLite safety)', () => {
+  const home = mkdtempSync(path.join(os.tmpdir(), 'aer-home-'));
+  afterAll(() => rmSync(home, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
+  const deps: PlatformDeps = { env: {}, tmpdir: '/tmp', homedir: home, username: 'u' };
+
+  it('flags iCloud Desktop only when Desktop sync is on, plus OneDrive/Dropbox/Google Drive', () => {
+    expect(syncedFolderHint('darwin', deps, path.join(home, 'Desktop', 'proj'))).toBeUndefined();
+    mkdirSync(path.join(home, 'Library', 'Mobile Documents', 'com~apple~CloudDocs', 'Desktop'), { recursive: true });
+    expect(syncedFolderHint('darwin', deps, path.join(home, 'Desktop', 'proj'))).toBe('iCloud Drive (Desktop sincronizado)');
+    expect(syncedFolderHint('darwin', deps, path.join(home, 'Projetos', 'proj'))).toBeUndefined();
+    expect(syncedFolderHint('darwin', deps, '/Users/u/Library/Mobile Documents/com~apple~CloudDocs/x')).toBe('iCloud Drive');
+    expect(syncedFolderHint('win32', win, 'C:\\Users\\u\\OneDrive - Empresa\\proj')).toBe('OneDrive');
+    expect(syncedFolderHint('linux', linux, '/home/u/Dropbox/proj')).toBe('Dropbox');
+    expect(syncedFolderHint('linux', linux, '/home/u/code/proj')).toBeUndefined();
   });
 });

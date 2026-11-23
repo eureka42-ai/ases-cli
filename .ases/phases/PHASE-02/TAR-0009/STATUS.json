@@ -1,31 +1,33 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0009",
   "phaseId": "PHASE-02",
   "title": "Exportação JSONL e recuperação",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
     "AER-REQ-036",
     "AER-REQ-067",
     "AER-REQ-068",
     "AER-REQ-192"
   ],
-  "tests": [
-    "packages/persistence/test/export.test.ts"
+  "dependsOn": [
+    "TAR-0007"
   ],
   "evidence": [
-    ".ases/evidence/PHASE-02-verify.md",
-    "packages/persistence/test/export.test.ts",
-    "docs/DATA.md"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T00:19:34.861Z",
-      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
+      "path": ".ases/evidence/PHASE-02-verify.md",
+      "sha256": "9078cb1509868ecee85464a5e50cdb3afe6b24dedff83cd9e9fb344d9985d632"
     },
     {
-      "at": "2026-11-23T00:19:35.001Z",
-      "text": "fast-forward de ases/PHASE-02 em main (9e4fa8b)"
+      "path": "packages/persistence/test/export.test.ts",
+      "sha256": "9f86c09592ed99d27abc7e057eccdf8693d58e456582a13f5571fea3e8502819"
+    },
+    {
+      "path": "docs/DATA.md",
+      "sha256": "dce5295ea0f59d837acbef1d4e3935e7f5f0ed12f78290ca0b4f41fc5fec16fd"
     }
-  ]
+  ],
+  "lastTest": null
 }

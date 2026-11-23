@@ -1,9 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0017",
   "phaseId": "PHASE-04",
   "title": "ases: home + sessão TUI",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
     "AER-REQ-081",
     "AER-REQ-084",
@@ -12,23 +14,22 @@
     "AER-REQ-088",
     "AER-REQ-090"
   ],
-  "tests": [
-    "apps/ases-cli/test/*.test.tsx",
-    "test/e2e/pty.test.mjs"
+  "dependsOn": [
+    "TAR-0016"
   ],
   "evidence": [
-    ".ases/evidence/PHASE-04-verify.md",
-    "apps/ases-cli/test/tui.test.tsx",
-    "test/e2e/pty.test.mjs"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T01:03:40.175Z",
-      "text": "integração autorizada pelo responsável (22/11/2026)"
+      "path": ".ases/evidence/PHASE-04-verify.md",
+      "sha256": "b38a1fcb746a55f39b14d2c2e3f75a4008d7bf7d0ef759500df8cd3e8438548b"
     },
     {
-      "at": "2026-11-23T01:03:40.298Z",
-      "text": "fast-forward de ases/PHASE-04 em main (5f98677)"
+      "path": "apps/ases-cli/test/tui.test.tsx",
+      "sha256": "ec1615525cf8d41a7be1e0494525008cdc360c283ab5530f8face317c8f82be5"
+    },
+    {
+      "path": "test/e2e/pty.test.mjs",
+      "sha256": "14930dec4877298576f792091d2c0088c1618a405cd14c251c359fbdb6c288f2"
     }
-  ]
+  ],
+  "lastTest": null
 }

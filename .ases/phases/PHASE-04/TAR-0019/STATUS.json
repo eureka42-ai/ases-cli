@@ -1,29 +1,28 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0019",
   "phaseId": "PHASE-04",
   "title": "ases-tar: detalhe da tarefa",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
     "AER-REQ-085",
     "AER-REQ-094",
     "AER-REQ-098"
   ],
-  "tests": [
-    "apps/ases-tar/test/*.test.tsx"
+  "dependsOn": [
+    "TAR-0018"
   ],
   "evidence": [
-    ".ases/evidence/PHASE-04-verify.md",
-    "apps/ases-tar/test/tui.test.tsx"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T01:03:40.517Z",
-      "text": "integração autorizada pelo responsável (22/11/2026)"
+      "path": ".ases/evidence/PHASE-04-verify.md",
+      "sha256": "b38a1fcb746a55f39b14d2c2e3f75a4008d7bf7d0ef759500df8cd3e8438548b"
     },
     {
-      "at": "2026-11-23T01:03:40.620Z",
-      "text": "fast-forward de ases/PHASE-04 em main (5f98677)"
+      "path": "apps/ases-tar/test/tui.test.tsx",
+      "sha256": "03a60e4453f0705aa3d6432be1f036493fbbbaa5c2caac7fd8addc974f782cd7"
     }
-  ]
+  ],
+  "lastTest": null
 }

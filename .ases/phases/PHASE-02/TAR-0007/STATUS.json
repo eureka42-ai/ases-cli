@@ -1,9 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0007",
   "phaseId": "PHASE-02",
   "title": "Event store transacional",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
     "AER-REQ-061",
     "AER-REQ-062",
@@ -13,25 +15,18 @@
     "AER-REQ-069",
     "AER-REQ-074"
   ],
-  "tests": [
-    "packages/persistence/test/events.test.ts"
+  "dependsOn": [
+    "TAR-0006"
   ],
   "evidence": [
-    ".ases/evidence/PHASE-02-verify.md",
-    "packages/persistence/test/store.test.ts"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T00:17:05.073Z",
-      "text": "corrigida lacuna de seq por ON CONFLICT DO NOTHING + AUTOINCREMENT"
+      "path": ".ases/evidence/PHASE-02-verify.md",
+      "sha256": "9078cb1509868ecee85464a5e50cdb3afe6b24dedff83cd9e9fb344d9985d632"
     },
     {
-      "at": "2026-11-23T00:19:34.534Z",
-      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
-    },
-    {
-      "at": "2026-11-23T00:19:34.653Z",
-      "text": "fast-forward de ases/PHASE-02 em main (9e4fa8b)"
+      "path": "packages/persistence/test/store.test.ts",
+      "sha256": "c7e08996485cbeb50c63b1f855bc94736a025f897e18304a7dd0bfdf9aa19398"
     }
-  ]
+  ],
+  "lastTest": null
 }

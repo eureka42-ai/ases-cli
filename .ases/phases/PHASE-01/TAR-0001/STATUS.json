@@ -1,29 +1,23 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0001",
   "phaseId": "PHASE-01",
   "title": "Auditar ambiente local",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
     "AER-REQ-001",
     "AER-REQ-002",
     "AER-REQ-003",
     "AER-REQ-204"
   ],
-  "tests": [
-    "T-AER-001: evidência .ases/evidence/TAR-0001-environment.md"
-  ],
+  "dependsOn": [],
   "evidence": [
-    ".ases/evidence/TAR-0001-environment.md"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T00:08:43.146Z",
-      "text": "auditoria read-only; pnpm ausente; npm workspaces escolhido"
-    },
-    {
-      "at": "2026-11-23T00:10:38.205Z",
-      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026); integrado no commit 277c38a"
+      "path": ".ases/evidence/TAR-0001-environment.md",
+      "sha256": "a18d7604b2044f456f99173b0ec7c3dffbf56fcf21b59677e4b318d606e803b1"
     }
-  ]
+  ],
+  "lastTest": null
 }

@@ -1,9 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0022",
   "phaseId": "PHASE-05",
   "title": "Leases com fencing e scheduler",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
     "AER-REQ-043",
     "AER-REQ-044",
@@ -12,20 +14,14 @@
     "AER-REQ-047",
     "AER-REQ-050"
   ],
-  "tests": [
-    "packages/scheduler/test/*.test.ts"
+  "dependsOn": [
+    "TAR-0021"
   ],
   "evidence": [
-    ".ases/evidence/PHASE-05-verify.md"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T01:37:03.214Z",
-      "text": "integração autorizada pelo responsável"
-    },
-    {
-      "at": "2026-11-23T01:37:03.330Z",
-      "text": "fast-forward de ases/PHASE-05 em main (1663719); CI 8/8 verde"
+      "path": ".ases/evidence/PHASE-05-verify.md",
+      "sha256": "852ed26b0d100f4a93ca8a805e1fcad5e8fac3ddc21a6b2f6783743131de6119"
     }
-  ]
+  ],
+  "lastTest": null
 }

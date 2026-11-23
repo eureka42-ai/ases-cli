@@ -1,34 +1,30 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0010",
   "phaseId": "PHASE-02",
   "title": "Suíte transacional multiprocesso",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
     "AER-REQ-045",
     "AER-REQ-062",
     "AER-REQ-063",
     "AER-REQ-191"
   ],
-  "tests": [
-    "packages/persistence/test/multiprocess.test.ts"
+  "dependsOn": [
+    "TAR-0007",
+    "TAR-0008"
   ],
   "evidence": [
-    ".ases/evidence/PHASE-02-verify.md",
-    "packages/persistence/test/multiprocess.test.ts"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T00:17:05.370Z",
-      "text": "8 processos reais; Win/Linux NOT_RUN"
+      "path": ".ases/evidence/PHASE-02-verify.md",
+      "sha256": "9078cb1509868ecee85464a5e50cdb3afe6b24dedff83cd9e9fb344d9985d632"
     },
     {
-      "at": "2026-11-23T00:19:35.050Z",
-      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
-    },
-    {
-      "at": "2026-11-23T00:19:35.154Z",
-      "text": "fast-forward de ases/PHASE-02 em main (9e4fa8b)"
+      "path": "packages/persistence/test/multiprocess.test.ts",
+      "sha256": "5b0c21eb61ea8ad4c995aa4f7476c2e29a5942c68559410d11013e8218190c65"
     }
-  ]
+  ],
+  "lastTest": null
 }

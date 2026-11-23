@@ -1,31 +1,31 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0016",
   "phaseId": "PHASE-04",
   "title": "tui-shared: tema, marca, badges, painéis, ajuda",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
+    "AER-REQ-100",
     "AER-REQ-240",
     "AER-REQ-243",
-    "AER-REQ-248",
-    "AER-REQ-100"
+    "AER-REQ-248"
   ],
-  "tests": [
-    "packages/tui-shared/test/*.test.tsx"
-  ],
+  "dependsOn": [],
   "evidence": [
-    ".ases/evidence/PHASE-04-verify.md",
-    "packages/tui-shared/test/tui-shared.test.tsx",
-    "docs/ADRs/ADR-0011.md"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T01:03:40.002Z",
-      "text": "integração autorizada pelo responsável (22/11/2026)"
+      "path": ".ases/evidence/PHASE-04-verify.md",
+      "sha256": "b38a1fcb746a55f39b14d2c2e3f75a4008d7bf7d0ef759500df8cd3e8438548b"
     },
     {
-      "at": "2026-11-23T01:03:40.108Z",
-      "text": "fast-forward de ases/PHASE-04 em main (5f98677)"
+      "path": "packages/tui-shared/test/tui-shared.test.tsx",
+      "sha256": "524107cf05328ff1e05a2a571e45c248e9c2e8063380bfa367f298896e68cea8"
+    },
+    {
+      "path": "docs/ADRs/ADR-0011.md",
+      "sha256": "21f8de46e4aa9e71167f4aa68b061eec375579b85824c79b256265b2eb0b9cb3"
     }
-  ]
+  ],
+  "lastTest": null
 }

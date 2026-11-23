@@ -1,9 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0005",
   "phaseId": "PHASE-01",
   "title": "Testes/CI e esqueleto PlatformAdapter",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
     "AER-REQ-190",
     "AER-REQ-195",
@@ -14,23 +16,22 @@
     "AER-REQ-229",
     "AER-REQ-233"
   ],
-  "tests": [
-    "packages/platform-*/test/*.test.ts",
-    ".github/workflows/ci.yml"
+  "dependsOn": [
+    "TAR-0002"
   ],
   "evidence": [
-    ".ases/evidence/PHASE-01-verify.md",
-    "packages/platform-core/test/platform.test.ts",
-    ".github/workflows/ci.yml"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T00:08:43.332Z",
-      "text": "Win/Linux só via fakes; CI NOT_RUN"
+      "path": ".ases/evidence/PHASE-01-verify.md",
+      "sha256": "1b2a6164a7a857f0c5e3aad8b2de1520fed9da6d765683304694a6a458a966d2"
     },
     {
-      "at": "2026-11-23T00:10:38.398Z",
-      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026); integrado no commit 277c38a"
+      "path": "packages/platform-core/test/platform.test.ts",
+      "sha256": "da3ae797945e8cc8055275ee231e5c9f3a96302375ee20d776fc8a013e33d383"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "ccd8b41b16546ea99f47c411e37e69e733f0e71c67e9f2b540781f0f0b9ce0d0"
     }
-  ]
+  ],
+  "lastTest": null
 }

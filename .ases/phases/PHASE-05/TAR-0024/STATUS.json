@@ -1,29 +1,25 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0024",
   "phaseId": "PHASE-05",
   "title": "Fila de merge serializada",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
     "AER-REQ-055",
     "AER-REQ-056",
     "AER-REQ-057",
     "AER-REQ-059"
   ],
-  "tests": [
-    "packages/git-bridge/test/merge.test.ts"
+  "dependsOn": [
+    "TAR-0023"
   ],
   "evidence": [
-    ".ases/evidence/PHASE-05-verify.md"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T01:37:03.672Z",
-      "text": "integração autorizada pelo responsável"
-    },
-    {
-      "at": "2026-11-23T01:37:03.793Z",
-      "text": "fast-forward de ases/PHASE-05 em main (1663719); CI 8/8 verde"
+      "path": ".ases/evidence/PHASE-05-verify.md",
+      "sha256": "852ed26b0d100f4a93ca8a805e1fcad5e8fac3ddc21a6b2f6783743131de6119"
     }
-  ]
+  ],
+  "lastTest": null
 }

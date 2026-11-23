@@ -1,32 +1,33 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0008",
   "phaseId": "PHASE-02",
   "title": "Máquina de estados de tarefa e fase",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
     "AER-REQ-022",
     "AER-REQ-031",
     "AER-REQ-033",
     "AER-REQ-039"
   ],
-  "tests": [
-    "packages/contracts/test/state-machine.test.ts",
-    "packages/persistence/test/tasks.test.ts"
+  "dependsOn": [
+    "TAR-0006"
   ],
   "evidence": [
-    ".ases/evidence/PHASE-02-verify.md",
-    "packages/contracts/test/state-machine.test.ts",
-    "packages/persistence/test/store.test.ts"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T00:19:34.699Z",
-      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
+      "path": ".ases/evidence/PHASE-02-verify.md",
+      "sha256": "9078cb1509868ecee85464a5e50cdb3afe6b24dedff83cd9e9fb344d9985d632"
     },
     {
-      "at": "2026-11-23T00:19:34.810Z",
-      "text": "fast-forward de ases/PHASE-02 em main (9e4fa8b)"
+      "path": "packages/contracts/test/state-machine.test.ts",
+      "sha256": "7ef7438974c201f719940ca0a6e11f10b21c0362bb4b6211a68ef7bddd5c61f7"
+    },
+    {
+      "path": "packages/persistence/test/store.test.ts",
+      "sha256": "c7e08996485cbeb50c63b1f855bc94736a025f897e18304a7dd0bfdf9aa19398"
     }
-  ]
+  ],
+  "lastTest": null
 }

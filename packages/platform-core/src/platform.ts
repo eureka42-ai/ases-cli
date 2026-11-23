@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { chmodSync, lstatSync, mkdirSync, realpathSync, renameSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, lstatSync, mkdirSync, realpathSync, renameSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { NotImplementedError, PlatformError } from './errors.ts';
@@ -133,4 +133,24 @@ export function assertSupportedTarget(platform: string = process.platform, arch:
     throw new PlatformError('UNSUPPORTED_PLATFORM', `target ${platform}-${arch} is not supported.${hint}`);
   }
   return id;
+}
+
+/**
+ * Pasta sincronizada (iCloud Drive, OneDrive, Dropbox, Google Drive): o cliente de sync pode copiar o SQLite e o WAL
+ * no meio de uma escrita (cópias "arquivo 2", banco corrompido). Visto de verdade em 22/11/2026 com ~/Desktop no iCloud.
+ */
+export function syncedFolderHint(id: PlatformId, deps: PlatformDeps, dir: string): string | undefined {
+  const p = pathFor(id);
+  const parts = p.resolve(dir).split(/[\\/]+/);
+  if (parts.some((s, i) => s === 'Mobile Documents' && parts[i - 1] === 'Library')) return 'iCloud Drive';
+  if (id === 'darwin') {
+    for (const folder of ['Desktop', 'Documents']) {
+      const inside = p.resolve(dir).startsWith(p.join(deps.homedir, folder) + p.sep) || p.resolve(dir) === p.join(deps.homedir, folder);
+      if (inside && existsSync(p.join(deps.homedir, 'Library', 'Mobile Documents', 'com~apple~CloudDocs', folder))) return `iCloud Drive (${folder} sincronizado)`;
+    }
+  }
+  if (parts.some((s) => /^OneDrive( - .+)?$/.test(s))) return 'OneDrive';
+  if (parts.some((s) => s === 'Dropbox')) return 'Dropbox';
+  if (parts.some((s) => s === 'Google Drive' || s === 'My Drive' || s.startsWith('GoogleDrive-'))) return 'Google Drive';
+  return undefined;
 }

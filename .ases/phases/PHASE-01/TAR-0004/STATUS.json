@@ -1,31 +1,29 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0004",
   "phaseId": "PHASE-01",
   "title": "Bootstrap de .ases/",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
     "AER-REQ-011",
     "AER-REQ-016",
     "AER-REQ-151",
     "AER-REQ-181"
   ],
-  "tests": [
-    "test/ases-dev.test.mjs",
-    "node scripts/ases-dev.mjs verify"
+  "dependsOn": [
+    "TAR-0002"
   ],
   "evidence": [
-    ".ases/evidence/PHASE-01-verify.md",
-    "test/ases-dev.test.mjs"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T00:08:43.287Z",
-      "text": "init idempotente comprovado; JSONL interino até PHASE-02"
+      "path": ".ases/evidence/PHASE-01-verify.md",
+      "sha256": "1b2a6164a7a857f0c5e3aad8b2de1520fed9da6d765683304694a6a458a966d2"
     },
     {
-      "at": "2026-11-23T00:10:38.346Z",
-      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026); integrado no commit 277c38a"
+      "path": "test/ases-dev.test.mjs",
+      "sha256": "600e58ba089bc7c09df6d5f37a633a68b8083a7a452daab923b96be61d4b0010"
     }
-  ]
+  ],
+  "lastTest": null
 }

@@ -1,30 +1,30 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0006",
   "phaseId": "PHASE-02",
   "title": "Schema SQLite e migrações",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
     "AER-REQ-010",
     "AER-REQ-018",
     "AER-REQ-236"
   ],
-  "tests": [
-    "packages/persistence/test/migrations.test.ts"
-  ],
+  "dependsOn": [],
   "evidence": [
-    ".ases/evidence/PHASE-02-verify.md",
-    "docs/ADRs/ADR-0002.md",
-    "packages/persistence/test/migrations.test.ts"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T00:19:34.378Z",
-      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
+      "path": ".ases/evidence/PHASE-02-verify.md",
+      "sha256": "9078cb1509868ecee85464a5e50cdb3afe6b24dedff83cd9e9fb344d9985d632"
     },
     {
-      "at": "2026-11-23T00:19:34.479Z",
-      "text": "fast-forward de ases/PHASE-02 em main (9e4fa8b)"
+      "path": "docs/ADRs/ADR-0002.md",
+      "sha256": "1f0edd105874c8df189f1dc6c2eae13127d936a04ceb2a0a625f72e30c2622c8"
+    },
+    {
+      "path": "packages/persistence/test/migrations.test.ts",
+      "sha256": "c8069c12fadea91b8c4fc5b3b11a37ed91216bd83092e5c9e6cc879db90dc138"
     }
-  ]
+  ],
+  "lastTest": null
 }

@@ -1,9 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0020",
   "phaseId": "PHASE-04",
   "title": "Acessibilidade, larguras e smoke em pty",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
     "AER-REQ-088",
     "AER-REQ-089",
@@ -12,26 +14,24 @@
     "AER-REQ-245",
     "AER-REQ-246"
   ],
-  "tests": [
-    "test/e2e/pty.test.mjs"
+  "dependsOn": [
+    "TAR-0017",
+    "TAR-0018",
+    "TAR-0019"
   ],
   "evidence": [
-    ".ases/evidence/PHASE-04-verify.md",
-    "test/e2e/pty.test.mjs",
-    "docs/TUI-UX.md"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T01:02:02.785Z",
-      "text": "pty real só macOS; Linux/Windows NOT_RUN"
+      "path": ".ases/evidence/PHASE-04-verify.md",
+      "sha256": "b38a1fcb746a55f39b14d2c2e3f75a4008d7bf7d0ef759500df8cd3e8438548b"
     },
     {
-      "at": "2026-11-23T01:03:40.671Z",
-      "text": "integração autorizada pelo responsável (22/11/2026)"
+      "path": "test/e2e/pty.test.mjs",
+      "sha256": "14930dec4877298576f792091d2c0088c1618a405cd14c251c359fbdb6c288f2"
     },
     {
-      "at": "2026-11-23T01:03:40.771Z",
-      "text": "fast-forward de ases/PHASE-04 em main (5f98677)"
+      "path": "docs/TUI-UX.md",
+      "sha256": "1d219a19b5f95aaaafab73906eb1d7ca7d3d9c14543b127bc063ec03715acf7c"
     }
-  ]
+  ],
+  "lastTest": null
 }

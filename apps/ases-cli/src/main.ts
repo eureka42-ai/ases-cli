@@ -5,7 +5,7 @@ import { LOGO_MODES, THEMES, pickLogoMode, renderBrand, type LogoMode, type Them
 import { copyFileSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { ProjectStore, exportHistory, importLegacy, sqliteVersion } from '@aer/persistence';
-import { targetStatus } from '@aer/platform-core';
+import { defaultDeps, syncedFolderHint, targetStatus } from '@aer/platform-core';
 import { findProjectRoot, initProject, isInterimProject, loadPlatformAdapter, paths, readInterimProject, readManifest } from '@aer/project-store';
 import { writeReports } from './reports.ts';
 import { Engine } from './engine.ts';
@@ -78,7 +78,7 @@ async function main(argv: string[]): Promise<number> {
       app: VERSIONS.app, protocol: VERSIONS.protocol, platform: adapter.id, arch: process.arch, node: process.version,
       sqlite: { version: sqliteVersion(), driver: 'node:sqlite (experimental API, ADR-0002)' },
       terminal: caps,
-      project: root ? { projectId: readManifest(root).projectId, ipc: adapter.createLocalIpcEndpoint(readManifest(root).projectId).kind } : null,
+      project: root ? { projectId: readManifest(root).projectId, ipc: adapter.createLocalIpcEndpoint(readManifest(root).projectId).kind, syncedFolder: syncedFolderHint(adapter.id, defaultDeps(), root) ?? null } : null,
       providers: { status: 'NOT_PROBED', plannedPhase: 'PHASE-07' },
       secretStore: await adapter.getSecretStore().probe(),
       target: { id: `${process.platform}-${process.arch}`, status: targetStatus(process.platform, process.arch) },
@@ -137,6 +137,8 @@ async function main(argv: string[]): Promise<number> {
 class UsageError extends Error {}
 
 async function interactive(root: string, adapter: Awaited<ReturnType<typeof loadPlatformAdapter>>, ui: { color: boolean; banner: boolean; theme: ThemeName; mode: LogoMode; unicode: boolean; logo: LogoMode | undefined; tui: boolean }): Promise<number> {
+  const synced = syncedFolderHint(adapter.id, defaultDeps(), root);
+  if (synced) console.error(`AVISO: o projeto está numa pasta sincronizada (${synced}). O sync pode copiar o banco SQLite no meio de uma escrita e corrompê-lo; mova o projeto para uma pasta não sincronizada.`);
   const engine = await Engine.start(root, adapter);
   if (ui.tui) {
     const reason = await runTui(engine, { color: ui.color, unicode: ui.unicode, theme: ui.theme, logo: ui.logo });

@@ -1,9 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0015",
   "phaseId": "PHASE-03",
   "title": "E2E com dois processos reais",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
     "AER-REQ-090",
     "AER-REQ-091",
@@ -12,21 +14,19 @@
     "AER-REQ-099",
     "AER-REQ-191"
   ],
-  "tests": [
-    "test/e2e/two-processes.test.mjs"
+  "dependsOn": [
+    "TAR-0013",
+    "TAR-0014"
   ],
   "evidence": [
-    ".ases/evidence/PHASE-03-verify.md",
-    "test/e2e/two-processes.test.mjs"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T00:41:02.572Z",
-      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026)"
+      "path": ".ases/evidence/PHASE-03-verify.md",
+      "sha256": "edc1d8123fb5fada1141b5212052084e914d9970e543f05f4a56b248f6f5bdcf"
     },
     {
-      "at": "2026-11-23T00:41:02.668Z",
-      "text": "fast-forward de ases/PHASE-03 em main (31f5473)"
+      "path": "test/e2e/two-processes.test.mjs",
+      "sha256": "49452796a317613c992b1a9c65824b911095b0dfbcae792e4b342d3862cc9d58"
     }
-  ]
+  ],
+  "lastTest": null
 }

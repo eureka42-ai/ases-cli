@@ -1,31 +1,28 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
   "taskId": "TAR-0002",
   "phaseId": "PHASE-01",
   "title": "Monorepo TypeScript (npm workspaces)",
   "state": "COMPLETED",
+  "version": 1,
   "reqs": [
     "AER-REQ-005",
     "AER-REQ-006",
     "AER-REQ-007"
   ],
-  "tests": [
-    "npm run lint",
-    "npm run typecheck",
-    "test/boundaries.test.mjs"
+  "dependsOn": [
+    "TAR-0001"
   ],
   "evidence": [
-    ".ases/evidence/PHASE-01-verify.md",
-    "docs/ADRs/ADR-0001.md"
-  ],
-  "notes": [
     {
-      "at": "2026-11-23T00:08:43.195Z",
-      "text": "lint+typecheck PASS; lockfile gerado, ainda não commitado"
+      "path": ".ases/evidence/PHASE-01-verify.md",
+      "sha256": "1b2a6164a7a857f0c5e3aad8b2de1520fed9da6d765683304694a6a458a966d2"
     },
     {
-      "at": "2026-11-23T00:10:38.254Z",
-      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026); integrado no commit 277c38a"
+      "path": "docs/ADRs/ADR-0001.md",
+      "sha256": "dce43803ed05d7d366d7f497d02e1efb4e127b1582d2fa25b52c9830dbad3f17"
     }
-  ]
+  ],
+  "lastTest": null
 }

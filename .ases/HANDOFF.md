@@ -1,11 +1,11 @@
 # Handoff AER
 
-<!-- AUTO:BEGIN (gerado por scripts/ases-dev.mjs refresh; não editar) -->
-- Último evento válido: seq 157 em 2026-11-23T01:37:04.387Z
-- Git: branch `ases/PHASE-05`, HEAD `1663719`
-- Concluídas: TAR-0001, TAR-0002, TAR-0003, TAR-0004, TAR-0005, TAR-0006, TAR-0007, TAR-0008, TAR-0009, TAR-0010, TAR-0011, TAR-0012, TAR-0013, TAR-0014, TAR-0015, TAR-0016, TAR-0017, TAR-0018, TAR-0019, TAR-0020, TAR-0021, TAR-0022, TAR-0023, TAR-0024, TAR-0025, TAR-0026
+<!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
+- Último evento válido: seq 158 em 2026-11-23T01:40:15.604Z
+- Git: branch `main`, HEAD `a9a8efa`
+- Concluídas: 26 de 26
 - Abertas: nenhuma
-- Comando para retomar: `node scripts/ases-dev.mjs refresh` e ler `.ases/NEXT-STEPS.md` (o `ases resume` ainda não existe)
+- Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
 <!-- AUTO:END -->
 
 ## Notas da sessão
@@ -64,3 +64,15 @@
   - `.npmrc` `legacy-peer-deps` (o peer opcional `react-devtools-core` do Ink não é instalado; só é usado com `DEV=true`).
   - A reticência `…` do Ink no modo ASCII.
   - O `.ases/` deste repositório continua interino.
+
+### Sessão 22/11/2026 — publicação, CI real, PHASE-05 e corte
+- **Repositório:** `eureka42-ai/ases-cli` (privado). CI no GitHub Actions: macOS arm64, Windows x64/arm64, Ubuntu x64/arm64; Node 22 e 24.
+- **Primeiro CI real:** 8/8 falhando, por 4 causas reais, todas corrigidas:
+  - Ink em CI só desenha o último quadro;
+  - o harness do pty não matava o grupo de processos;
+  - CRLF quebrava o hashbang no Windows;
+  - EBUSY ao apagar bancos abertos no Windows.
+  - Depois disso, 8/8 verdes.
+- **PHASE-05** (scheduler, leases com fencing, worktrees, fila de merge, gate de evidência, corte): CI 8/8 verde (run 45095195993). Windows com 6 testes NOT_RUN (pty e só-POSIX).
+- **Corte do `.ases/`:** `ases migrate-interim` importou 157 eventos (prefixo byte a byte preservado), 5 fases, 26 tarefas e 56 evidências. A partir do seq 159 o engine é o escritor.
+- **Achado operacional:** `~/Desktop` sincronizado pelo iCloud gerou 15 cópias de conflito (" 2") de arquivos do `.ases/`; estavam desatualizadas e foram apagadas. O projeto foi clonado em `~/Projetos/eureka42/ases-cli`, e o `doctor` e o início do `ases` agora avisam sobre pastas sincronizadas.
