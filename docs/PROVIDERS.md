@@ -7,9 +7,9 @@
 | `simulator` | processo Node local | nenhuma | **SIMULATED** | testes + CI 8/8 | n/a |
 | `claude` | `claude -p --output-format stream-json --verbose --restricted --permission-prompts none --no-session-persistence --strict-mcp-config` | OFFICIAL_CLI_SESSION (login do próprio cliente) | **VERIFIED em 2.1.330** (outras versões: UNVERIFIED) | fixture real redigida + falso binário | **SIM**, smoke 23/11/2026 (`.ases/evidence/TAR-0035-smoke-real.md`) |
 | `codex` | `codex exec --json --ephemeral -C <worktree> -s workspace-write -c approval_policy="never"` | OFFICIAL_CLI_SESSION | **VERIFIED em 0.170.0** (outras versões: UNVERIFIED) | fixture real redigida + falso binário | **SIM**, smoke 23/11/2026 |
-| `kimi` | ACP: `kimi acp` (cliente ACP do AER, `@aer/provider-acp`) | OFFICIAL_CLI_SESSION (`kimi login`) | **UNVERIFIED** (faixa `[1.50.0, 1.51.0)`) | falso servidor ACP + handshake real sem prompt | **NÃO** (sem consentimento para Kimi) |
-| `opencode` | ACP: `opencode acp --cwd <worktree>` + `OPENCODE_CONFIG_CONTENT` forçando `ask` | credenciais do próprio OpenCode (`opencode auth login`) | **UNVERIFIED** (faixa `[1.19.6, 1.20.0)`) | falso servidor ACP + handshake real sem prompt | **NÃO** (sem consentimento para OpenCode) |
-| `google` | ACP: `gemini --acp` (documentado) | login do próprio Gemini CLI | **UNVERIFIED**; nenhuma versão testada | falso servidor ACP | **NÃO**: Gemini CLI **não instalado** neste Mac |
+| `kimi` | ACP: `kimi acp` (cliente ACP do AER, `@aer/provider-acp`) | OFFICIAL_CLI_SESSION (`kimi login`) | **VERIFIED em 1.50.0** (outras da faixa `[1.50.0, 1.51.0)`: UNVERIFIED) | fixture real redigida + falso servidor ACP | **SIM**, smoke 23/11/2026 (`.ases/evidence/TAR-0041-smoke-real.md`) |
+| `opencode` | ACP: `opencode acp --cwd <worktree>` + `OPENCODE_CONFIG_CONTENT` forçando `ask` | credenciais do próprio OpenCode (`opencode auth login`) | **UNVERIFIED** (faixa `[1.19.6, 1.20.0)`) | falso servidor ACP + fixture real do erro de chave expirada | **PARCIAL**: o prompt real deu `AUTH_EXPIRED` (chave de API expirada no OpenCode Console) |
+| `google` | ACP: `gemini --acp` (documentado) | login do próprio Gemini CLI | **UNVERIFIED**; nenhuma versão testada | falso servidor ACP | **NÃO**: Gemini CLI **não instalado** (a instalação global foi bloqueada pelo controle de permissões da sessão) |
 
 **VERIFIED** vale só para a versão exata cuja saída real foi capturada, redigida e versionada (`test/fixtures/real-*`, TAR-0035). Qualquer outra versão dentro da faixa aceita aparece como **UNVERIFIED**: o parser vem da documentação oficial e não foi validado contra saída real daquela versão (§7.6). Os caminhos de erro (auth expirada e limite atingido) continuam derivados da documentação mesmo nas versões VERIFIED.
 
@@ -17,11 +17,11 @@
 | Capacidade | claude | codex | kimi | opencode | google |
 |---|---|---|---|---|---|
 | Execução headless com stream estruturado | stream-json | exec --json | ACP | ACP | ACP (não testado) |
-| Quem decide permissões | flags fixas (`--restricted`, `--permission-prompts none`) | sandbox `workspace-write` + `approval_policy=never` | **AER**, pedido a pedido (`session/request_permission`) | **AER**, se `ask` for respeitado (a confirmar) | **AER** (não testado) |
+| Quem decide permissões | flags fixas (`--restricted`, `--permission-prompts none`) | sandbox `workspace-write` + `approval_policy=never` | **AER**, pedido a pedido (`session/request_permission`; o caminho vem do `diff`) | **AER**, se `ask` for respeitado (a confirmar) | **AER** (não testado) |
 | Shell | bloqueado (`--restricted`) | permitido **dentro do sandbox** | negado (`execute` → `reject_once`) | negado | negado |
 | Uso de tokens | sim (result) | sim (turn.completed) | **não** (o ACP v1 não reporta) | **não** | **não** |
 | Cancelamento | árvore de processos | árvore de processos | árvore de processos (o fim do stdin encerra limpo) | idem | idem |
-| Contrato | VERIFIED 2.1.330 | VERIFIED 0.170.0 | UNVERIFIED | UNVERIFIED | UNVERIFIED / UNSUPPORTED_VERSION |
+| Contrato | VERIFIED 2.1.330 | VERIFIED 0.170.0 | VERIFIED 1.50.0 | UNVERIFIED | UNVERIFIED / UNSUPPORTED_VERSION |
 
 ## Regras que valem para os providers reais
 - **Consentimento por run (AER-REQ-123):**
@@ -52,5 +52,7 @@
 | kimi/opencode sem comando oficial de status de login usado pelo AER | o `doctor` mostra READY pela versão; login ausente só aparece no `session/new` (`NOT_AUTHENTICATED`) | — |
 | `OPENCODE_CONFIG_CONTENT` (forçar `ask`) não confirmado em execução real | se o OpenCode ignorar, as ações não passam pelo AER; o diff da worktree continua autoritativo | smoke opt-in (TAR-0041) |
 | ACP: edições viram `file_change` `modify` (o protocolo não distingue criar/alterar) | o tipo exato vem do diff da worktree | — |
+| Kimi 1.50.0 não manda `kind`/`locations`; o caminho só aparece no `diff` do pedido de permissão | o AER deduz `edit` a partir do diff; um pedido sem diff e sem kind é negado | — (comportamento do vendor) |
+| Kimi tenta conferir o trabalho via Shell | o pedido é negado; a tarefa termina normal | — |
 | Google sem versão testada | qualquer `gemini` instalado aparece `UNSUPPORTED_VERSION` | instalar o Gemini CLI (com revisão) + smoke |
 | Termos de uso (assinatura em orquestração) | uso local autorizado pelo responsável em 23/11/2026; para distribuição, ainda não confirmado com os vendors | antes da distribuição |

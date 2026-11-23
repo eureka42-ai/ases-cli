@@ -4,8 +4,8 @@
   "taskId": "TAR-0041",
   "phaseId": "PHASE-08",
   "title": "Fixtures de teste e smoke opt-in",
-  "state": "BLOCKED",
-  "version": 2,
+  "state": "REVIEW",
+  "version": 7,
   "reqs": [
     "AER-REQ-123",
     "AER-REQ-125"
@@ -13,6 +13,11 @@
   "dependsOn": [
     "TAR-0039"
   ],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/TAR-0041-smoke-real.md",
+      "sha256": "9322183ce00689ce371104c8cf26bf466bba74841b1b43af61eda53a0c364c85"
+    }
+  ],
   "lastTest": null
 }

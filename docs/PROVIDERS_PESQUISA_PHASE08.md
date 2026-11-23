@@ -7,7 +7,7 @@ Fontes, em ordem de autoridade:
 
 **Probes sem efeito colateral usados:** `--version`, `--help`, `kimi info`, `opencode providers list` (lista só nomes, sem chaves) e o handshake ACP `initialize` + `session/new`. Esse handshake abre uma sessão, mas **não envia prompt** e não consome cota.
 
-**Ainda não foi feita nenhuma chamada com prompt** a Kimi ou OpenCode. A tentativa foi bloqueada pelo controle de permissões da sessão porque o consentimento do responsável tinha sido dado para Claude e Codex. O smoke real depende de um aceite explícito para estes dois (TAR-0041).
+**Atualização (mesmo dia):** com a autorização explícita do responsável, o smoke real foi feito. Resultado em `.ases/evidence/TAR-0041-smoke-real.md`: Kimi VERIFIED em 1.50.0; OpenCode com a chave de API expirada; Gemini não instalado.
 
 ## Ambiente encontrado (darwin-arm64)
 | Cliente | Versão | Binário | Auth |

@@ -26,8 +26,8 @@ describe('providers without login or cost (TAR-0036, AER-REQ-116/119/123/130)', 
     // o PATH do teste inclui a pasta do git; se o cliente estiver na mesma pasta (p.ex. /opt/homebrew/bin), ele é achado
     const inPath = (bin) => PATH.split(path.delimiter).some((d) => ['', '.exe', '.cmd'].some((x) => existsSync(path.join(d, bin + x))));
     for (const [id, bin] of [['kimi', 'kimi'], ['opencode', 'opencode'], ['google', 'gemini']]) {
-      expect(byId[id].contract).toBe('UNVERIFIED');
-      if (!inPath(bin)) expect(byId[id].availability).toBe('NOT_INSTALLED');
+      if (inPath(bin)) expect(['VERIFIED', 'UNVERIFIED']).toContain(byId[id].contract);
+      else expect(byId[id]).toMatchObject({ availability: 'NOT_INSTALLED', contract: 'UNVERIFIED' });
     }
   });
 

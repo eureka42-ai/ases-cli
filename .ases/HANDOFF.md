@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
-- Último evento válido: seq 311 em 2026-11-23T17:07:33.310Z
-- Git: branch `ases/PHASE-08`, HEAD `a9a6f83`
+- Último evento válido: seq 316 em 2026-11-23T17:19:10.878Z
+- Git: branch `ases/PHASE-08`, HEAD `ac72abf`
 - Concluídas: 36 de 42
-- Abertas: TAR-0037 (REVIEW), TAR-0038 (REVIEW), TAR-0039 (REVIEW), TAR-0040 (REVIEW), TAR-0041 (BLOCKED), TAR-0042 (REVIEW)
+- Abertas: TAR-0037 (REVIEW), TAR-0038 (REVIEW), TAR-0039 (REVIEW), TAR-0040 (REVIEW), TAR-0041 (REVIEW), TAR-0042 (REVIEW)
 - Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
 <!-- AUTO:END -->
 
@@ -115,6 +115,10 @@
   - TAR-0042: matriz de paridade (`docs/PROVIDERS.md`) e ADR-0013.
 - **Real, sem prompt:** versões, ajuda e handshake ACP (`initialize` + `session/new`) de kimi 1.50.0 e opencode 1.19.6. Os dois saem com 0 no fim do stdin.
 - **Testes:** `npm run verify` 226/226 (darwin-arm64).
-- **Bloqueio:** TAR-0041 BLOCKED (CONSENT_REQUIRED). O consentimento anterior valia para Claude/Codex, e o controle de permissões bloqueou o prompt real ao Kimi/OpenCode. O Gemini CLI não está instalado.
-- **Próxima operação segura:** CI da branch; com aceite, smoke real ACP; depois, aprovação e merge.
+- **Atualização:** o responsável autorizou tudo. Smoke real feito (`.ases/evidence/TAR-0041-smoke-real.md`):
+  - **Kimi 1.50.0 VERIFIED**, pelo adapter e pelo motor. Achado: o Kimi não manda `kind`/`locations`; o caminho vem do `diff` do pedido de permissão.
+  - **OpenCode:** chave de API expirada → `AUTH_EXPIRED`. A classificação foi corrigida.
+  - **Gemini:** a instalação global foi bloqueada pelo controle de permissões desta sessão; o responsável instala.
+  - `npm run verify` 229/229.
+- **Próxima operação segura:** CI da branch; aprovação do responsável; merge. Repetir o smoke do OpenCode e do Google quando houver chave nova e Gemini instalado.
 

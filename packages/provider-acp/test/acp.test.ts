@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
 import { createBaseAdapter, detectPlatform } from '@aer/platform-core';
 import type { AgentStreamEvent } from '@aer/provider-sdk';
-import { AcpProvider, GEMINI_SPEC, KIMI_SPEC, OPENCODE_SPEC, decidePermission, insideWorktree, type AcpSpec } from '../src/index.ts';
+import { AcpProvider, AcpSession, GEMINI_SPEC, KIMI_SPEC, OPENCODE_SPEC, decidePermission, insideWorktree, type AcpSpec } from '../src/index.ts';
 
 // FALSO servidor ACP (fixtures/fake-acp.mjs). Nenhum Kimi/OpenCode/Gemini real é chamado.
 const fake = fileURLToPath(new URL('./fixtures/fake-acp.mjs', import.meta.url));
@@ -117,9 +117,42 @@ describe('AcpProvider with a fake ACP server', () => {
   });
 });
 
+describe('AcpSession against REAL captured output (TAR-0041)', () => {
+  const fixtures = fileURLToPath(new URL('./fixtures/', import.meta.url));
+  const replay = (name: string, mode: 'READ_ONLY' | 'WORKTREE_WRITE' = 'WORKTREE_WRITE') => {
+    const sent: { id?: unknown; result?: { outcome?: { optionId?: string } } }[] = [];
+    const s = new AcpSession({ mode, workingDirectory: '/w/t' }, 'x', { write: (l) => sent.push(JSON.parse(l)), end: () => undefined });
+    const ev = readFileSync(path.join(fixtures, name), 'utf8').replaceAll('__CWD__', '/w/t').trim().split('\n').flatMap((l) => s.handle(JSON.parse(l)));
+    return { ev, s, sent };
+  };
+  it('kimi 1.50.0 write: permission without kind/locations is inferred from the diff; granted once; file_change; nothing unrecognized', () => {
+    const { ev, s, sent } = replay('real-kimi-1.50.0-write.jsonl');
+    expect(ev.filter((e) => e.type === 'status' && e.status === 'UNRECOGNIZED_EVENT')).toEqual([]);
+    expect(ev).toContainEqual(expect.objectContaining({ type: 'status', status: 'PERMISSION_GRANTED' }));
+    expect(ev.filter((e) => e.type === 'file_change')).toEqual([{ type: 'file_change', relativePath: 'hello.txt', kind: 'modify' }]);
+    expect(ev.some((e) => e.type === 'message')).toBe(true);
+    expect(sent.filter((m) => m.result?.outcome).map((m) => m.result!.outcome!.optionId)).toEqual(['approve']); // nunca approve_for_session
+    expect(s.state).toMatchObject({ phase: 'done', stopReason: 'end_turn' });
+    expect(JSON.stringify(ev)).not.toMatch(/"hi"|newText/); // conteúdo do arquivo não vai para o log
+  });
+  it('kimi 1.50.0 shell: real "Run command" request is rejected once', () => {
+    const { ev, sent } = replay('real-kimi-1.50.0-shell-denied.jsonl');
+    expect(ev).toContainEqual(expect.objectContaining({ type: 'status', status: 'PERMISSION_DENIED' }));
+    expect(sent.filter((m) => m.result?.outcome).map((m) => m.result!.outcome!.optionId)).toEqual(['reject']);
+    expect(JSON.stringify(ev)).not.toContain('ls -la');
+  });
+  it('opencode 1.19.6: expired API key at session/prompt → AUTH_EXPIRED (not NOT_AUTHENTICATED, not rate limit)', () => {
+    const { ev, s } = replay('real-opencode-1.19.6-auth-expired.jsonl');
+    expect(ev.filter((e) => e.type === 'error').map((e) => (e as { code: string }).code)).toEqual(['AUTH_EXPIRED']);
+    expect(ev.filter((e) => e.type === 'status' && e.status === 'UNRECOGNIZED_EVENT')).toEqual([]);
+    expect(s.state.phase).toBe('done');
+  });
+});
+
 describe('probe (no prompt, no login)', () => {
-  it('kimi/opencode READY and UNVERIFIED inside the tested range; outside → UNSUPPORTED_VERSION', async () => {
-    expect(await provider(KIMI_SPEC).probe()).toMatchObject({ availability: 'READY', version: '1.50.0', contractStatus: 'UNVERIFIED', simulated: false });
+  it('kimi VERIFIED only at the captured 1.50.0; opencode UNVERIFIED; outside the range → UNSUPPORTED_VERSION', async () => {
+    expect(await provider(KIMI_SPEC).probe()).toMatchObject({ availability: 'READY', version: '1.50.0', contractStatus: 'VERIFIED', simulated: false });
+    expect(await provider(KIMI_SPEC, { FAKE_VERSION: '1.50.1' }).probe()).toMatchObject({ availability: 'READY', contractStatus: 'UNVERIFIED' });
     expect(await provider(KIMI_SPEC, { FAKE_VERSION: '1.51.0' }).probe()).toMatchObject({ availability: 'UNSUPPORTED_VERSION' });
     expect(await provider(OPENCODE_SPEC, { FAKE_VERSION: '1.19.6' }).probe()).toMatchObject({ availability: 'READY', contractStatus: 'UNVERIFIED' });
   });

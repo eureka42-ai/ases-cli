@@ -53,7 +53,8 @@ export function decidePermission(toolCall: { kind?: string | undefined; location
 /** shortcut: classificação por texto/código (o ACP v1 só fixa -32000 auth_required); refinar com fixture real de erro. */
 export function classifyAcpError(code: number | undefined, text: string): string {
   if (/rate.?limit|usage limit|too many requests|\b429\b|quota/i.test(text)) return 'RATE_LIMITED';
-  if (/(token|session|login).{0,40}expired|expired.{0,40}(token|session|login)/i.test(text)) return 'AUTH_EXPIRED';
+  // "This API key has expired" (opencode 1.19.6, capturado em 23/11/2026)
+  if (/(token|session|login|key).{0,40}expired|expired.{0,40}(token|session|login|key)/i.test(text)) return 'AUTH_EXPIRED';
   if (code === -32000 || /auth(entication)? required|not logged in|login|unauthori[sz]ed|\b401\b|api key/i.test(text)) return 'NOT_AUTHENTICATED';
   return 'TASK_FAILED';
 }
@@ -71,7 +72,11 @@ export interface AcpSessionState {
   sessionId?: string | undefined;
 }
 
+/** nome para o log: o kind do ACP ou, se o agente não manda (kimi 1.50.0), a 1ª palavra do título ('WriteFile', 'Shell') */
+const toolName = (t: ToolInfo) => t.kind ?? (t.title?.split(/[\s:]/)[0] || 'unknown').slice(0, 60);
 const locationsOf = (v: unknown): string[] => (Array.isArray(v) ? v.map((l) => str(obj(l)?.path)).filter((x): x is string => !!x) : []);
+/** caminhos dos blocos `{type: 'diff', path}` do content (kimi 1.50.0 não manda kind/locations; o alvo vem só no diff) */
+const diffPathsOf = (v: unknown): string[] => (Array.isArray(v) ? v.map(obj).filter((c) => c?.type === 'diff').map((c) => str(c?.path)).filter((x): x is string => !!x) : []);
 
 /**
  * Máquina de estados do lado cliente: initialize → session/new → session/prompt → fim (fecha o stdin).
@@ -172,13 +177,14 @@ export class AcpSession {
         case 'available_commands_update':
         case 'current_mode_update':
         case 'plan':
+        case 'usage_update': // opencode: {used, size, cost} = ocupação da janela de contexto, não tokens consumidos; não vira uso
           return [];
         case 'tool_call': {
           const tid = str(u.toolCallId) ?? '?';
           const t: ToolInfo = { kind: str(u.kind), title: str(u.title), locations: locationsOf(u.locations) };
           this.tools.set(tid, t);
           // só kind e caminhos: rawInput (conteúdo, comandos) não vai para o log (§12.2)
-          return [...this.flush(), { type: 'tool_call', name: t.kind ?? 'unknown', safeArguments: { title: redactText(t.title ?? '', 120).text, paths: t.locations } }];
+          return [...this.flush(), { type: 'tool_call', name: toolName(t), safeArguments: { title: redactText(t.title ?? '', 120).text, paths: t.locations } }];
         }
         case 'tool_call_update': {
           const tid = str(u.toolCallId) ?? '?';
@@ -189,7 +195,7 @@ export class AcpSession {
           this.tools.set(tid, t);
           const status = str(u.status);
           if (status !== 'completed' && status !== 'failed') return [];
-          const out: AgentStreamEvent[] = [{ type: 'tool_result', name: t.kind ?? 'unknown', success: status === 'completed', safeSummary: redactText(`${status} ${t.title ?? ''}`, 300).text }];
+          const out: AgentStreamEvent[] = [{ type: 'tool_result', name: toolName(t), success: status === 'completed', safeSummary: redactText(`${status} ${t.title ?? ''}`, 300).text }];
           if (status === 'completed' && t.kind === 'edit') for (const l of t.locations) out.push({ type: 'file_change', relativePath: relativeTo(this.req.workingDirectory, l), kind: 'modify' });
           return out;
         }
@@ -202,8 +208,14 @@ export class AcpSession {
       const p = obj(m.params) ?? {};
       const tc = obj(p.toolCall) ?? {};
       const known = this.tools.get(str(tc.toolCallId) ?? '');
-      const locs = locationsOf(tc.locations);
-      const call = { kind: str(tc.kind) ?? known?.kind, locations: locs.length ? locs : known?.locations };
+      const diffs = diffPathsOf(tc.content);
+      const locs = [...new Set([...locationsOf(tc.locations), ...diffs])];
+      // sem kind declarado, um diff é por definição uma edição; a política de caminho continua valendo
+      const call = { kind: str(tc.kind) ?? known?.kind ?? (diffs.length ? 'edit' : undefined), locations: locs.length ? locs : known?.locations };
+      if (known && call.kind === 'edit') {
+        known.kind ??= 'edit';
+        if (!known.locations.length) known.locations = locs;
+      }
       const d = decidePermission(call, this.req.mode, this.req.workingDirectory);
       const options = Array.isArray(p.options) ? p.options.map(obj).filter((x): x is Json => !!x) : [];
       // só *_once: nenhuma decisão do AER pode persistir no cliente do usuário; sem a opção, responde "cancelled"
@@ -333,8 +345,9 @@ export class AcpProvider implements AgentProvider {
   }
 }
 
-/** Versões com fixture real capturada. Vazio até o smoke opt-in (TAR-0041). */
-export const KIMI_VERIFIED_VERSIONS: readonly string[] = [];
+/** Versões com fixture real capturada (TAR-0041, 23/11/2026): kimi com escrita concedida e shell negado. */
+export const KIMI_VERIFIED_VERSIONS: readonly string[] = ['1.50.0'];
+/** opencode 1.19.6: só o caminho de chave expirada foi capturado; sucesso não verificado → continua UNVERIFIED. */
 export const OPENCODE_VERIFIED_VERSIONS: readonly string[] = [];
 
 export const KIMI_SPEC: AcpSpec = {
