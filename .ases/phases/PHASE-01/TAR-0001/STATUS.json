@@ -3,7 +3,7 @@
   "taskId": "TAR-0001",
   "phaseId": "PHASE-01",
   "title": "Auditar ambiente local",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-001",
     "AER-REQ-002",
@@ -20,6 +20,10 @@
     {
       "at": "2026-11-23T00:08:43.146Z",
       "text": "auditoria read-only; pnpm ausente; npm workspaces escolhido"
+    },
+    {
+      "at": "2026-11-23T00:10:38.205Z",
+      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026); integrado no commit 277c38a"
     }
   ]
 }

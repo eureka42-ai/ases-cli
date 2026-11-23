@@ -3,7 +3,7 @@
   "taskId": "TAR-0005",
   "phaseId": "PHASE-01",
   "title": "Testes/CI e esqueleto PlatformAdapter",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-190",
     "AER-REQ-195",
@@ -27,6 +27,10 @@
     {
       "at": "2026-11-23T00:08:43.332Z",
       "text": "Win/Linux só via fakes; CI NOT_RUN"
+    },
+    {
+      "at": "2026-11-23T00:10:38.398Z",
+      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026); integrado no commit 277c38a"
     }
   ]
 }

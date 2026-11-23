@@ -3,7 +3,7 @@
   "taskId": "TAR-0004",
   "phaseId": "PHASE-01",
   "title": "Bootstrap de .ases/",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-011",
     "AER-REQ-016",
@@ -22,6 +22,10 @@
     {
       "at": "2026-11-23T00:08:43.287Z",
       "text": "init idempotente comprovado; JSONL interino até PHASE-02"
+    },
+    {
+      "at": "2026-11-23T00:10:38.346Z",
+      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026); integrado no commit 277c38a"
     }
   ]
 }

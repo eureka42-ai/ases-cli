@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "phaseId": "PHASE-01",
   "title": "Repositório e bootstrap seguro",
-  "state": "VERIFYING",
+  "state": "COMPLETED",
   "evidence": [
     ".ases/evidence/PHASE-01-verify.md"
   ],
@@ -10,6 +10,10 @@
     {
       "at": "2026-11-23T00:08:43.376Z",
       "text": "gate técnico PASS em macOS arm64; falta revisão humana + primeiro commit"
+    },
+    {
+      "at": "2026-11-23T00:10:38.444Z",
+      "text": "gate PASS em macOS arm64 (CI multiplataforma NOT_RUN); commit 277c38a"
     }
   ]
 }

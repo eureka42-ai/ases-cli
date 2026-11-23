@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado por scripts/ases-dev.mjs refresh; não editar) -->
-- Último evento válido: seq 13 em 2026-11-23T00:08:43.377Z
-- Git: branch `main`, HEAD `sem commits`
-- Concluídas: nenhuma
-- Abertas: TAR-0001 (REVIEW), TAR-0002 (REVIEW), TAR-0003 (REVIEW), TAR-0004 (REVIEW), TAR-0005 (REVIEW)
+- Último evento válido: seq 19 em 2026-11-23T00:10:38.446Z
+- Git: branch `main`, HEAD `277c38a`
+- Concluídas: TAR-0001, TAR-0002, TAR-0003, TAR-0004, TAR-0005
+- Abertas: nenhuma
 - Comando para retomar: `node scripts/ases-dev.mjs refresh` e ler `.ases/NEXT-STEPS.md` (o `ases resume` ainda não existe)
 <!-- AUTO:END -->
 

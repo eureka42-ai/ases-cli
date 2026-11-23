@@ -3,7 +3,7 @@
   "taskId": "TAR-0003",
   "phaseId": "PHASE-01",
   "title": "Contratos de projeto",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-010",
     "AER-REQ-013",
@@ -17,5 +17,10 @@
     ".ases/evidence/PHASE-01-verify.md",
     "packages/contracts/test/contracts.test.ts"
   ],
-  "notes": []
+  "notes": [
+    {
+      "at": "2026-11-23T00:10:38.299Z",
+      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026); integrado no commit 277c38a"
+    }
+  ]
 }

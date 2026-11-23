@@ -3,7 +3,7 @@
   "taskId": "TAR-0002",
   "phaseId": "PHASE-01",
   "title": "Monorepo TypeScript (npm workspaces)",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-005",
     "AER-REQ-006",
@@ -22,6 +22,10 @@
     {
       "at": "2026-11-23T00:08:43.195Z",
       "text": "lint+typecheck PASS; lockfile gerado, ainda não commitado"
+    },
+    {
+      "at": "2026-11-23T00:10:38.254Z",
+      "text": "revisão aprovada pelo responsável ('continue', 22/11/2026); integrado no commit 277c38a"
     }
   ]
 }
