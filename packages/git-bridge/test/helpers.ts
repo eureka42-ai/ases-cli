@@ -12,7 +12,7 @@ export async function tempRepo(): Promise<string> {
   const dir = mkdtempSync(path.join(os.tmpdir(), 'aer git ç '));
   dirs.push(dir);
   await git(dir, ['init', '-q', '-b', 'main']);
-  for (const [k, v] of [['user.name', 'AER Test'], ['user.email', 'aer-test@example.invalid'], ['commit.gpgsign', 'false']]) await git(dir, ['config', k!, v!]);
+  for (const [k, v] of [['user.name', 'AER Test'], ['user.email', 'aer-test@example.invalid'], ['commit.gpgsign', 'false'], ['core.autocrlf', 'false']]) await git(dir, ['config', k!, v!]);
   writeFileSync(path.join(dir, '.gitignore'), '.ases/worktrees/\n');
   writeFileSync(path.join(dir, 'app.txt'), 'linha 1\n');
   await git(dir, ['add', '.']);
