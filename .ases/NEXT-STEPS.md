@@ -6,9 +6,10 @@
 
 1. **PHASE-06: COMPLETED** (23/11/2026, CI 8/8 run 45192505934; `.ases/evidence/PHASE-06-verify.md`, ADR-0012).
    - Teste manual do simulador: `/task new PHASE-XX t --provider simulator[:hang|fail|approval|auth-expired|garbage|escape]`, depois `/task move TAR-XXXX READY` e `/run --parallel 2`, com `ases-tar` noutro terminal.
-2. **PHASE-07: em andamento** (branch `ases/PHASE-07`). TAR-0032..0036 estão em REVIEW, aguardando aprovação do responsável.
-   - Smoke real feito com consentimento (`.ases/evidence/TAR-0035-smoke-real.md`). Contrato **VERIFIED** em claude 2.1.330 e codex 0.170.0; outras versões, UNVERIFIED (`docs/PROVIDERS.md`).
-   - **Próximo:** CI da branch; aprovação; merge em `main`; PHASE-07 COMPLETED; depois PHASE-08.
+2. **PHASE-07: COMPLETED** (23/11/2026). Aprovada pelo responsável e integrada em `main` (`ca47806`).
+   - CI Linux/Windows 6/6 (run 45220306651). macOS não rodou no CI (os jobs ficaram na fila sem máquina); verificado só localmente, darwin-arm64, 215/215.
+   - Claude 2.1.330 e Codex 0.170.0 VERIFIED com smoke real (`.ases/evidence/TAR-0035-smoke-real.md`). Termos para **distribuição** ainda não confirmados com os vendors.
+   - **Próximo:** PHASE-08 (kimi, google, opencode), conforme o `ASES_CLI_MD_MESTRE.md`.
 3. **Pendências do responsável:**
    - Licença (bloqueia publicação).
    - Excluir/apagar a pasta antiga do Desktop quando quiser (tudo está no GitHub; o único arquivo não versionado lá era `.Rhistory`, que não é do projeto).

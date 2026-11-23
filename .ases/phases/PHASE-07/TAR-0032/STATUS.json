@@ -4,8 +4,8 @@
   "taskId": "TAR-0032",
   "phaseId": "PHASE-07",
   "title": "Pesquisa de flags e termos atuais (Claude Code, Codex)",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-113",
     "AER-REQ-120",

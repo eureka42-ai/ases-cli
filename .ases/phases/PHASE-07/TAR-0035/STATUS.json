@@ -4,8 +4,8 @@
   "taskId": "TAR-0035",
   "phaseId": "PHASE-07",
   "title": "Smoke opt-in com consentimento e transcript redigido",
-  "state": "REVIEW",
-  "version": 7,
+  "state": "COMPLETED",
+  "version": 10,
   "reqs": [
     "AER-REQ-111",
     "AER-REQ-112",

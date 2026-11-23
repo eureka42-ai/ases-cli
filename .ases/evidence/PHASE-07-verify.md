@@ -38,3 +38,13 @@ providers:
 ## Pendente
 - **TAR-0035 (smoke real): BLOCKED**, aguardando consentimento explícito do responsável.
 - **CI:** ainda não rodou para estes commits.
+
+## Atualização: fechamento (23/11/2026)
+- **Smoke real com consentimento:** `.ases/evidence/TAR-0035-smoke-real.md`. Os adapters passaram de UNVERIFIED a VERIFIED nas versões capturadas.
+- **`npm run verify` local:** 215/215 (darwin-arm64, Node 22.19.0).
+- **CI do commit `ca47806` (run 45220306651):** ubuntu-latest 22.x/24.x, ubuntu-24.04-arm 22.x, windows-latest 22.x/24.x e windows-11-arm 22.x passaram. **macos-latest 22.x/24.x: NOT_RUN**, porque o GitHub não alocou máquina e os jobs ficaram na fila com 0 passos (o mesmo aconteceu nos runs 45197848273 e 45219403006).
+- **Flakes corrigidos no caminho:**
+  - run 45217682603, ubuntu 22.x: Ctrl+C enviado antes do raw mode do Ink.
+  - run 45219403006, windows 22.x: `EBUSY` ao remover temp depois do `taskkill`.
+  - Nos dois casos, todos os testes de produto passaram.
+- **Aprovação:** feita pelo responsável. `main` avançou por fast-forward para `ca47806`.

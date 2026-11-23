@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
-- Último evento válido: seq 254 em 2026-11-23T16:31:58.376Z
-- Git: branch `ases/PHASE-07`, HEAD `0673613`
-- Concluídas: 31 de 36
-- Abertas: TAR-0032 (REVIEW), TAR-0033 (REVIEW), TAR-0034 (REVIEW), TAR-0035 (REVIEW), TAR-0036 (REVIEW)
+- Último evento válido: seq 271 em 2026-11-23T16:57:19.032Z
+- Git: branch `main`, HEAD `ca47806`
+- Concluídas: 36 de 36
+- Abertas: nenhuma
 - Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
 <!-- AUTO:END -->
 
@@ -105,4 +105,5 @@
 - **Nenhuma chamada real a provider:** sem consentimento para consumir cota. Os testes usam falsos binários com o formato documentado.
 - **Testes:** `npm run verify` 211/211 (darwin-arm64), e mais 2 rodadas 211/211.
 - **Atualização (mesma data):** o responsável deu todos os consentimentos (cota e termos, para uso local). TAR-0035 feita: 6 chamadas reais mínimas + smoke pelo motor (`claude` e `codex` → REVIEW, com commit na worktree). Fixtures reais redigidas versionadas. Contrato VERIFIED só em claude 2.1.330 e codex 0.170.0. `rate_limit_event` mapeado. Achado: o Codex pode editar via shell sem emitir `file_change`; o diff da worktree é a fonte autoritativa. Evidência: `.ases/evidence/TAR-0035-smoke-real.md`. `npm run verify` 215/215.
-- **Próxima operação segura:** CI da branch; com aprovação do responsável, aprovar TAR-0032..0036, merge em `main` e PHASE-07 COMPLETED.
+- **Fechamento:** o responsável aprovou e autorizou a integração. Fast-forward de `main` para `ca47806`; TAR-0032..0036 e PHASE-07 COMPLETED. CI Linux/Windows 6/6 (run 45220306651), depois de corrigir dois flakes de teste: Ctrl+C no pty antes do raw mode do Ink, e EBUSY na limpeza de temp no Windows. macOS sem runner no CI; verificado só localmente (215/215).
+- **Próxima operação segura:** iniciar a PHASE-08 numa branch `ases/PHASE-08`.

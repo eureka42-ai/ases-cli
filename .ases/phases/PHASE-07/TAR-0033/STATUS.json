@@ -4,8 +4,8 @@
   "taskId": "TAR-0033",
   "phaseId": "PHASE-07",
   "title": "Adapter Claude Code (claude -p, stream-json)",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-101",
     "AER-REQ-103",
