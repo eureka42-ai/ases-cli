@@ -3,7 +3,7 @@
   "taskId": "TAR-0018",
   "phaseId": "PHASE-04",
   "title": "ases-tar: overview + eventos ao vivo",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-092",
     "AER-REQ-096",
@@ -18,5 +18,14 @@
     "apps/ases-tar/test/tui.test.tsx",
     "apps/ases-tar/test/projection.test.ts"
   ],
-  "notes": []
+  "notes": [
+    {
+      "at": "2026-11-23T01:03:40.350Z",
+      "text": "integração autorizada pelo responsável (22/11/2026)"
+    },
+    {
+      "at": "2026-11-23T01:03:40.456Z",
+      "text": "fast-forward de ases/PHASE-04 em main (5f98677)"
+    }
+  ]
 }

@@ -3,7 +3,7 @@
   "taskId": "TAR-0019",
   "phaseId": "PHASE-04",
   "title": "ases-tar: detalhe da tarefa",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-085",
     "AER-REQ-094",
@@ -16,5 +16,14 @@
     ".ases/evidence/PHASE-04-verify.md",
     "apps/ases-tar/test/tui.test.tsx"
   ],
-  "notes": []
+  "notes": [
+    {
+      "at": "2026-11-23T01:03:40.517Z",
+      "text": "integração autorizada pelo responsável (22/11/2026)"
+    },
+    {
+      "at": "2026-11-23T01:03:40.620Z",
+      "text": "fast-forward de ases/PHASE-04 em main (5f98677)"
+    }
+  ]
 }

@@ -3,7 +3,7 @@
   "taskId": "TAR-0020",
   "phaseId": "PHASE-04",
   "title": "Acessibilidade, larguras e smoke em pty",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-088",
     "AER-REQ-089",
@@ -24,6 +24,14 @@
     {
       "at": "2026-11-23T01:02:02.785Z",
       "text": "pty real só macOS; Linux/Windows NOT_RUN"
+    },
+    {
+      "at": "2026-11-23T01:03:40.671Z",
+      "text": "integração autorizada pelo responsável (22/11/2026)"
+    },
+    {
+      "at": "2026-11-23T01:03:40.771Z",
+      "text": "fast-forward de ases/PHASE-04 em main (5f98677)"
     }
   ]
 }

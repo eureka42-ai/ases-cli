@@ -3,7 +3,7 @@
   "taskId": "TAR-0017",
   "phaseId": "PHASE-04",
   "title": "ases: home + sessão TUI",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-081",
     "AER-REQ-084",
@@ -21,5 +21,14 @@
     "apps/ases-cli/test/tui.test.tsx",
     "test/e2e/pty.test.mjs"
   ],
-  "notes": []
+  "notes": [
+    {
+      "at": "2026-11-23T01:03:40.175Z",
+      "text": "integração autorizada pelo responsável (22/11/2026)"
+    },
+    {
+      "at": "2026-11-23T01:03:40.298Z",
+      "text": "fast-forward de ases/PHASE-04 em main (5f98677)"
+    }
+  ]
 }

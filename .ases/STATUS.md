@@ -1,6 +1,6 @@
 # STATUS AER
 
-Último evento: seq 106 (PhaseUpdated, 2026-11-23T01:02:02.842Z)
+Último evento: seq 122 (PhaseUpdated, 2026-11-23T01:03:40.840Z)
 
 ## Fases
 | Fase | Título | Estado | Evidência |
@@ -8,7 +8,7 @@
 | PHASE-01 | Repositório e bootstrap seguro | COMPLETED | .ases/evidence/PHASE-01-verify.md |
 | PHASE-02 | SQLite + eventos + estados | COMPLETED | .ases/evidence/PHASE-02-verify.md |
 | PHASE-03 | Dois executáveis e IPC | COMPLETED | .ases/evidence/PHASE-03-verify.md |
-| PHASE-04 | TUI utilizável + marca Eureka42 | VERIFYING | .ases/evidence/PHASE-04-verify.md |
+| PHASE-04 | TUI utilizável + marca Eureka42 | COMPLETED | .ases/evidence/PHASE-04-verify.md |
 
 ## Tarefas
 | Tarefa | Fase | Título | Estado | Evidência |
@@ -28,10 +28,10 @@
 | TAR-0013 | PHASE-03 | Cliente IPC e assinatura de eventos | COMPLETED | .ases/evidence/PHASE-03-verify.md<br>packages/ipc/test/ipc.test.ts<br>docs/API.md |
 | TAR-0014 | PHASE-03 | Monitor somente leitura | COMPLETED | .ases/evidence/PHASE-03-verify.md<br>packages/ipc/test/ipc.test.ts |
 | TAR-0015 | PHASE-03 | E2E com dois processos reais | COMPLETED | .ases/evidence/PHASE-03-verify.md<br>test/e2e/two-processes.test.mjs |
-| TAR-0016 | PHASE-04 | tui-shared: tema, marca, badges, painéis, ajuda | REVIEW | .ases/evidence/PHASE-04-verify.md<br>packages/tui-shared/test/tui-shared.test.tsx<br>docs/ADRs/ADR-0011.md |
-| TAR-0017 | PHASE-04 | ases: home + sessão TUI | REVIEW | .ases/evidence/PHASE-04-verify.md<br>apps/ases-cli/test/tui.test.tsx<br>test/e2e/pty.test.mjs |
-| TAR-0018 | PHASE-04 | ases-tar: overview + eventos ao vivo | REVIEW | .ases/evidence/PHASE-04-verify.md<br>apps/ases-tar/test/tui.test.tsx<br>apps/ases-tar/test/projection.test.ts |
-| TAR-0019 | PHASE-04 | ases-tar: detalhe da tarefa | REVIEW | .ases/evidence/PHASE-04-verify.md<br>apps/ases-tar/test/tui.test.tsx |
-| TAR-0020 | PHASE-04 | Acessibilidade, larguras e smoke em pty | REVIEW | .ases/evidence/PHASE-04-verify.md<br>test/e2e/pty.test.mjs<br>docs/TUI-UX.md |
+| TAR-0016 | PHASE-04 | tui-shared: tema, marca, badges, painéis, ajuda | COMPLETED | .ases/evidence/PHASE-04-verify.md<br>packages/tui-shared/test/tui-shared.test.tsx<br>docs/ADRs/ADR-0011.md |
+| TAR-0017 | PHASE-04 | ases: home + sessão TUI | COMPLETED | .ases/evidence/PHASE-04-verify.md<br>apps/ases-cli/test/tui.test.tsx<br>test/e2e/pty.test.mjs |
+| TAR-0018 | PHASE-04 | ases-tar: overview + eventos ao vivo | COMPLETED | .ases/evidence/PHASE-04-verify.md<br>apps/ases-tar/test/tui.test.tsx<br>apps/ases-tar/test/projection.test.ts |
+| TAR-0019 | PHASE-04 | ases-tar: detalhe da tarefa | COMPLETED | .ases/evidence/PHASE-04-verify.md<br>apps/ases-tar/test/tui.test.tsx |
+| TAR-0020 | PHASE-04 | Acessibilidade, larguras e smoke em pty | COMPLETED | .ases/evidence/PHASE-04-verify.md<br>test/e2e/pty.test.mjs<br>docs/TUI-UX.md |
 
 Estados sem evidência listada não foram verificados. NOT_RUN ≠ PASS.

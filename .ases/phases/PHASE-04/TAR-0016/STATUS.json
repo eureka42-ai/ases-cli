@@ -3,7 +3,7 @@
   "taskId": "TAR-0016",
   "phaseId": "PHASE-04",
   "title": "tui-shared: tema, marca, badges, painéis, ajuda",
-  "state": "REVIEW",
+  "state": "COMPLETED",
   "reqs": [
     "AER-REQ-240",
     "AER-REQ-243",
@@ -18,5 +18,14 @@
     "packages/tui-shared/test/tui-shared.test.tsx",
     "docs/ADRs/ADR-0011.md"
   ],
-  "notes": []
+  "notes": [
+    {
+      "at": "2026-11-23T01:03:40.002Z",
+      "text": "integração autorizada pelo responsável (22/11/2026)"
+    },
+    {
+      "at": "2026-11-23T01:03:40.108Z",
+      "text": "fast-forward de ases/PHASE-04 em main (5f98677)"
+    }
+  ]
 }
