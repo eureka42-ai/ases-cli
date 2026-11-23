@@ -9,7 +9,7 @@
 | `codex` | `codex exec --json --ephemeral -C <worktree> -s workspace-write -c approval_policy="never"` | OFFICIAL_CLI_SESSION | **VERIFIED em 0.170.0** (outras versões: UNVERIFIED) | fixture real redigida + falso binário | **SIM**, smoke 23/11/2026 |
 | `kimi` | ACP: `kimi acp` (cliente ACP do AER, `@aer/provider-acp`) | OFFICIAL_CLI_SESSION (`kimi login`) | **VERIFIED em 1.50.0** (outras da faixa `[1.50.0, 1.51.0)`: UNVERIFIED) | fixture real redigida + falso servidor ACP | **SIM**, smoke 23/11/2026 (`.ases/evidence/TAR-0041-smoke-real.md`) |
 | `opencode` | ACP: `opencode acp --cwd <worktree>` + `OPENCODE_CONFIG_CONTENT` forçando `ask` | credenciais do próprio OpenCode (`opencode auth login`) | **UNVERIFIED** (faixa `[1.19.6, 1.20.0)`) | falso servidor ACP + fixture real do erro de chave expirada | **PARCIAL**: o prompt real deu `AUTH_EXPIRED` (chave de API expirada no OpenCode Console) |
-| `google` | ACP: `gemini --acp` (documentado) | login do próprio Gemini CLI | **UNVERIFIED**; nenhuma versão testada | falso servidor ACP | **NÃO**: Gemini CLI **não instalado** (a instalação global foi bloqueada pelo controle de permissões da sessão) |
+| `google` | ACP: `gemini --acp` | login do próprio Gemini CLI (Google, API key, Vertex ou gateway) | **UNVERIFIED** (faixa `[0.70.0, 0.71.0)`) | falso servidor ACP + handshake real 0.70.0 | **PARCIAL**: handshake real; sem login, `session/new` dá `-32000` → `NOT_AUTHENTICATED` |
 
 **VERIFIED** vale só para a versão exata cuja saída real foi capturada, redigida e versionada (`test/fixtures/real-*`, TAR-0035). Qualquer outra versão dentro da faixa aceita aparece como **UNVERIFIED**: o parser vem da documentação oficial e não foi validado contra saída real daquela versão (§7.6). Os caminhos de erro (auth expirada e limite atingido) continuam derivados da documentação mesmo nas versões VERIFIED.
 
@@ -54,5 +54,5 @@
 | ACP: edições viram `file_change` `modify` (o protocolo não distingue criar/alterar) | o tipo exato vem do diff da worktree | — |
 | Kimi 1.50.0 não manda `kind`/`locations`; o caminho só aparece no `diff` do pedido de permissão | o AER deduz `edit` a partir do diff; um pedido sem diff e sem kind é negado | — (comportamento do vendor) |
 | Kimi tenta conferir o trabalho via Shell | o pedido é negado; a tarefa termina normal | — |
-| Google sem versão testada | qualquer `gemini` instalado aparece `UNSUPPORTED_VERSION` | instalar o Gemini CLI (com revisão) + smoke |
+| Google sem prompt real | 0.70.x aparece READY/UNVERIFIED; sem login, a tarefa falha com `NOT_AUTHENTICATED` | login do responsável (`gemini` num terminal interativo) + smoke |
 | Termos de uso (assinatura em orquestração) | uso local autorizado pelo responsável em 23/11/2026; para distribuição, ainda não confirmado com os vendors | antes da distribuição |

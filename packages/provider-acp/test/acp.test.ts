@@ -141,6 +141,12 @@ describe('AcpSession against REAL captured output (TAR-0041)', () => {
     expect(sent.filter((m) => m.result?.outcome).map((m) => m.result!.outcome!.optionId)).toEqual(['reject']);
     expect(JSON.stringify(ev)).not.toContain('ls -la');
   });
+  it('gemini 0.70.0 without login: real -32000 at session/new → NOT_AUTHENTICATED', () => {
+    const { ev, s } = replay('real-gemini-0.70.0-not-authenticated.jsonl');
+    expect(ev.filter((e) => e.type === 'error').map((e) => (e as { code: string }).code)).toEqual(['NOT_AUTHENTICATED']);
+    expect(ev[0]).toEqual({ type: 'status', status: 'INIT', detail: 'gemini-cli 0.70.0' });
+    expect(s.state.phase).toBe('done');
+  });
   it('opencode 1.19.6: expired API key at session/prompt → AUTH_EXPIRED (not NOT_AUTHENTICATED, not rate limit)', () => {
     const { ev, s } = replay('real-opencode-1.19.6-auth-expired.jsonl');
     expect(ev.filter((e) => e.type === 'error').map((e) => (e as { code: string }).code)).toEqual(['AUTH_EXPIRED']);
@@ -157,9 +163,11 @@ describe('probe (no prompt, no login)', () => {
     expect(await provider(OPENCODE_SPEC, { FAKE_VERSION: '1.19.6' }).probe()).toMatchObject({ availability: 'READY', contractStatus: 'UNVERIFIED' });
   });
 
-  it('google: NOT_INSTALLED without gemini; any installed version is UNSUPPORTED_VERSION until tested', async () => {
+  it('google: NOT_INSTALLED without gemini; 0.70.x READY/UNVERIFIED; other versions UNSUPPORTED_VERSION; --acp argv', async () => {
     const missing = new AcpProvider(adapter, GEMINI_SPEC, { env: { PATH: root } });
     expect(await missing.probe()).toMatchObject({ availability: 'NOT_INSTALLED', providerId: 'google' });
-    expect(await provider(GEMINI_SPEC, { FAKE_VERSION: '0.40.0' }).probe()).toMatchObject({ availability: 'UNSUPPORTED_VERSION', evidence: [expect.stringContaining('no Gemini CLI version has been tested')] });
+    expect(await provider(GEMINI_SPEC, { FAKE_VERSION: '0.70.0' }).probe()).toMatchObject({ availability: 'READY', contractStatus: 'UNVERIFIED' });
+    expect(await provider(GEMINI_SPEC, { FAKE_VERSION: '0.40.0' }).probe()).toMatchObject({ availability: 'UNSUPPORTED_VERSION' });
+    expect(GEMINI_SPEC.acpArgs('/w')).toEqual(['--acp']);
   });
 });

@@ -29,8 +29,14 @@ As chamadas usaram o próprio adapter (`AcpProvider`, dist) e um wrapper que só
   - se o `OPENCODE_CONFIG_CONTENT` faz o OpenCode pedir permissão.
   - Pré-requisito: o responsável criar uma chave nova no OpenCode Console.
 
-## Google (Gemini CLI): NOT_INSTALLED
-`npm i -g @google/gemini-cli` foi **bloqueado pelo controle de permissões da sessão** (instalação global), mesmo com a autorização do responsável. O bloqueio não foi contornado. Instalação e login ficam para o próprio responsável.
+## Google (Gemini CLI 0.70.0): UNVERIFIED, sem login
+- **Instalação:** a instalação global pelo agente foi bloqueada pelo controle de permissões da sessão e não foi contornada. O **próprio responsável instalou** com `npm i -g @google/gemini-cli` (0.70.0).
+- **`gemini` sem terminal interativo:** pede um método de autenticação. O login ainda não foi feito.
+- **Handshake real `gemini --acp`:**
+  - `initialize` dá `protocolVersion: 1`;
+  - `authMethods`: `oauth-personal`, `gemini-api-key`, `vertex-ai` e `gateway`;
+  - `session/new` dá o erro `-32000` "Gemini API key is missing or not configured.", e o adapter classifica como `NOT_AUTHENTICATED` (fixture `real-gemini-0.70.0-not-authenticated.jsonl`).
+- **Faixa:** habilitada em `[0.70.0, 0.71.0)` como UNVERIFIED. O prompt real depende do login.
 
 ## Fixtures reais redigidas
 Arquivos `packages/provider-acp/test/fixtures/real-*`:
@@ -51,5 +57,5 @@ O script recusa gravar se sobrar `raulg`, `@` ou `sk-`.
 ## `npm run verify`
 ```text
  Test Files  37 passed (37)
-      Tests  229 passed (229)
+      Tests  230 passed (230)
 ```

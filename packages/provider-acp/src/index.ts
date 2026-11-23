@@ -366,11 +366,11 @@ export const OPENCODE_SPEC: AcpSpec = {
   env: { OPENCODE_CONFIG_CONTENT: JSON.stringify({ permission: { edit: 'ask', bash: 'ask', webfetch: 'ask' } }) },
 };
 
-/** Google: `gemini --acp` é a interface documentada, mas nenhuma versão foi testada (não instalado neste Mac). */
+/** Google: `gemini --acp` (documentado). 0.70.0: handshake ACP v1 real verificado (23/11/2026); prompt ainda não → UNVERIFIED. */
 export const GEMINI_SPEC: AcpSpec = {
   id: 'google', binary: 'gemini', label: 'Gemini CLI',
   acpArgs: () => ['--acp'], versionArgs: ['--version'],
-  supported: null, verifiedVersions: [],
+  supported: { min: '0.70.0', maxExclusive: '0.71.0' }, verifiedVersions: [],
   loginHint: 'run `gemini` and log in yourself; the AER never logs in for you',
 };
 
