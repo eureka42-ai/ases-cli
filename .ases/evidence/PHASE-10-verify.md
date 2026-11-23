@@ -39,10 +39,18 @@ O teste usa os bins compilados, um projeto temporário e `HOME` isolado; o PATH 
 ## Manual
 `ases secret set/has/delete/status` no Keychain real deste Mac. Uma entrada de teste (`aer-dev-test`) foi gravada no chaveiro de login e **removida** em seguida.
 
+## Defeitos reais encontrados pelo CI (corrigidos)
+1. **Windows: o servidor MCP herdava o ambiente inteiro do engine** (run 45251873118). Agora o servidor sobe com uma **allowlist** de variáveis (`mcpEnv`: PATH, HOME, TEMP, SystemRoot…), sem credenciais nem variáveis internas do Node/vitest, como pede o §12.2.
+2. **Windows: depois do health check, o `ases` dizia "engine encerrado" e não saía** (run 45254028483). Os pipes do servidor MCP continuavam referenciados depois do `taskkill`. Agora stdin, stdout e stderr são encerrados explicitamente.
+   - A causa só apareceu depois de o e2e passar a anexar stdout/stderr da sessão quando falha.
+3. **Ubuntu: o flake do pty voltou** (run 45252718578): o 1º Ctrl+C chegava antes do raw mode e virava SIGINT do tty. Agora o teste espera o raw mode ("?" com prompt vazio abre a ajuda, o que não acontece em modo normal) antes do Ctrl+C.
+
+CI do commit `6eaf402` (run 45254652196): Linux e Windows 6/6.
+
 ## `npm run verify`
 ```text
 boundaries: OK
  Test Files  43 passed (43)
-      Tests  262 passed (262)
+      Tests  263 passed (263)
 ```
 Os testes de segurança (14) foram repetidos mais 2 vezes, com 14/14 nas duas.
