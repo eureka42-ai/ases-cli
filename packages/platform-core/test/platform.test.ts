@@ -147,12 +147,15 @@ describe('synced folder hint (SQLite safety)', () => {
   afterAll(() => rmSync(home, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
   const deps: PlatformDeps = { env: {}, tmpdir: '/tmp', homedir: home, username: 'u' };
 
-  it('flags iCloud Desktop only when Desktop sync is on, plus OneDrive/Dropbox/Google Drive', () => {
+  it.runIf(process.platform !== 'win32')('flags iCloud Desktop only when Desktop sync is on (macOS paths)', () => {
     expect(syncedFolderHint('darwin', deps, path.join(home, 'Desktop', 'proj'))).toBeUndefined();
     mkdirSync(path.join(home, 'Library', 'Mobile Documents', 'com~apple~CloudDocs', 'Desktop'), { recursive: true });
     expect(syncedFolderHint('darwin', deps, path.join(home, 'Desktop', 'proj'))).toBe('iCloud Drive (Desktop sincronizado)');
     expect(syncedFolderHint('darwin', deps, path.join(home, 'Projetos', 'proj'))).toBeUndefined();
     expect(syncedFolderHint('darwin', deps, '/Users/u/Library/Mobile Documents/com~apple~CloudDocs/x')).toBe('iCloud Drive');
+  });
+
+  it('flags OneDrive, Dropbox and Google Drive on any host', () => {
     expect(syncedFolderHint('win32', win, 'C:\\Users\\u\\OneDrive - Empresa\\proj')).toBe('OneDrive');
     expect(syncedFolderHint('linux', linux, '/home/u/Dropbox/proj')).toBe('Dropbox');
     expect(syncedFolderHint('linux', linux, '/home/u/code/proj')).toBeUndefined();
