@@ -82,3 +82,5 @@ Fontes:
 - https://code.claude.com/docs/en/legal-and-compliance
 - https://code.claude.com/docs/en/agent-sdk/overview
 - https://developers.openai.com/codex/noninteractive
+
+**Atualização (23/11/2026):** o responsável declarou que todos os vendors (Anthropic, OpenAI, Moonshot, OpenCode e Google) autorizaram a orquestração pelo AER. A declaração está registrada; o AER não verificou os documentos.

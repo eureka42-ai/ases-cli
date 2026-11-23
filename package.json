@@ -4,7 +4,7 @@
   "private": true,
   "description": "Eureka42 · ASES Engineering Runtime (AER) — monorepo (PHASE-01, sem binários publicados ainda)",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "CC-BY-NC-ND-4.0",
   "workspaces": [
     "packages/*",
     "apps/*"

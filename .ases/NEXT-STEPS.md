@@ -14,11 +14,13 @@
      - Kimi 1.50.0;
      - OpenCode 2.4.1;
      - Google via Antigravity CLI (`agy`) 1.5.13.
-   - **Matriz dos cinco ecossistemas completa** (`docs/PROVIDERS.md`). Os termos de uso para distribuição seguem UNKNOWN.
+   - **Matriz dos cinco ecossistemas completa** (`docs/PROVIDERS.md`). Termos: autorização declarada pelo responsável.
    - **Próximo:** aprovação; merge em `main`; PHASE-08 COMPLETED; depois PHASE-09 (ASES-300/500 e rastreabilidade).
-4. **Pendências do responsável:**
-   - Licença (bloqueia publicação).
-   - Excluir/apagar a pasta antiga do Desktop quando quiser (tudo está no GitHub; o único arquivo não versionado lá era `.Rhistory`, que não é do projeto).
+4. **Decisões do responsável (23/11/2026):**
+   - **Licença:** CC BY-NC-ND 4.0, Open Access (`LICENSE`; `package.json` com `CC-BY-NC-ND-4.0`). AER-REQ-210 atendido.
+   - **Termos dos providers:** o responsável declarou que todos os vendors autorizaram a orquestração. A declaração está registrada; os documentos de autorização não estão no repositório.
+   - **Pasta antiga do Desktop:** o responsável vai apagar.
+   - **Pendente:** conferir o limite de gasto/cota de Actions da organização `eureka42-ai`, porque os jobs macOS ficam na fila sem máquina.
 5. **Restauração a partir do espelho** (clone novo sem banco → `DB_MISSING`): planejada no Project Passport (PHASE-11). Até lá, este Mac é o dono do banco.
 
 Verificação rápida: `npm run verify && node scripts/ases-dev.mjs verify`.

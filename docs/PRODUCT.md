@@ -27,5 +27,5 @@ Web/PWA/Electron, pool de cotas entre assinaturas, reutilização de credenciais
 - Matriz: macOS arm64 testado localmente (unit, integração, E2E com processos reais e pty). Windows/Linux **NOT_RUN** (CI definido, sem remoto). macOS Intel **fora do escopo** (CHANGE-0001).
 
 ## Pendências
-- Licença (bloqueia publicação, AER-REQ-210).
+- Licença: **CC BY-NC-ND 4.0** (decisão do responsável em 23/11/2026; `LICENSE`). AER-REQ-210 atendido.
 - Driver SQLite (ADR-0002).

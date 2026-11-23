@@ -57,4 +57,4 @@
 | Shell negado: OpenCode 2.4.1 encerra o turno como `cancelled`, e a tarefa fica FAILED (`TASK_FAILED`); Kimi e agy terminam normal | resultado honesto; o agente não contorna | — |
 | Título de ferramenta `execute` pode conter o comando (agy: `ls -la`) | o AER registra `[comando omitido]` | — |
 | Gemini CLI (`gemini --acp`) não é mais usado | login de conta Google encerrado para planos individuais em 18/06/2026; o provider `google` usa o Antigravity CLI | — |
-| Termos de uso (assinatura em orquestração) | uso local autorizado pelo responsável em 23/11/2026; para distribuição, ainda não confirmado com os vendors | antes da distribuição |
+| Termos de uso (assinatura em orquestração) | o responsável declarou em 23/11/2026 que todos os vendors autorizaram; os documentos não estão no repositório | — |

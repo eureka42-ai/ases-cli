@@ -77,3 +77,5 @@ Os termos de Moonshot (Kimi), OpenCode (Zen/Go) e Google para orquestração por
 - [Gemini CLI: ACP mode](https://geminicli.com/docs/cli/acp-mode/)
 - [Kimi Code CLI: `kimi acp`](https://www.kimi.com/code/docs/en/kimi-code-cli/reference/kimi-acp)
 - [Kimi Code CLI: comando `kimi`](https://www.kimi.com/code/docs/en/kimi-code-cli/reference/kimi-command)
+
+**Atualização (23/11/2026):** o responsável declarou que todos os vendors (Anthropic, OpenAI, Moonshot, OpenCode e Google) autorizaram a orquestração pelo AER. A declaração está registrada; o AER não verificou os documentos.
