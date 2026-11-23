@@ -6,10 +6,9 @@
 
 1. **PHASE-06: COMPLETED** (23/11/2026, CI 8/8 run 45192505934; `.ases/evidence/PHASE-06-verify.md`, ADR-0012).
    - Teste manual do simulador: `/task new PHASE-XX t --provider simulator[:hang|fail|approval|auth-expired|garbage|escape]`, depois `/task move TAR-XXXX READY` e `/run --parallel 2`, com `ases-tar` noutro terminal.
-2. **PHASE-07: em andamento** (branch `ases/PHASE-07`). TAR-0032/33/34/36 estão em REVIEW; **TAR-0035 está BLOCKED, aguardando consentimento**.
-   - Adapters prontos com contrato **UNVERIFIED** (`docs/PROVIDERS.md`). Nenhuma chamada real foi feita.
-   - **Para destravar:** aceite do responsável para o smoke (consome cota do Claude Pro e do ChatGPT) e uma posição sobre os termos de uso (`docs/PROVIDERS_PESQUISA.md`).
-   - **Smoke previsto:** fase de teste com 1 tarefa `claude` e 1 `codex` só de leitura (`/run --consent claude,codex`), capturando o stream bruto como fixture redigida.
+2. **PHASE-07: em andamento** (branch `ases/PHASE-07`). TAR-0032..0036 estão em REVIEW, aguardando aprovação do responsável.
+   - Smoke real feito com consentimento (`.ases/evidence/TAR-0035-smoke-real.md`). Contrato **VERIFIED** em claude 2.1.330 e codex 0.170.0; outras versões, UNVERIFIED (`docs/PROVIDERS.md`).
+   - **Próximo:** CI da branch; aprovação; merge em `main`; PHASE-07 COMPLETED; depois PHASE-08.
 3. **Pendências do responsável:**
    - Licença (bloqueia publicação).
    - Excluir/apagar a pasta antiga do Desktop quando quiser (tudo está no GitHub; o único arquivo não versionado lá era `.Rhistory`, que não é do projeto).

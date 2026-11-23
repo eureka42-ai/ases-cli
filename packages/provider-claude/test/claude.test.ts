@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
 import { createBaseAdapter, detectPlatform } from '@aer/platform-core';
 import type { AgentStreamEvent } from '@aer/provider-sdk';
-import { ClaudeCodeProvider, claudeArgs, classifyClaudeError, mapClaudeEvent } from '../src/index.ts';
+import { ClaudeCodeProvider, claudeArgs, classifyClaudeError, mapClaudeEvent, type ClaudeStreamState } from '../src/index.ts';
 
 // Os testes usam um FALSO binário com o formato documentado (fixtures doc-derived-*). Nenhum Claude real é chamado.
 const fixtures = fileURLToPath(new URL('./fixtures/', import.meta.url));
@@ -67,12 +67,37 @@ describe('mapClaudeEvent (doc-derived, UNVERIFIED)', () => {
   });
 });
 
+describe('mapClaudeEvent against REAL captured output (TAR-0035, claude 2.1.330)', () => {
+  const replay = (name: string) => {
+    const cwd = '/w/t';
+    const st: ClaudeStreamState = {};
+    const ev = readFileSync(path.join(fixtures, name), 'utf8').replaceAll('__CWD__', cwd).trim().split('\n').flatMap((l) => mapClaudeEvent(JSON.parse(l), st, cwd));
+    return { ev, st };
+  };
+  it('read-only run: init, text, rate-limit status, usage; nothing unrecognized', () => {
+    const { ev, st } = replay('real-2.1.330-readonly.jsonl');
+    expect(ev.filter((e) => e.type === 'status' && e.status === 'UNRECOGNIZED_EVENT')).toEqual([]);
+    expect(ev).toContainEqual({ type: 'message', text: 'OK', visibleToUser: true });
+    expect(ev).toContainEqual({ type: 'status', status: 'RATE_LIMIT_ALLOWED', detail: 'five_hour' });
+    expect(ev.filter((e) => e.type === 'usage')).toHaveLength(4);
+    expect(st.result?.isError).toBe(false);
+  });
+  it('write run: Write tool becomes a relative file_change inside the worktree', () => {
+    const { ev, st } = replay('real-2.1.330-write.jsonl');
+    expect(ev.filter((e) => e.type === 'file_change')).toEqual([{ type: 'file_change', relativePath: 'nota.txt', kind: 'create' }]);
+    expect(ev.filter((e) => e.type === 'status' && e.status === 'UNRECOGNIZED_EVENT')).toEqual([]);
+    expect(ev.some((e) => e.type === 'tool_result' && e.success)).toBe(true);
+    expect(st.result?.isError).toBe(false);
+  });
+});
+
 describe('ClaudeCodeProvider with a fake binary', () => {
-  it('probe: READY via the official status command, UNVERIFIED contract, no email in evidence', async () => {
+  it('probe: READY via the official status command, VERIFIED only for the captured version, no email in evidence', async () => {
     const p = await provider().probe();
-    expect(p).toMatchObject({ availability: 'READY', version: '2.1.330', contractStatus: 'UNVERIFIED', simulated: false });
+    expect(p).toMatchObject({ availability: 'READY', version: '2.1.330', contractStatus: 'VERIFIED', simulated: false });
     expect(JSON.stringify(p)).not.toContain('example.invalid');
     expect(calls().map((c) => c.args)).toEqual([['--version'], ['auth', 'status']]);
+    expect(await provider({ FAKE_VERSION: '2.1.331' }).probe()).toMatchObject({ availability: 'READY', contractStatus: 'UNVERIFIED' });
   });
 
   it('probe states: NOT_INSTALLED, NOT_AUTHENTICATED, AUTH_EXPIRED, UNSUPPORTED_VERSION (AER-REQ-103/125)', async () => {

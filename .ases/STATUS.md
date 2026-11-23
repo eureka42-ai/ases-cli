@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 249 (TaskUpdated, 2026-11-23T14:46:23.684Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 254 (TaskUpdated, 2026-11-23T16:31:58.376Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -50,7 +50,7 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0032 | PHASE-07 | Pesquisa de flags e termos atuais (Claude Code, Codex) | REVIEW | — | docs/PROVIDERS_PESQUISA.md |
 | TAR-0033 | PHASE-07 | Adapter Claude Code (claude -p, stream-json) | REVIEW | — | packages/provider-claude/test/claude.test.ts<br>.ases/evidence/PHASE-07-verify.md |
 | TAR-0034 | PHASE-07 | Adapter Codex (codex exec --json) | REVIEW | — | packages/provider-codex/test/codex.test.ts<br>.ases/evidence/PHASE-07-verify.md |
-| TAR-0035 | PHASE-07 | Smoke opt-in com consentimento e transcript redigido | BLOCKED | — | — |
+| TAR-0035 | PHASE-07 | Smoke opt-in com consentimento e transcript redigido | REVIEW | — | .ases/evidence/TAR-0035-smoke-real.md |
 | TAR-0036 | PHASE-07 | Matriz de limitações e doctor VERIFIED/SIMULATED/UNKNOWN | REVIEW | — | docs/PROVIDERS.md<br>test/e2e/providers.test.mjs<br>.ases/evidence/PHASE-07-verify.md |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
-- Último evento válido: seq 249 em 2026-11-23T14:46:23.684Z
-- Git: branch `ases/PHASE-07`, HEAD `5c3a117`
+- Último evento válido: seq 254 em 2026-11-23T16:31:58.376Z
+- Git: branch `ases/PHASE-07`, HEAD `0673613`
 - Concluídas: 31 de 36
-- Abertas: TAR-0032 (REVIEW), TAR-0033 (REVIEW), TAR-0034 (REVIEW), TAR-0035 (BLOCKED), TAR-0036 (REVIEW)
+- Abertas: TAR-0032 (REVIEW), TAR-0033 (REVIEW), TAR-0034 (REVIEW), TAR-0035 (REVIEW), TAR-0036 (REVIEW)
 - Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
 <!-- AUTO:END -->
 
@@ -104,5 +104,5 @@
   - `runAgentProcess` comum ao simulador e aos adapters.
 - **Nenhuma chamada real a provider:** sem consentimento para consumir cota. Os testes usam falsos binários com o formato documentado.
 - **Testes:** `npm run verify` 211/211 (darwin-arm64), e mais 2 rodadas 211/211.
-- **Bloqueio:** TAR-0035 BLOCKED (CONSENT_REQUIRED). Precisa de aceite do responsável para o smoke real (prompts mínimos, só leitura, worktree temporária) e de uma posição sobre os termos de uso da assinatura.
-- **Próxima operação segura:** CI desta branch; depois, com aceite, `/run --consent claude,codex` numa fase de smoke, captura das fixtures reais (redigidas) e troca de UNVERIFIED para VERIFIED onde o parser bater.
+- **Atualização (mesma data):** o responsável deu todos os consentimentos (cota e termos, para uso local). TAR-0035 feita: 6 chamadas reais mínimas + smoke pelo motor (`claude` e `codex` → REVIEW, com commit na worktree). Fixtures reais redigidas versionadas. Contrato VERIFIED só em claude 2.1.330 e codex 0.170.0. `rate_limit_event` mapeado. Achado: o Codex pode editar via shell sem emitir `file_change`; o diff da worktree é a fonte autoritativa. Evidência: `.ases/evidence/TAR-0035-smoke-real.md`. `npm run verify` 215/215.
+- **Próxima operação segura:** CI da branch; com aprovação do responsável, aprovar TAR-0032..0036, merge em `main` e PHASE-07 COMPLETED.

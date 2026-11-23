@@ -35,7 +35,7 @@ Fontes, em ordem de autoridade:
   - `system/api_retry`, `system/permission_denied`.
   - `stream_event` (só com partial).
   - `result` final, com `subtype` (sucesso/limite), uso e custo.
-  - **Contrato real a confirmar com fixture capturada desta versão.**
+  - **Confirmado com captura real em 23/11/2026** (ver `.ases/evidence/TAR-0035-smoke-real.md`).
 
 ## Codex — modo programático (fonte: `codex exec --help` 0.170.0)
 - **Invocação:** `codex exec --json -C <worktree> -s workspace-write --ephemeral <prompt>`.
@@ -54,7 +54,7 @@ Fontes, em ordem de autoridade:
   - `item.started` / `item.updated` / `item.completed` (`agent_message`, comandos, alterações de arquivo).
   - `turn.completed` (com usage) / `turn.failed`.
   - `error`.
-  - **Contrato real a confirmar com fixture capturada desta versão.**
+  - **Confirmado com captura real em 23/11/2026** (ver `.ases/evidence/TAR-0035-smoke-real.md`).
 - **Verificado em 23/11/2026:** `codex login status` escreve o status no **stderr** (stdout vazio). O probe lê os dois.
 - **`codex app-server`** é preferido pelo §7.3, mas está marcado `[experimental]` nesta versão. A PHASE-07 usa `exec --json` (a alternativa documentada no §7.3); o app-server fica CONDITIONAL.
 
@@ -70,6 +70,7 @@ Leitura para o AER, a ser confirmada pelo responsável:
 - **Compatível com o desenho do AER:** o binário oficial não é modificado, o usuário faz login no próprio cliente (`OFFICIAL_CLI_SESSION`), e o AER não lê, copia nem intercepta tokens (AER-REQ-121/126).
 - **Incerto:** se orquestrar sessões em paralelo com assinatura Pro, num produto que será distribuído, conta como "uso individual comum". O AER **não afirma** que isso é permitido.
 - **Decisão desta fase:** o adapter Claude só roda com consentimento explícito do usuário dono da sessão. O paralelismo padrão por provider é 1 (`maxPerProvider`). Para distribuição, a recomendação é confirmar com a Anthropic (Sales) ou oferecer `API_KEY_MANAGED` com aviso de cobrança (AER-REQ-123).
+- **Decisão do responsável (23/11/2026):** autorizou o uso local das próprias assinaturas no AER, inclusive o consumo de cota, e assumiu a posição sobre os termos. Isso não muda o ponto aberto para **distribuição**.
 - **Codex com login ChatGPT:** os termos da OpenAI para orquestração por terceiros **não foram verificados** nesta pesquisa. Status UNKNOWN até a verificação.
 
 ## Riscos de inventar contrato

@@ -8,8 +8,10 @@ import {
 /**
  * Adapter do Claude Code oficial em modo programático (§7.3, docs/PROVIDERS_PESQUISA.md).
  * Auth: OFFICIAL_CLI_SESSION — o login é do próprio cliente; o AER nunca lê, copia ou intercepta tokens (AER-REQ-121/126).
- * Contrato de eventos: UNVERIFIED até haver fixture real capturada desta versão (TAR-0035).
+ * Contrato de eventos: VERIFIED só nas versões de CLAUDE_VERIFIED_VERSIONS (fixture real, TAR-0035); erros de auth/limite ainda vêm da documentação.
  */
+/** Versões com fixture real capturada (TAR-0035, 23/11/2026). */
+export const CLAUDE_VERIFIED_VERSIONS: readonly string[] = ['2.1.330'];
 export const CLAUDE_SUPPORTED = { min: '2.1.0', maxExclusive: '2.2.0', researchedVersion: '2.1.330' } as const;
 
 export interface ClaudeOptions {
@@ -115,6 +117,11 @@ export function mapClaudeEvent(value: unknown, state: ClaudeStreamState, cwd: st
       }
       return out;
     }
+    case 'rate_limit_event': {
+      // visto na fixture real 2.1.330: { rate_limit_info: { status: 'allowed', rateLimitType: 'five_hour', ... } }
+      const info = obj(v.rate_limit_info) ?? {};
+      return [{ type: 'status', status: `RATE_LIMIT_${(str(info.status) ?? 'unknown').toUpperCase()}`.slice(0, 100), detail: (str(info.rateLimitType) ?? '').slice(0, 60) }];
+    }
     case 'stream_event':
       return [];
     default:
@@ -156,7 +163,7 @@ export class ClaudeCodeProvider implements AgentProvider {
       subscription_quota: 'UNKNOWN', parallel_sessions: 'CONDITIONAL',
     };
     const notes: Partial<Record<Capability, string>> = {
-      structured_stream: 'stream-json documentado; fixture real desta versão pendente (UNVERIFIED)',
+      structured_stream: 'sucesso e escrita validados com saída real 2.1.330; erros de auth/limite ainda pela documentação',
       tool_approvals: 'desligado pelo AER nesta fase (--permission-prompts none)',
       session_resume: 'desligado pelo AER nesta fase (--no-session-persistence)',
       mcp: 'desligado pelo AER nesta fase (--strict-mcp-config)',
@@ -188,7 +195,9 @@ export class ClaudeCodeProvider implements AgentProvider {
     if (auth.loggedIn !== true) return fail('NOT_AUTHENTICATED', [...ev, 'run `claude auth login` yourself; the AER never logs in for you'], { executable: exe, version });
     const expires = str(auth.loginExpiresAt);
     if (expires && Date.parse(expires) <= Date.now()) return fail('AUTH_EXPIRED', [...ev, `login expired at ${expires}`], { executable: exe, version });
-    return { ...base, executable: exe, version, availability: 'READY', capabilities: caps(true), evidence: ev };
+    // VERIFIED só para a versão exata cuja saída real foi capturada e versionada (test/fixtures/real-*, TAR-0035)
+    const contractStatus = CLAUDE_VERIFIED_VERSIONS.includes(version) ? 'VERIFIED' as const : 'UNVERIFIED' as const;
+    return { ...base, contractStatus, executable: exe, version, availability: 'READY', capabilities: caps(true), evidence: ev };
   }
 
   async *start(req: AgentRunRequest): AsyncGenerator<AgentStreamEvent> {

@@ -4,8 +4,8 @@
   "taskId": "TAR-0035",
   "phaseId": "PHASE-07",
   "title": "Smoke opt-in com consentimento e transcript redigido",
-  "state": "BLOCKED",
-  "version": 2,
+  "state": "REVIEW",
+  "version": 7,
   "reqs": [
     "AER-REQ-111",
     "AER-REQ-112",
@@ -16,6 +16,11 @@
     "TAR-0033",
     "TAR-0034"
   ],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/TAR-0035-smoke-real.md",
+      "sha256": "216cd918e1b550b1141697037ee0be8e77381830a7ff8af87d91d2748220a1ba"
+    }
+  ],
   "lastTest": null
 }

@@ -8,8 +8,10 @@ import {
 
 /**
  * Adapter do Codex CLI oficial via `codex exec --json` (alternativa documentada do §7.3; o app-server está
- * [experimental] na 0.170.0). Auth: OFFICIAL_CLI_SESSION. Contrato de eventos: UNVERIFIED até a fixture real (TAR-0035).
+ * [experimental] na 0.170.0). Auth: OFFICIAL_CLI_SESSION. Contrato de eventos: VERIFIED só nas versões de CODEX_VERIFIED_VERSIONS (fixture real, TAR-0035); erros ainda pela documentação.
  */
+/** Versões com fixture real capturada (TAR-0035, 23/11/2026). */
+export const CODEX_VERIFIED_VERSIONS: readonly string[] = ['0.170.0'];
 export const CODEX_SUPPORTED = { min: '0.170.0', maxExclusive: '0.171.0', researchedVersion: '0.170.0' } as const;
 
 export interface CodexOptions {
@@ -168,7 +170,9 @@ export class CodexProvider implements AgentProvider {
     const method = /using (chatgpt|an? api key)/i.exec(said)?.[1] ?? '?';
     const ev = [`--version -> ${version}`, `login status -> exit ${a.exitCode}, loggedIn=${loggedIn}, method=${method}`];
     if (!loggedIn) return fail('NOT_AUTHENTICATED', [...ev, 'run `codex login` yourself; the AER never logs in for you'], { executable: exe, version });
-    return { ...base, executable: exe, version, availability: 'READY', capabilities: caps(true), evidence: ev };
+    // VERIFIED só para a versão exata cuja saída real foi capturada e versionada (test/fixtures/real-*, TAR-0035)
+    const contractStatus = CODEX_VERIFIED_VERSIONS.includes(version) ? 'VERIFIED' as const : 'UNVERIFIED' as const;
+    return { ...base, contractStatus, executable: exe, version, availability: 'READY', capabilities: caps(true), evidence: ev };
   }
 
   async *start(req: AgentRunRequest): AsyncGenerator<AgentStreamEvent> {

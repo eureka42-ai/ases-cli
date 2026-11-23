@@ -137,12 +137,12 @@ describe('real providers: consent and per-provider limit (PHASE-07, fake binary)
     expect(s.listAttempts(ids[0]!)).toEqual([]);
   });
 
-  it('with consent a real-provider task reaches REVIEW, labelled UNVERIFIED, never SIMULATED', async () => {
+  it('with consent a real-provider task reaches REVIEW, labelled with its contract status, never SIMULATED', async () => {
     const { s, ids, d } = await setup(['claude:sonnet']);
     const o = await runAttempt({ ...d, providers: { claude }, consented: new Set(['claude']) }, reserve(s)[0]!, new AbortController().signal);
     expect(o).toMatchObject({ state: 'REVIEW', simulated: false });
     const det = s.eventsSince(0, 1000).find((e) => e.eventType === 'ProviderDetected')!;
-    expect(det.payload).toMatchObject({ providerId: 'claude', contractStatus: 'UNVERIFIED', simulated: false, label: null });
+    expect(det.payload).toMatchObject({ providerId: 'claude', contractStatus: 'VERIFIED', simulated: false, label: null });
     expect(types(s, ids[0]!)).toContain('GitCheckpointCreated');
   });
 

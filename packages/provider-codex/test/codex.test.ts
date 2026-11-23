@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
 import { createBaseAdapter, detectPlatform } from '@aer/platform-core';
 import type { AgentStreamEvent } from '@aer/provider-sdk';
-import { CodexProvider, classifyCodexError, codexArgs, mapCodexEvent } from '../src/index.ts';
+import { CodexProvider, classifyCodexError, codexArgs, mapCodexEvent, type CodexStreamState } from '../src/index.ts';
 
 // FALSO binário com o formato documentado (fixtures doc-derived-*). Nenhum Codex real é chamado.
 const fixtures = fileURLToPath(new URL('./fixtures/', import.meta.url));
@@ -53,9 +53,31 @@ describe('mapCodexEvent (doc-derived, UNVERIFIED)', () => {
   });
 });
 
+describe('mapCodexEvent against REAL captured output (TAR-0035, codex 0.170.0)', () => {
+  const replay = (name: string) => {
+    const cwd = '/w/t';
+    const st: CodexStreamState = {};
+    const ev = readFileSync(path.join(fixtures, name), 'utf8').replaceAll('__CWD__', cwd).trim().split('\n').flatMap((l) => mapCodexEvent(JSON.parse(l), st, cwd));
+    return { ev, st };
+  };
+  it('read-only run: message and usage, turn completed, nothing unrecognized', () => {
+    const { ev, st } = replay('real-0.170.0-readonly.jsonl');
+    expect(ev).toContainEqual({ type: 'message', text: 'OK', visibleToUser: true });
+    expect(ev.filter((e) => e.type === 'status' && e.status === 'UNRECOGNIZED_EVENT')).toEqual([]);
+    expect(ev.filter((e) => e.type === 'usage').length).toBeGreaterThan(0);
+    expect(st.turnEnded).toBe('completed');
+  });
+  it('write run: file_change "add" item (started + completed) yields exactly one create', () => {
+    const { ev, st } = replay('real-0.170.0-write.jsonl');
+    expect(ev.filter((e) => e.type === 'file_change')).toEqual([{ type: 'file_change', relativePath: 'nota.txt', kind: 'create' }]);
+    expect(st.turnEnded).toBe('completed');
+  });
+});
+
 describe('CodexProvider with a fake binary', () => {
   it('probe READY / NOT_AUTHENTICATED / UNSUPPORTED_VERSION / NOT_INSTALLED', async () => {
-    expect(await provider().probe()).toMatchObject({ availability: 'READY', version: '0.170.0', contractStatus: 'UNVERIFIED' });
+    expect(await provider().probe()).toMatchObject({ availability: 'READY', version: '0.170.0', contractStatus: 'VERIFIED' });
+    expect(await provider({ FAKE_VERSION: '0.170.1' }).probe()).toMatchObject({ availability: 'READY', contractStatus: 'UNVERIFIED' });
     expect((await provider({ FAKE_AUTH: 'none' }).probe()).availability).toBe('NOT_AUTHENTICATED');
     expect((await provider({ FAKE_VERSION: '0.171.0' }).probe()).availability).toBe('UNSUPPORTED_VERSION');
     expect((await new CodexProvider(adapter, { env: { PATH: dir } }).probe()).availability).toBe('NOT_INSTALLED');

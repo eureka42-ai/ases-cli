@@ -5,11 +5,11 @@
 | Provider | Integração | Auth | Contrato | Testado com | Real executado? |
 |---|---|---|---|---|---|
 | `simulator` | processo Node local | nenhuma | **SIMULATED** | testes + CI 8/8 | n/a |
-| `claude` | `claude -p --output-format stream-json --verbose --restricted --permission-prompts none --no-session-persistence --strict-mcp-config` | OFFICIAL_CLI_SESSION (login do próprio cliente) | **UNVERIFIED** | falso binário com o formato documentado | **NÃO** (sem consentimento para captura) |
-| `codex` | `codex exec --json --ephemeral -C <worktree> -s workspace-write -c approval_policy="never"` | OFFICIAL_CLI_SESSION | **UNVERIFIED** | falso binário com o formato documentado | **NÃO** |
+| `claude` | `claude -p --output-format stream-json --verbose --restricted --permission-prompts none --no-session-persistence --strict-mcp-config` | OFFICIAL_CLI_SESSION (login do próprio cliente) | **VERIFIED em 2.1.330** (outras versões: UNVERIFIED) | fixture real redigida + falso binário | **SIM**, smoke 23/11/2026 (`.ases/evidence/TAR-0035-smoke-real.md`) |
+| `codex` | `codex exec --json --ephemeral -C <worktree> -s workspace-write -c approval_policy="never"` | OFFICIAL_CLI_SESSION | **VERIFIED em 0.170.0** (outras versões: UNVERIFIED) | fixture real redigida + falso binário | **SIM**, smoke 23/11/2026 |
 | `kimi`, `google`, `opencode` | — | — | — | — | PHASE-08 |
 
-**UNVERIFIED** significa que o parser foi escrito a partir da documentação oficial e ainda não foi validado contra uma saída real capturada desta versão (§7.6). Vira **VERIFIED** só depois do smoke opt-in (TAR-0035) com fixture real, redigida e versionada.
+**VERIFIED** vale só para a versão exata cuja saída real foi capturada, redigida e versionada (`test/fixtures/real-*`, TAR-0035). Qualquer outra versão dentro da faixa aceita aparece como **UNVERIFIED**: o parser vem da documentação oficial e não foi validado contra saída real daquela versão (§7.6). Os caminhos de erro (auth expirada e limite atingido) continuam derivados da documentação mesmo nas versões VERIFIED.
 
 ## Regras que valem para os providers reais
 - **Consentimento por run (AER-REQ-123):**
@@ -32,8 +32,9 @@
 |---|---|---|
 | Sem canal de aprovação | claude: `--permission-prompts none` (o que pediria aprovação é negado); codex: `approval_policy="never"` | PHASE-10 (`/approval`) |
 | Prompt vai no argv | o conteúdo das instruções fica visível no `ps` do próprio usuário | trocar por stdin quando `SpawnOptions` aceitar stdin |
-| Erros de auth/limite classificados por texto | uma mensagem nova do vendor pode cair em `TASK_FAILED` | depois da fixture real (TAR-0035) |
+| Erros de auth/limite classificados por texto | uma mensagem nova do vendor pode cair em `TASK_FAILED` | quando houver captura real de um erro (não provocável sem custo) |
+| Codex pode editar via `command_execution` (shell dentro do sandbox `workspace-write`) sem emitir `file_change` | os eventos `file_change` não são completos; o diff/commit da worktree é a fonte autoritativa | — (comportamento do vendor) |
 | Windows + codex instalado via npm (`codex.cmd`) | `UNSUPPORTED_VERSION` ("shim .cmd não roda sem shell") | PHASE-15 |
 | `codex app-server` (preferido pelo §7.3) | não usado: é `[experimental]` na 0.170.0 | quando sair de experimental |
 | `codex login status` escreve no stderr | tratado (verificado em 23/11/2026) | — |
-| Termos de uso (assinatura em orquestração) | não confirmados; ver a pesquisa | decisão do responsável |
+| Termos de uso (assinatura em orquestração) | uso local autorizado pelo responsável em 23/11/2026; para distribuição, ainda não confirmado com os vendors | antes da distribuição |
