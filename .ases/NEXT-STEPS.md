@@ -19,12 +19,21 @@
 
 5. **PHASE-10: COMPLETED** (23/11/2026). Aprovada pelo responsável e integrada em `main` (`26295d4`). Segurança e extensões (ADR-0015).
 6. **PHASE-11: COMPLETED** (23/11/2026). Aprovada pelo responsável e integrada em `main` (`26295d4`). Continuidade, test runs, revisão, resume e usage (ADR-0016).
-   - **Próximo:** PHASE-12 (release: daemon, pacote npm, CI completo, CLIs reais em Windows/Linux).
-7. **Decisões do responsável (23/11/2026):**
+7. **PHASE-12: em andamento** (branch `ases/PHASE-12`).
+   - **Feito:** TAR-0061/0062 (em andamento).
+     - Pacote npm único e autocontido (`scripts/pack.mjs`, `docs/INSTALL.md`).
+     - Smoke instala/roda/desinstala offline num prefixo temporário (`scripts/pack-smoke.mjs`).
+     - Comandos pelo PATH: CI Windows (pwsh, PowerShell, cmd), Linux (bash, pwsh); local macOS (bash, zsh). Run 45262002469: Linux/Windows 6/6.
+   - **Falta:**
+     - TAR-0059/0060: ADR e lifecycle do motor residente (start/stop/status; a TUI sai sem perder tarefas; IPC `control` já existe).
+     - TAR-0063: hardening e auditoria do DoD (§21).
+       - **43 requisitos P0 sem tarefa rastreada.** Para cada um: ligar a teste/evidência existente, implementar, ou registrar exceção com aprovação do responsável.
+       - Revisão de segurança, licenças (terceiros embutidos no pacote) e conformidade de autenticação.
+8. **Decisões do responsável (23/11/2026):**
    - **Licença:** CC BY-NC-ND 4.0, Open Access (`LICENSE`; `package.json` com `CC-BY-NC-ND-4.0`). AER-REQ-210 atendido.
    - **Termos dos providers:** o responsável declarou que todos os vendors autorizaram a orquestração. A declaração está registrada; os documentos de autorização não estão no repositório.
    - **Pasta antiga do Desktop:** o responsável vai apagar.
    - **Pendente:** conferir o limite de gasto/cota de Actions da organização `eureka42-ai`, porque os jobs macOS ficam na fila sem máquina.
-8. **Restauração a partir do espelho** (clone novo sem banco → `DB_MISSING`): planejada no Project Passport (PHASE-11). Até lá, este Mac é o dono do banco.
+9. **Restauração a partir do espelho** (clone novo sem banco → `DB_MISSING`): planejada no Project Passport (PHASE-11). Até lá, este Mac é o dono do banco.
 
 Verificação rápida: `npm run verify && node scripts/ases-dev.mjs verify`.
