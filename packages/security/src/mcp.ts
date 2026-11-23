@@ -126,6 +126,10 @@ export async function mcpHealth(platform: ProcessPlatform, s: { id: string; comm
     }, () => undefined);
     send({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'aer', version: '0.0.0' } } });
   });
+  p.child.stdin?.end();
   const t = await platform.terminateProcessTree(p.pid, { graceMs: 300 });
+  // Windows: depois do taskkill os pipes do filho podem continuar referenciados e segurar o event loop do engine
+  // (o `ases` dizia "engine encerrado" e não saía; run 45254028483)
+  for (const st of [p.child.stdin, p.child.stdout, p.child.stderr]) st?.destroy();
   return { ...result, reconciled: t.terminated };
 }
