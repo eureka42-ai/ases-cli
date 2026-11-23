@@ -36,6 +36,23 @@ describe('migrations (TAR-0006)', () => {
     backup.db.close();
   });
 
+  it('concurrent openers racing through migrations never fail the backup check', async () => {
+    const { spawn } = await import('node:child_process');
+    const { fileURLToPath } = await import('node:url');
+    const worker = fileURLToPath(new URL('./fixtures/worker.ts', import.meta.url));
+    for (let round = 0; round < 3; round++) {
+      const db = path.join(dir, `race-${round}.sqlite`);
+      const codes = await Promise.all(Array.from({ length: 6 }, () => new Promise<number | null>((resolve) => {
+        const c = spawn(process.execPath, ['--conditions=source', '--no-warnings', worker, db, 'append', '1'], { stdio: 'ignore' });
+        c.on('close', resolve);
+      })));
+      expect(codes).toEqual([0, 0, 0, 0, 0, 0]);
+      const r = openDatabase(db);
+      expect(r.schemaVersion).toBe(MIGRATIONS.length);
+      r.db.close();
+    }
+  }, 60_000);
+
   it('refuses a database newer than the code (AER-REQ-010, C18)', () => {
     expect(() => openDatabase(path.join(dir, 'a.sqlite'), MIGRATIONS)).toThrow(expect.objectContaining({ code: 'DB_SCHEMA_TOO_NEW' }) as StoreError);
   });

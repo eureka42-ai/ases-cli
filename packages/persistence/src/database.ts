@@ -37,7 +37,9 @@ function backup(db: Database, file: string, version: number): string {
   db.exec(`VACUUM INTO ${quote(target)}`);
   const check = openSqlite(target);
   try {
-    if (scalar(check, 'PRAGMA integrity_check') !== 'ok' || scalar(check, 'PRAGMA user_version') !== version) {
+    // >= e não ===: outro processo pode ter migrado entre a leitura da versão e o VACUUM INTO (corrida vista no CI,
+    // run 45096707722); a migração deste processo relê a versão sob lock e vira no-op, e o backup segue íntegro
+    if (scalar(check, 'PRAGMA integrity_check') !== 'ok' || Number(scalar(check, 'PRAGMA user_version')) < version) {
       throw new StoreError('BACKUP_FAILED', `backup verification failed: ${target}`);
     }
   } finally {
