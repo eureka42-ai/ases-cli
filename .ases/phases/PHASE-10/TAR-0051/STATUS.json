@@ -4,8 +4,8 @@
   "taskId": "TAR-0051",
   "phaseId": "PHASE-10",
   "title": "MCP bridge: discovery, inspeção, allowlist, health sob timeout, namespace",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-135",
     "AER-REQ-136"

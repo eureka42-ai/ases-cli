@@ -1,10 +1,10 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
-- Último evento válido: seq 465 em 2026-11-23T20:12:28.828Z
-- Git: branch `ases/PHASE-11`, HEAD `4822fac`
-- Concluídas: 47 de 58
-- Abertas: TAR-0048 (REVIEW), TAR-0049 (REVIEW), TAR-0050 (REVIEW), TAR-0051 (REVIEW), TAR-0052 (REVIEW), TAR-0053 (REVIEW), TAR-0054 (REVIEW), TAR-0055 (REVIEW), TAR-0056 (REVIEW), TAR-0057 (REVIEW), TAR-0058 (REVIEW)
+- Último evento válido: seq 502 em 2026-11-23T20:31:12.341Z
+- Git: branch `main`, HEAD `26295d4`
+- Concluídas: 58 de 58
+- Abertas: nenhuma
 - Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
 <!-- AUTO:END -->
 
@@ -157,6 +157,6 @@
   - `/review`: independente, read-only; quem escreve é INVALID.
   - `/resume`: idempotente. `/usage`: por provider.
 - **Testes:** `npm run verify` 268/268. Os gates passaram no e2e (POSIX) e na unidade (todos os SOs).
-- **Pendente:** aprovação humana da PHASE-10 (o "continue" não foi tratado como aprovação) e da PHASE-11.
-- **Próxima operação segura:** CI da branch; aprovação; merge da PHASE-10 e depois da PHASE-11.
+- **Fechamento:** o responsável aprovou as PHASE-10 e PHASE-11. Fast-forward de `main` para `26295d4`; TAR-0048..0058 e as duas fases COMPLETED.
+- **Próxima operação segura:** iniciar a PHASE-12 numa branch `ases/PHASE-12`.
 

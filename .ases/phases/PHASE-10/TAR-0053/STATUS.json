@@ -4,8 +4,8 @@
   "taskId": "TAR-0053",
   "phaseId": "PHASE-10",
   "title": "Testes de segurança do gate (plugin inseguro, Claude-only, logs redigidos)",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-140",
     "AER-REQ-166",

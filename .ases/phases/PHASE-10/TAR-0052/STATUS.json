@@ -4,8 +4,8 @@
   "taskId": "TAR-0052",
   "phaseId": "PHASE-10",
   "title": "Plugin manager: scan de supply chain, compatibilidade, instalação delegada ao CLI oficial",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-134",
     "AER-REQ-138",

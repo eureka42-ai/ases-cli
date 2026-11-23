@@ -4,8 +4,8 @@
   "taskId": "TAR-0049",
   "phaseId": "PHASE-10",
   "title": "SecretStore nativo (Keychain macOS, libsecret Linux; Windows explícito)",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-166",
     "AER-REQ-229"

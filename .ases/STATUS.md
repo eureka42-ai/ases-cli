@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 465 (TaskUpdated, 2026-11-23T20:12:28.828Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 502 (PhaseUpdated, 2026-11-23T20:31:12.341Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -14,8 +14,8 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | PHASE-07 | Claude Code oficial e Codex oficial | COMPLETED |
 | PHASE-08 | Kimi, OpenCode e Google | COMPLETED |
 | PHASE-09 | ASES-300/500 e rastreabilidade | COMPLETED |
-| PHASE-10 | Segurança e registry de extensões | RUNNING |
-| PHASE-11 | Continuidade, métricas e review | RUNNING |
+| PHASE-10 | Segurança e registry de extensões | COMPLETED |
+| PHASE-11 | Continuidade, métricas e review | COMPLETED |
 
 ## Tarefas
 | Tarefa | Fase | Título | Estado | Último teste | Evidência |
@@ -67,16 +67,16 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0045 | PHASE-09 | Matriz de requisitos (aplicabilidade, estado, evidência, N/A justificado) | COMPLETED | — | .ases/evidence/PHASE-09-verify.md |
 | TAR-0046 | PHASE-09 | Rastreabilidade, gates G0/G1 e mudança controlada (CHANGE) | COMPLETED | — | .ases/evidence/PHASE-09-verify.md<br>docs/ADRs/ADR-0014.md |
 | TAR-0047 | PHASE-09 | QA: projeto de exemplo da entrevista a 2 fases e 3 tarefas rastreáveis | COMPLETED | — | .ases/evidence/PHASE-09-verify.md |
-| TAR-0048 | PHASE-10 | Policy engine: escopos, deny-by-default, approvals por hash com escopo e validade (/approval) | REVIEW | — | .ases/evidence/PHASE-10-verify.md<br>docs/ADRs/ADR-0015.md |
-| TAR-0049 | PHASE-10 | SecretStore nativo (Keychain macOS, libsecret Linux; Windows explícito) | REVIEW | — | .ases/evidence/PHASE-10-verify.md |
-| TAR-0050 | PHASE-10 | Skill registry: discovery, frontmatter seguro, hash, preview, import por referência | REVIEW | — | .ases/evidence/PHASE-10-verify.md |
-| TAR-0051 | PHASE-10 | MCP bridge: discovery, inspeção, allowlist, health sob timeout, namespace | REVIEW | — | .ases/evidence/PHASE-10-verify.md |
-| TAR-0052 | PHASE-10 | Plugin manager: scan de supply chain, compatibilidade, instalação delegada ao CLI oficial | REVIEW | — | .ases/evidence/PHASE-10-verify.md |
-| TAR-0053 | PHASE-10 | Testes de segurança do gate (plugin inseguro, Claude-only, logs redigidos) | REVIEW | — | .ases/evidence/PHASE-10-verify.md |
-| TAR-0054 | PHASE-11 | Handoff entre providers: continuidade da worktree, HANDOFF.md e pacote de contexto com budget | REVIEW | — | .ases/evidence/PHASE-11-verify.md<br>docs/ADRs/ADR-0016.md |
-| TAR-0055 | PHASE-11 | Usage por provider com proveniência, sem somar providers (/usage) | REVIEW | — | .ases/evidence/PHASE-11-verify.md |
-| TAR-0056 | PHASE-11 | Revisão independente read-only por outro provider (/review) | REVIEW | — | .ases/evidence/PHASE-11-verify.md |
-| TAR-0057 | PHASE-11 | Recovery: /resume recupera tentativas interrompidas sem duplicar | REVIEW | — | .ases/evidence/PHASE-11-verify.md |
-| TAR-0058 | PHASE-11 | Test runs reais (/test com EXEC_TESTS) e gate de troca de provider | REVIEW | — | .ases/evidence/PHASE-11-verify.md |
+| TAR-0048 | PHASE-10 | Policy engine: escopos, deny-by-default, approvals por hash com escopo e validade (/approval) | COMPLETED | — | .ases/evidence/PHASE-10-verify.md<br>docs/ADRs/ADR-0015.md |
+| TAR-0049 | PHASE-10 | SecretStore nativo (Keychain macOS, libsecret Linux; Windows explícito) | COMPLETED | — | .ases/evidence/PHASE-10-verify.md |
+| TAR-0050 | PHASE-10 | Skill registry: discovery, frontmatter seguro, hash, preview, import por referência | COMPLETED | — | .ases/evidence/PHASE-10-verify.md |
+| TAR-0051 | PHASE-10 | MCP bridge: discovery, inspeção, allowlist, health sob timeout, namespace | COMPLETED | — | .ases/evidence/PHASE-10-verify.md |
+| TAR-0052 | PHASE-10 | Plugin manager: scan de supply chain, compatibilidade, instalação delegada ao CLI oficial | COMPLETED | — | .ases/evidence/PHASE-10-verify.md |
+| TAR-0053 | PHASE-10 | Testes de segurança do gate (plugin inseguro, Claude-only, logs redigidos) | COMPLETED | — | .ases/evidence/PHASE-10-verify.md |
+| TAR-0054 | PHASE-11 | Handoff entre providers: continuidade da worktree, HANDOFF.md e pacote de contexto com budget | COMPLETED | — | .ases/evidence/PHASE-11-verify.md<br>docs/ADRs/ADR-0016.md |
+| TAR-0055 | PHASE-11 | Usage por provider com proveniência, sem somar providers (/usage) | COMPLETED | — | .ases/evidence/PHASE-11-verify.md |
+| TAR-0056 | PHASE-11 | Revisão independente read-only por outro provider (/review) | COMPLETED | — | .ases/evidence/PHASE-11-verify.md |
+| TAR-0057 | PHASE-11 | Recovery: /resume recupera tentativas interrompidas sem duplicar | COMPLETED | — | .ases/evidence/PHASE-11-verify.md |
+| TAR-0058 | PHASE-11 | Test runs reais (/test com EXEC_TESTS) e gate de troca de provider | COMPLETED | — | .ases/evidence/PHASE-11-verify.md |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

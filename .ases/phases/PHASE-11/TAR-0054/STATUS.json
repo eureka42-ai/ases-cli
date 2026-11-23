@@ -4,8 +4,8 @@
   "taskId": "TAR-0054",
   "phaseId": "PHASE-11",
   "title": "Handoff entre providers: continuidade da worktree, HANDOFF.md e pacote de contexto com budget",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-176",
     "AER-REQ-177",

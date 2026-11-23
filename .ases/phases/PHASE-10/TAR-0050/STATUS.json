@@ -4,8 +4,8 @@
   "taskId": "TAR-0050",
   "phaseId": "PHASE-10",
   "title": "Skill registry: discovery, frontmatter seguro, hash, preview, import por referência",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-131",
     "AER-REQ-132",

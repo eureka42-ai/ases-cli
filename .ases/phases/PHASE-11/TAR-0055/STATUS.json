@@ -4,8 +4,8 @@
   "taskId": "TAR-0055",
   "phaseId": "PHASE-11",
   "title": "Usage por provider com proveniência, sem somar providers (/usage)",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-150"
   ],
