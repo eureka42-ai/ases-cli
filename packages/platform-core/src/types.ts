@@ -6,6 +6,8 @@ export interface TerminalCapabilities {
   unicode: boolean;
   columns: number | undefined;
   rows: number | undefined;
+  /** ambiente de CI (mesma regra do is-in-ci usado pelo Ink, que em CI só desenha o último quadro) */
+  ci: boolean;
 }
 
 export interface LocalIpcEndpoint {

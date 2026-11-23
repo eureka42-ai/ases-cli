@@ -1,3 +1,5 @@
+# LF em tudo: no Windows o CRLF quebrava o hashbang dos .mjs no vitest (CI run 45093418742).
+* text=auto eol=lf
 # Fontes normativas e referências de marca preservadas byte a byte (MD mestre §22.2, AER-REQ-151/250).
 fontes/** -text
 branding/references/** binary

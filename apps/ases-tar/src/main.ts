@@ -77,7 +77,7 @@ async function main(argv: string[]): Promise<number> {
   const filter = { task: values.task, phase: values.phase };
   const keep = (e: EventEnvelope) => (!filter.task || e.taskId === filter.task) && (!filter.phase || e.phaseId === filter.phase);
 
-  const tui = !jsonl && !values['no-tui'] && caps.isTTY && process.stdin.isTTY === true && process.env.TERM !== 'dumb';
+  const tui = !jsonl && !values['no-tui'] && caps.isTTY && process.stdin.isTTY === true && process.env.TERM !== 'dumb' && !caps.ci;
   if (tui) {
     const target: { h?: MonitorHandlers } = {};
     const monitor = new Monitor(adapter, manifest.projectId, { fromSeq, snapshot: fromSeq === undefined }, {

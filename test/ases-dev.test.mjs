@@ -8,7 +8,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 
 const script = path.join(path.dirname(fileURLToPath(import.meta.url)), '../scripts/ases-dev.mjs');
 const root = mkdtempSync(path.join(os.tmpdir(), 'aer ases-dev ç '));
-afterAll(() => rmSync(root, { recursive: true, force: true }));
+afterAll(() => rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
 
 const plan = path.join(root, 'plan.json');
 writeFileSync(path.join(root, 'fonte.md'), 'fonte original\n');

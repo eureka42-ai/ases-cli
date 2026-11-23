@@ -58,7 +58,7 @@ async function main(argv: string[]): Promise<number> {
     mode: pickLogoMode(caps, values.logo as LogoMode | undefined),
     unicode: caps.unicode,
     logo: values.logo as LogoMode | undefined,
-    tui: !values['no-tui'] && !values.json && caps.isTTY && process.stdin.isTTY === true && process.env.TERM !== 'dumb',
+    tui: !values['no-tui'] && !values.json && caps.isTTY && process.stdin.isTTY === true && process.env.TERM !== 'dumb' && !caps.ci,
   };
   const [cmd] = positionals;
 

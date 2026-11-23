@@ -49,7 +49,14 @@ describe('terminal capabilities (AER-REQ-245, AER-REQ-089)', () => {
   const utf8 = { LANG: 'pt_BR.UTF-8' };
 
   it('enables color+unicode on a UTF-8 TTY', () => {
-    expect(getTerminalCapabilities('darwin', utf8, tty)).toEqual({ isTTY: true, color: true, unicode: true, columns: 80, rows: 24 });
+    expect(getTerminalCapabilities('darwin', utf8, tty)).toEqual({ isTTY: true, color: true, unicode: true, columns: 80, rows: 24, ci: false });
+  });
+
+  it('detects CI like is-in-ci (Ink only paints the last frame there)', () => {
+    expect(getTerminalCapabilities('linux', { CI: 'true' }, tty).ci).toBe(true);
+    expect(getTerminalCapabilities('linux', { GITHUB_ACTIONS: 'true', CI: 'false' }, tty).ci).toBe(false);
+    expect(getTerminalCapabilities('linux', { CI_PIPELINE_ID: '1' }, tty).ci).toBe(true);
+    expect(getTerminalCapabilities('linux', {}, tty).ci).toBe(false);
   });
 
   it.each([
@@ -73,7 +80,7 @@ describe('terminal capabilities (AER-REQ-245, AER-REQ-089)', () => {
 
 describe('normalizeProjectPath (AER-REQ-230, host only)', () => {
   const root = mkdtempSync(path.join(os.tmpdir(), 'aer path ação '));
-  afterAll(() => rmSync(root, { recursive: true, force: true }));
+  afterAll(() => rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
 
   it('resolves spaces, accents and symlinks to the canonical path', () => {
     const real = path.join(root, 'projeto com espaço');
@@ -100,7 +107,7 @@ describe('base adapter', () => {
 
 describe('private dirs and files (AER-REQ-014, AER-REQ-202)', () => {
   const root = mkdtempSync(path.join(os.tmpdir(), 'aer-priv-'));
-  afterAll(() => rmSync(root, { recursive: true, force: true }));
+  afterAll(() => rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
   const posix = process.platform !== 'win32';
 
   it.runIf(posix)('creates 0700 dirs, tightens loose ones and rejects symlinks', () => {

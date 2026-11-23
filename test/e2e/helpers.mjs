@@ -19,7 +19,7 @@ export function requireBuild() {
 
 export function tempProject(name = 'e2e proj ç') {
   const dir = mkdtempSync(path.join(os.tmpdir(), `${name} `));
-  return { dir, cleanup: () => rmSync(dir, { recursive: true, force: true }) };
+  return { dir, cleanup: () => rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }) };
 }
 
 const env = { ...process.env, NO_COLOR: undefined, FORCE_COLOR: undefined };

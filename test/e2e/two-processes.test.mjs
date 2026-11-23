@@ -4,8 +4,9 @@ import { BIN, jsonl, requireBuild, runSync, start, tempProject } from './helpers
 requireBuild();
 const p = tempProject('e2e dois terminais');
 const procs = [];
-afterAll(() => {
-  for (const x of procs) x.child.kill('SIGKILL');
+afterAll(async () => {
+  // espera os processos saírem antes de apagar (Windows: EBUSY no diretório em uso)
+  await Promise.all(procs.map((x) => (x.child.exitCode === null ? (x.child.kill('SIGKILL'), x.exited) : undefined)));
   p.cleanup();
 });
 const launch = (bin, args) => {

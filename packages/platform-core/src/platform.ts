@@ -46,7 +46,8 @@ export function getTerminalCapabilities(id: PlatformId, env: PlatformDeps['env']
   const locale = env.LC_ALL || env.LC_CTYPE || env.LANG || '';
   // shortcut: heurística de Unicode por env; trocar por probe real de terminal na PHASE-04/16.
   const unicode = !dumb && (id === 'win32' ? Boolean(env.WT_SESSION) || env.TERM_PROGRAM === 'vscode' : /utf-?8/i.test(locale));
-  return { isTTY, color: isTTY && !dumb && !noColor, unicode, columns: stream.columns, rows: stream.rows };
+  const ci = env.CI !== '0' && env.CI !== 'false' && ('CI' in env || 'CONTINUOUS_INTEGRATION' in env || Object.keys(env).some((k) => k.startsWith('CI_')));
+  return { isTTY, color: isTTY && !dumb && !noColor, unicode, columns: stream.columns, rows: stream.rows, ci };
 }
 
 export function normalizeProjectPath(projectPath: string): string {

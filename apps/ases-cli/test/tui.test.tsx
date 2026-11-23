@@ -9,7 +9,7 @@ import { AsesApp } from '../src/tui.tsx';
 
 const adapter = await loadPlatformAdapter();
 const dirs: string[] = [];
-afterAll(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })));
+afterAll(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })));
 async function engine(): Promise<Engine> {
   const dir = mkdtempSync(path.join(os.tmpdir(), 'aer-tui-'));
   dirs.push(dir);

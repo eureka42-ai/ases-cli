@@ -15,13 +15,21 @@ function pty(bin, args, cwd, extraEnv = {}) {
   const q = (s) => `'${s.replaceAll("'", "'\\''")}'`;
   const inner = [node, bin, ...args].map(q).join(' ');
   const script = process.platform === 'darwin' ? `script -q /dev/null ${inner}` : `script -qfec ${q(inner)} /dev/null`;
-  const child = spawn('/bin/sh', ['-c', `cat | ${script}`], { cwd, env: { ...process.env, LANG: 'pt_BR.UTF-8', TERM: 'xterm-256color', NO_COLOR: undefined, ...extraEnv }, stdio: ['pipe', 'pipe', 'pipe'] });
+  const child = spawn('/bin/sh', ['-c', `cat | ${script}`], { cwd, env: { ...process.env, LANG: 'pt_BR.UTF-8', TERM: 'xterm-256color', NO_COLOR: undefined, CI: 'false', ...extraEnv }, stdio: ['pipe', 'pipe', 'pipe'], detached: true });
   let raw = '';
   child.stdout.setEncoding('utf8').on('data', (d) => (raw += d));
   child.stderr.setEncoding('utf8').on('data', (d) => (raw += d));
   const exited = new Promise((resolve) => child.on('close', (code) => resolve(code)));
   return {
     child, exited,
+    /** mata sh + script + node juntos (só o sh deixava o engine vivo: ENGINE_ALREADY_RUNNING no CI) */
+    killGroup: () => {
+      try {
+        process.kill(-child.pid, 'SIGKILL');
+      } catch {
+        // grupo já terminou
+      }
+    },
     text: () => raw.replace(ANSI, ''),
     raw: () => raw,
     /** fecha o stdin do harness: o `cat` sai e o `script` só termina se o processo do AER também terminou */
@@ -53,7 +61,8 @@ describe.runIf(hasScript)('TUIs in a real pseudo-terminal (TAR-0020)', () => {
     // nenhum processo de um teste sobrevive para o próximo (o engine é escritor único)
     for (const x of procs.splice(0)) {
       if (x.child.exitCode === null) {
-        x.child.kill('SIGKILL');
+        if (x.killGroup) x.killGroup();
+        else x.child.kill('SIGKILL');
         await x.exited;
       }
     }

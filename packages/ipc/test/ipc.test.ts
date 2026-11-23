@@ -9,7 +9,7 @@ import type { LocalIpcEndpoint } from '@aer/platform-core';
 import { IpcClient, IpcServer, RPC, type RpcError } from '../src/index.ts';
 
 const dir = mkdtempSync(path.join(os.tmpdir(), 'aer-ipc-'));
-afterAll(() => rmSync(dir, { recursive: true, force: true }));
+afterAll(() => rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
 let n = 0;
 const endpoint = (): LocalIpcEndpoint =>
   process.platform === 'win32' ? { kind: 'named-pipe', address: `\\\\.\\pipe\\aer-test-${process.pid}-${++n}` } : { kind: 'uds', address: path.join(dir, `s${++n}.sock`) };

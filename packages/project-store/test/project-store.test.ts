@@ -6,7 +6,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { findProjectRoot, initProject, isInterimProject, loadPlatformAdapter, paths, readSession } from '../src/index.ts';
 
 const tmp = mkdtempSync(path.join(os.tmpdir(), 'aer proj ã '));
-afterAll(() => rmSync(tmp, { recursive: true, force: true }));
+afterAll(() => rmSync(tmp, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
 const adapter = await loadPlatformAdapter();
 
 function hashes(dir: string, out: Record<string, string> = {}): Record<string, string> {
