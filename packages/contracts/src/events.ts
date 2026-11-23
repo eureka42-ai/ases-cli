@@ -4,7 +4,7 @@ import { PHASE_STATES, TASK_STATES } from './states.ts';
 // §6.5 + PhaseUpdated (transição de fase registrada pelo bootstrap e pelo store).
 export const EVENT_TYPES = [
   'ProjectInitialized', 'PhaseCreated', 'PhaseUpdated', 'PhaseStarted', 'PhaseCompleted',
-  'TaskCreated', 'TaskUpdated', 'TaskReady', 'TaskReserved', 'TaskStarted', 'TaskPaused', 'TaskResumed', 'TaskBlocked',
+  'TaskCreated', 'TaskUpdated', 'TaskDependencyAdded', 'TaskReady', 'TaskReserved', 'TaskStarted', 'TaskPaused', 'TaskResumed', 'TaskBlocked',
   'TaskFailed', 'TaskReviewRequested', 'TaskReviewApproved', 'TaskReworkRequested', 'TaskMergeStarted', 'TaskMerged',
   'TaskCompleted', 'TaskCancelled', 'AttemptStarted', 'AttemptExited', 'ProviderDetected', 'ProviderUnavailable',
   'ProviderOutputChunk', 'ProviderToolCallObserved', 'ProviderToolResultObserved', 'ProviderUsageObserved',
@@ -26,6 +26,11 @@ export const CRITICAL_PAYLOADS = {
   TaskCreated: z.strictObject({ title: z.string().min(1), reqs: z.array(z.string()) }),
   TaskUpdated: z.strictObject({ from: z.enum(TASK_STATES), to: z.enum(TASK_STATES), reason: z.string().nullable() }),
   PhaseUpdated: z.strictObject({ from: z.enum(PHASE_STATES), to: z.enum(PHASE_STATES), reason: z.string().nullable() }),
+  TaskDependencyAdded: z.strictObject({ dependsOn: taskId }),
+  TaskReserved: z.strictObject({ ownerId: z.string().min(1), fencingToken: z.number().int().min(1), expiresAt: z.iso.datetime(), explanation: z.string() }),
+  AttemptStarted: z.strictObject({ providerId: z.string().min(1), fencingToken: z.number().int().min(1), branch: z.string().nullable(), baseCommit: z.string().nullable() }),
+  AttemptExited: z.strictObject({ state: z.enum(['EXITED', 'FAILED', 'CANCELLED', 'UNKNOWN']), exitCode: z.number().int().nullable(), failureCode: z.string().nullable() }),
+  TestRunCompleted: z.strictObject({ command: z.string().min(1), exitCode: z.number().int(), total: z.number().int().min(0), passed: z.number().int().min(0), failed: z.number().int().min(0), skipped: z.number().int().min(0) }),
 } as const satisfies Partial<Record<EventType, z.ZodType>>;
 
 export const EventEnvelopeSchema = z.strictObject({

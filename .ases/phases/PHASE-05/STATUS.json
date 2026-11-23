@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "phaseId": "PHASE-05",
+  "title": "Scheduler, DAG e isolamento Git",
+  "state": "RUNNING",
+  "evidence": [],
+  "notes": [
+    {
+      "at": "2026-11-23T01:15:18.505Z",
+      "text": "worktree .worktrees/PHASE-05; repo remoto eureka42-ai/ases-cli (privado)"
+    }
+  ]
+}

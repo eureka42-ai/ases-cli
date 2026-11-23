@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0022",
+  "phaseId": "PHASE-05",
+  "title": "Leases com fencing e scheduler",
+  "state": "PLANNED",
+  "reqs": [
+    "AER-REQ-043",
+    "AER-REQ-044",
+    "AER-REQ-045",
+    "AER-REQ-046",
+    "AER-REQ-047",
+    "AER-REQ-050"
+  ],
+  "tests": [
+    "packages/scheduler/test/*.test.ts"
+  ],
+  "evidence": [],
+  "notes": []
+}

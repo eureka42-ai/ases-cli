@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0025",
+  "phaseId": "PHASE-05",
+  "title": "Concorrência e recuperação do scheduler",
+  "state": "PLANNED",
+  "reqs": [
+    "AER-REQ-045",
+    "AER-REQ-046",
+    "AER-REQ-192"
+  ],
+  "tests": [
+    "packages/scheduler/test/multiprocess.test.ts"
+  ],
+  "evidence": [],
+  "notes": []
+}

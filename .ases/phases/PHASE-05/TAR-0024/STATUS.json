@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0024",
+  "phaseId": "PHASE-05",
+  "title": "Fila de merge serializada",
+  "state": "PLANNED",
+  "reqs": [
+    "AER-REQ-055",
+    "AER-REQ-056",
+    "AER-REQ-057",
+    "AER-REQ-059"
+  ],
+  "tests": [
+    "packages/git-bridge/test/merge.test.ts"
+  ],
+  "evidence": [],
+  "notes": []
+}

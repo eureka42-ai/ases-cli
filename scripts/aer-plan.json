@@ -34,7 +34,8 @@
     },
     {
       "id": "PHASE-05",
-      "title": "Scheduler, DAG e isolamento Git"
+      "title": "Scheduler, DAG e isolamento Git",
+      "gate": "duas tarefas paralelas em worktrees separadas, uma bloqueada por dependência, conflito simulado sem merge automático, reserva sem duplicação entre processos"
     },
     {
       "id": "PHASE-06",
@@ -600,6 +601,157 @@
       ],
       "tests": [
         "test/e2e/pty.test.mjs"
+      ]
+    },
+    {
+      "id": "TAR-0021",
+      "phase": "PHASE-05",
+      "title": "DAG de dependências",
+      "priority": 90,
+      "risk": "MODERATE",
+      "dependencies": [],
+      "reqs": [
+        "AER-REQ-041",
+        "AER-REQ-042",
+        "AER-REQ-037"
+      ],
+      "scope": "adicionar dependências depois da criação com rejeição de ciclo (caminho explicativo); elegibilidade só com dependências COMPLETED",
+      "acceptance": [
+        "A→B→C→A rejeitado com caminho",
+        "dependente não fica elegível antes da dependência concluir"
+      ],
+      "tests": [
+        "packages/scheduler/test/dag.test.ts"
+      ]
+    },
+    {
+      "id": "TAR-0022",
+      "phase": "PHASE-05",
+      "title": "Leases com fencing e scheduler",
+      "priority": 85,
+      "risk": "HIGH",
+      "dependencies": [
+        "TAR-0021"
+      ],
+      "reqs": [
+        "AER-REQ-043",
+        "AER-REQ-044",
+        "AER-REQ-045",
+        "AER-REQ-046",
+        "AER-REQ-047",
+        "AER-REQ-050"
+      ],
+      "scope": "migração 2 (leases, attempts, recursos); reserva transacional com fencing token; heartbeat; expiração → BLOCKED/UNKNOWN sem duplicata; limites globais/por provider; rationale persistido",
+      "acceptance": [
+        "corrida entre processos: um vencedor",
+        "token antigo rejeitado",
+        "nunca mais RUNNING/RESERVED que o limite",
+        "decisão com rationale no evento"
+      ],
+      "tests": [
+        "packages/scheduler/test/*.test.ts"
+      ]
+    },
+    {
+      "id": "TAR-0023",
+      "phase": "PHASE-05",
+      "title": "Git worktree por tarefa/attempt",
+      "priority": 85,
+      "risk": "HIGH",
+      "dependencies": [
+        "TAR-0022"
+      ],
+      "reqs": [
+        "AER-REQ-051",
+        "AER-REQ-052",
+        "AER-REQ-053",
+        "AER-REQ-060",
+        "AER-REQ-164"
+      ],
+      "scope": "packages/git-bridge via git CLI sem shell: worktree + branch ases/TAR-XXXX/ATT-XXXX, base commit registrado, validação de caminho contra ../ e symlink",
+      "acceptance": [
+        "duas tarefas em worktrees distintas",
+        "branch e base no attempt",
+        "escape por ../ ou symlink bloqueado"
+      ],
+      "tests": [
+        "packages/git-bridge/test/*.test.ts"
+      ]
+    },
+    {
+      "id": "TAR-0024",
+      "phase": "PHASE-05",
+      "title": "Fila de merge serializada",
+      "priority": 85,
+      "risk": "HIGH",
+      "dependencies": [
+        "TAR-0023"
+      ],
+      "reqs": [
+        "AER-REQ-055",
+        "AER-REQ-056",
+        "AER-REQ-057",
+        "AER-REQ-059"
+      ],
+      "scope": "merge só com checkout limpo e no branch alvo; um merge por vez (lock no banco); conflito → abort seguro + CONFLICT; nunca reset --hard/clean/force",
+      "acceptance": [
+        "alterações humanas não commitadas preservadas byte a byte",
+        "conflito termina em CONFLICT sem merge",
+        "dois merges não simultâneos"
+      ],
+      "tests": [
+        "packages/git-bridge/test/merge.test.ts"
+      ]
+    },
+    {
+      "id": "TAR-0025",
+      "phase": "PHASE-05",
+      "title": "Concorrência e recuperação do scheduler",
+      "priority": 85,
+      "risk": "HIGH",
+      "dependencies": [
+        "TAR-0022",
+        "TAR-0024"
+      ],
+      "reqs": [
+        "AER-REQ-045",
+        "AER-REQ-046",
+        "AER-REQ-192"
+      ],
+      "scope": "processos reais disputando reservas; crash com lease ativo; reabertura reconcilia sem duplicar",
+      "acceptance": [
+        "20 processos, 1 vencedor por tarefa",
+        "lease vencido após crash vira BLOCKED com motivo"
+      ],
+      "tests": [
+        "packages/scheduler/test/multiprocess.test.ts"
+      ]
+    },
+    {
+      "id": "TAR-0026",
+      "phase": "PHASE-05",
+      "title": "Evidências no banco e corte do .ases/ interino",
+      "priority": 80,
+      "risk": "HIGH",
+      "dependencies": [
+        "TAR-0022"
+      ],
+      "reqs": [
+        "AER-REQ-158",
+        "AER-REQ-186",
+        "AER-REQ-189",
+        "AER-REQ-036",
+        "AER-REQ-181"
+      ],
+      "scope": "tabelas artifacts/test_runs; COMPLETED exige evidência; importação do HISTORY.jsonl interino; STATUS/TRACEABILITY/HANDOFF gerados pelo engine; aposentar scripts/ases-dev.mjs como escritor",
+      "acceptance": [
+        "COMPLETED sem evidência negado",
+        "histórico interino importado com eventId e seq preservados",
+        "ases abre este repositório"
+      ],
+      "tests": [
+        "packages/persistence/test/legacy.test.ts",
+        "test/e2e/cutover.test.mjs"
       ]
     }
   ]

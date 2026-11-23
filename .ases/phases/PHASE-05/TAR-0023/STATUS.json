@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0023",
+  "phaseId": "PHASE-05",
+  "title": "Git worktree por tarefa/attempt",
+  "state": "PLANNED",
+  "reqs": [
+    "AER-REQ-051",
+    "AER-REQ-052",
+    "AER-REQ-053",
+    "AER-REQ-060",
+    "AER-REQ-164"
+  ],
+  "tests": [
+    "packages/git-bridge/test/*.test.ts"
+  ],
+  "evidence": [],
+  "notes": []
+}

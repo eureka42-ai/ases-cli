@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0021",
+  "phaseId": "PHASE-05",
+  "title": "DAG de dependências",
+  "state": "PLANNED",
+  "reqs": [
+    "AER-REQ-041",
+    "AER-REQ-042",
+    "AER-REQ-037"
+  ],
+  "tests": [
+    "packages/scheduler/test/dag.test.ts"
+  ],
+  "evidence": [],
+  "notes": []
+}

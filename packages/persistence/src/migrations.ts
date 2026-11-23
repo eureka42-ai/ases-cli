@@ -96,4 +96,85 @@ CREATE TRIGGER events_append_only_delete BEFORE DELETE ON events
   BEGIN SELECT RAISE(ABORT, 'events are append-only'); END;
 `,
   },
+  // PHASE-05 (ADR-0004): scheduler, leases com fencing, attempts, recursos compartilhados, travas e evidências.
+  {
+    version: 2,
+    name: 'scheduler-leases-evidence',
+    sql: `
+  ALTER TABLE tasks ADD COLUMN fencing_seq INTEGER NOT NULL DEFAULT 0;
+  ALTER TABLE tasks ADD COLUMN provider TEXT;
+  CREATE TABLE task_leases (
+    project_id TEXT NOT NULL,
+    task_id TEXT NOT NULL,
+    owner_id TEXT NOT NULL,
+    fencing_token INTEGER NOT NULL CHECK (fencing_token >= 1),
+    acquired_at TEXT NOT NULL,
+    heartbeat_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    PRIMARY KEY (project_id, task_id),
+    FOREIGN KEY (project_id, task_id) REFERENCES tasks(project_id, id)
+  );
+  CREATE TABLE task_resources (
+    project_id TEXT NOT NULL,
+    task_id TEXT NOT NULL,
+    resource TEXT NOT NULL,
+    PRIMARY KEY (project_id, task_id, resource),
+    FOREIGN KEY (project_id, task_id) REFERENCES tasks(project_id, id)
+  );
+  CREATE TABLE attempts (
+    project_id TEXT NOT NULL,
+    task_id TEXT NOT NULL,
+    id TEXT NOT NULL,
+    provider_id TEXT NOT NULL,
+    state TEXT NOT NULL CHECK (state IN ('RUNNING','EXITED','FAILED','CANCELLED','UNKNOWN')),
+    fencing_token INTEGER NOT NULL,
+    worktree_path TEXT,
+    branch TEXT,
+    base_commit TEXT,
+    started_at TEXT NOT NULL,
+    ended_at TEXT,
+    exit_code INTEGER,
+    failure_code TEXT,
+    PRIMARY KEY (project_id, task_id, id),
+    FOREIGN KEY (project_id, task_id) REFERENCES tasks(project_id, id)
+  );
+  CREATE TABLE locks (
+    project_id TEXT NOT NULL REFERENCES projects(id),
+    name TEXT NOT NULL,
+    owner_id TEXT NOT NULL,
+    acquired_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    PRIMARY KEY (project_id, name)
+  );
+  CREATE TABLE artifacts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id TEXT NOT NULL,
+    task_id TEXT NOT NULL,
+    attempt_id TEXT,
+    kind TEXT NOT NULL CHECK (kind IN ('EVIDENCE','LOG','REPORT','DIFF')),
+    relative_path TEXT NOT NULL,
+    sha256 TEXT NOT NULL CHECK (length(sha256) = 64),
+    note TEXT,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (project_id, task_id) REFERENCES tasks(project_id, id)
+  );
+  CREATE TABLE test_runs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id TEXT NOT NULL,
+    task_id TEXT NOT NULL,
+    attempt_id TEXT,
+    command TEXT NOT NULL,
+    exit_code INTEGER NOT NULL,
+    total INTEGER NOT NULL DEFAULT 0,
+    passed INTEGER NOT NULL DEFAULT 0,
+    failed INTEGER NOT NULL DEFAULT 0,
+    skipped INTEGER NOT NULL DEFAULT 0,
+    environment TEXT NOT NULL,
+    started_at TEXT NOT NULL,
+    ended_at TEXT NOT NULL,
+    FOREIGN KEY (project_id, task_id) REFERENCES tasks(project_id, id)
+  );
+  CREATE INDEX idx_test_runs_task ON test_runs(project_id, task_id, id);
+  `,
+  },
 ];

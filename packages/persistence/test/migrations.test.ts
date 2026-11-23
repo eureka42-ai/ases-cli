@@ -10,7 +10,7 @@ describe('migrations (TAR-0006)', () => {
   it('applies on an empty file with WAL and FKs on', () => {
     const { db, journalMode, schemaVersion, backupPath } = openDatabase(path.join(dir, 'a.sqlite'));
     expect(journalMode).toBe('wal');
-    expect(schemaVersion).toBe(1);
+    expect(schemaVersion).toBe(MIGRATIONS.length);
     expect(backupPath).toBeUndefined();
     expect(db.prepare('PRAGMA foreign_keys').get()).toEqual({ foreign_keys: 1 });
     db.close();
@@ -19,19 +19,20 @@ describe('migrations (TAR-0006)', () => {
   it('reopening is idempotent (no backup, same version)', () => {
     const file = path.join(dir, 'a.sqlite');
     const r = openDatabase(file);
-    expect(r).toMatchObject({ schemaVersion: 1, backupPath: undefined });
+    expect(r).toMatchObject({ schemaVersion: MIGRATIONS.length, backupPath: undefined });
     r.db.close();
   });
 
   it('backs up and verifies before migrating an existing database (AER-REQ-018)', () => {
     const file = path.join(dir, 'a.sqlite');
-    const extra = [...MIGRATIONS, { version: 2, name: 'test-extra', sql: 'CREATE TABLE extra (x INTEGER);' }];
+    const next = MIGRATIONS.length + 1;
+    const extra = [...MIGRATIONS, { version: next, name: 'test-extra', sql: 'CREATE TABLE extra (x INTEGER);' }];
     const r = openDatabase(file, extra);
-    expect(r.schemaVersion).toBe(2);
+    expect(r.schemaVersion).toBe(next);
     expect(r.backupPath && existsSync(r.backupPath)).toBe(true);
     r.db.close();
-    const backup = openDatabase(r.backupPath!, MIGRATIONS); // backup continua na v1 e abre sem migrar
-    expect(backup.schemaVersion).toBe(1);
+    const backup = openDatabase(r.backupPath!, MIGRATIONS); // backup continua na versão anterior e abre sem migrar
+    expect(backup.schemaVersion).toBe(MIGRATIONS.length);
     backup.db.close();
   });
 
@@ -42,10 +43,10 @@ describe('migrations (TAR-0006)', () => {
   it('rolls back a failing migration and leaves the version untouched', () => {
     const file = path.join(dir, 'b.sqlite');
     openDatabase(file).db.close();
-    const broken = [...MIGRATIONS, { version: 2, name: 'broken', sql: 'CREATE TABLE ok_t (x); CREATE TABLE ok_t (x);' }];
+    const broken = [...MIGRATIONS, { version: MIGRATIONS.length + 1, name: 'broken', sql: 'CREATE TABLE ok_t (x); CREATE TABLE ok_t (x);' }];
     expect(() => openDatabase(file, broken)).toThrow();
     const r = openDatabase(file);
-    expect(r.schemaVersion).toBe(1);
+    expect(r.schemaVersion).toBe(MIGRATIONS.length);
     expect(r.db.prepare("SELECT count(*) c FROM sqlite_master WHERE name = 'ok_t'").get()).toEqual({ c: 0 });
     r.db.close();
   });

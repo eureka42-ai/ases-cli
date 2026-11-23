@@ -46,6 +46,7 @@ describe('canonical payload hash', () => {
     expect(() => validatePayload('TaskUpdated', { from: 'READY', to: 'RESERVED', reason: null })).not.toThrow();
     expect(() => validatePayload('TaskUpdated', { from: 'READY', to: 'DONE', reason: null })).toThrow();
     expect(() => validatePayload('TaskCreated', { title: 't', reqs: [], extra: 1 })).toThrow();
-    expect(() => validatePayload('TestRunCompleted', { anything: true })).not.toThrow();
+    expect(() => validatePayload('TestRunStarted', { anything: true })).not.toThrow(); // não crítico: livre
+    expect(() => validatePayload('TestRunCompleted', { anything: true })).toThrow();
   });
 });

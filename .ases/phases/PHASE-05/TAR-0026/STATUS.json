@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "taskId": "TAR-0026",
+  "phaseId": "PHASE-05",
+  "title": "Evidências no banco e corte do .ases/ interino",
+  "state": "PLANNED",
+  "reqs": [
+    "AER-REQ-158",
+    "AER-REQ-186",
+    "AER-REQ-189",
+    "AER-REQ-036",
+    "AER-REQ-181"
+  ],
+  "tests": [
+    "packages/persistence/test/legacy.test.ts",
+    "test/e2e/cutover.test.mjs"
+  ],
+  "evidence": [],
+  "notes": []
+}

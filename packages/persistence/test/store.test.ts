@@ -62,11 +62,11 @@ describe('transitions (AER-REQ-033, §6.4)', () => {
 describe('event store (TAR-0007)', () => {
   it('is idempotent by eventId and rejects a reused id with another payload (AER-REQ-064)', () => {
     const eventId = '018f7194-44fd-7cb4-a65e-60d0b34c37e1';
-    const a = store.appendEvent({ eventId, eventType: 'TestRunCompleted', payload: { passed: 1 } });
-    const b = store.appendEvent({ eventId, eventType: 'TestRunCompleted', payload: { passed: 1 } });
+    const a = store.appendEvent({ eventId, eventType: 'TestRunStarted', payload: { passed: 1 } });
+    const b = store.appendEvent({ eventId, eventType: 'TestRunStarted', payload: { passed: 1 } });
     expect(a.inserted).toBe(true);
     expect(b).toEqual({ seq: a.seq, inserted: false });
-    expect(() => store.appendEvent({ eventId, eventType: 'TestRunCompleted', payload: { passed: 2 } })).toThrow(code('EVENT_ID_CONFLICT'));
+    expect(() => store.appendEvent({ eventId, eventType: 'TestRunStarted', payload: { passed: 2 } })).toThrow(code('EVENT_ID_CONFLICT'));
   });
 
   it('validates critical payloads before writing (AER-REQ-065)', () => {
