@@ -107,7 +107,10 @@ describe.runIf(hasScript)('TUIs in a real pseudo-terminal (TAR-0020)', () => {
     procs.push(t);
     await t.waitFor((s) => s.includes('ASES CLI') && s.includes('ases>'));
     expect(t.raw()).not.toMatch(/\u001b\[(3[0-9]|9[0-7]|38;)/);
-    await t.keys('\u0003\u0003');
+    // um Ctrl+C por vez: enviados juntos chegam num único bloco (\x03\x03) em runners lentos e não são Ctrl+C
+    await t.keys('\u0003');
+    await t.waitFor((s) => s.includes('Ctrl+C de novo em 2 s'));
+    await t.keys('\u0003');
     await t.waitFor((s) => s.includes('engine encerrado'));
     t.end();
     expect(await t.exited).toBe(0);
