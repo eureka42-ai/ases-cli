@@ -11,6 +11,9 @@
   ],
   "references": [
     {
+      "path": "../contracts/tsconfig.build.json"
+    },
+    {
       "path": "../platform-core/tsconfig.build.json"
     }
   ]

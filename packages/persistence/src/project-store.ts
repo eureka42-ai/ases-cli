@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import {
   EVENT_TYPES, PHASE_STATES, TASK_STATES, canTransitionPhase, canTransitionTask, formatAttemptId, formatPhaseId, formatTaskId,
-  payloadSha256, validatePayload, type EventEnvelope, type EventType, type PhaseState, type TaskState,
+  payloadSha256, redactText, validatePayload, type EventEnvelope, type EventType, type PhaseState, type TaskState,
 } from '@aer/contracts';
 import { DECISION_STATES, PRIORITIES, REQUIREMENT_STATES, type DecisionState, type RequirementState } from '@aer/ases-methodology';
 import { openDatabase, withBusyRetry, type OpenResult } from './database.ts';
@@ -200,6 +200,18 @@ export interface ChangeRow {
 
 // ===== PHASE-10: approvals e extensões (ADR-0015) =====
 export type ApprovalState = 'PENDING' | 'GRANTED' | 'DENIED' | 'EXPIRED' | 'CONSUMED';
+// ---- PHASE-18: conversa com a IA principal ----
+export type ChatMode = 'manual' | 'auto' | 'hybrid';
+export type ChatRole = 'user' | 'main' | 'system';
+export type TaskKind = 'code' | 'test' | 'docs' | 'review' | 'other';
+export interface PlannedTask { title: string; instructions: string; provider: string; kind: TaskKind; dependsOn: number[] }
+export interface ConversationRow { id: string; main: string; mode: ChatMode; phaseId: string | null; startedAt: string }
+export interface ChatMessageRow { n: number; role: ChatRole; provider: string | null; text: string; createdAt: string }
+export type PlanState = 'PENDING' | 'APPROVED' | 'CANCELLED' | 'RUNNING' | 'DONE';
+export interface PlanRow { id: string; conversationId: string; state: PlanState; tasks: PlannedTask[]; reasons: string[]; createdAt: string }
+export interface RestorePointRow { n: number; ref: string; commit: string; files: string[]; appliedAt: string | null }
+const CHAT_MODES: readonly string[] = ['manual', 'auto', 'hybrid'];
+
 export interface ApprovalRow {
   id: string;
   scope: string;
@@ -1052,6 +1064,147 @@ export class ProjectStore {
   }
 
   /** Snapshot consistente + cursor numa única transação de leitura (AER-REQ-074, §10.3). */
+  // ---- PHASE-18: conversa, planos e pontos de restauração (cada mudança é um evento) ----
+  private countId(table: string, prefix: string): string {
+    const n = Number((this.db.prepare(`SELECT count(*) n FROM ${table} WHERE project_id = ?`).get(this.projectId) as Row).n) + 1;
+    return `${prefix}-${String(n).padStart(4, '0')}`;
+  }
+
+  startConversation(main: string, mode: ChatMode): string {
+    if (!CHAT_MODES.includes(mode)) throw new StoreError('INVALID_INPUT', `invalid chat mode ${mode}`);
+    if (!main.trim()) throw new StoreError('INVALID_INPUT', 'main provider is required');
+    return this.inWriteTx(() => {
+      const id = this.countId('conversations', 'CNV');
+      this.db.prepare('INSERT INTO conversations (project_id, id, main, mode, phase_id, started_at) VALUES (?, ?, ?, ?, NULL, ?)').run(this.projectId, id, main, mode, this.now());
+      this.appendEvent({ eventType: 'ConversationStarted', payload: { conversationId: id, main, mode } });
+      return id;
+    });
+  }
+
+  private toConversation(r: Row): ConversationRow {
+    return { id: String(r.id), main: String(r.main), mode: r.mode as ChatMode, phaseId: (r.phase_id as string | null) ?? null, startedAt: String(r.started_at) };
+  }
+
+  currentConversation(): ConversationRow | undefined {
+    const r = this.db.prepare('SELECT * FROM conversations WHERE project_id = ? ORDER BY id DESC LIMIT 1').get(this.projectId) as Row | undefined;
+    return r ? this.toConversation(r) : undefined;
+  }
+
+  private conversation(id: string): ConversationRow {
+    const r = this.db.prepare('SELECT * FROM conversations WHERE project_id = ? AND id = ?').get(this.projectId, id) as Row | undefined;
+    if (!r) throw new StoreError('NOT_FOUND', `conversation ${id} not found`);
+    return this.toConversation(r);
+  }
+
+  /** Grava uma mensagem já redigida (segredos conhecidos viram [REDACTED]; máx. 16 000 caracteres). */
+  addChatMessage(cnv: string, m: { role: ChatRole; provider: string | null; text: string }): number {
+    if (!['user', 'main', 'system'].includes(m.role)) throw new StoreError('INVALID_INPUT', `invalid chat role ${m.role}`);
+    return this.inWriteTx(() => {
+      this.conversation(cnv);
+      const n = Number((this.db.prepare('SELECT count(*) n FROM chat_messages WHERE project_id = ? AND conversation_id = ?').get(this.projectId, cnv) as Row).n) + 1;
+      const t = redactText(m.text, 16_000);
+      this.db.prepare('INSERT INTO chat_messages (project_id, conversation_id, n, role, provider, text, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)').run(this.projectId, cnv, n, m.role, m.provider, t.text, this.now());
+      this.appendEvent({ eventType: 'ChatMessageAdded', payload: { conversationId: cnv, n, role: m.role, provider: m.provider, text: t.text, redacted: t.redacted, truncated: t.truncated } });
+      return n;
+    });
+  }
+
+  /** Mensagens em ordem; com `limit`, só as últimas. */
+  listChatMessages(cnv: string, limit?: number): ChatMessageRow[] {
+    const rows = this.db.prepare('SELECT * FROM chat_messages WHERE project_id = ? AND conversation_id = ? ORDER BY n').all(this.projectId, cnv) as Row[];
+    return (limit ? rows.slice(-limit) : rows).map((r) => ({ n: Number(r.n), role: r.role as ChatRole, provider: (r.provider as string | null) ?? null, text: String(r.text), createdAt: String(r.created_at) }));
+  }
+
+  setMainProvider(cnv: string, main: string): void {
+    this.inWriteTx(() => {
+      const c = this.conversation(cnv);
+      if (c.main === main) return;
+      this.db.prepare('UPDATE conversations SET main = ? WHERE project_id = ? AND id = ?').run(main, this.projectId, cnv);
+      this.appendEvent({ eventType: 'MainProviderChanged', payload: { conversationId: cnv, from: c.main, to: main } });
+    });
+  }
+
+  setConversationMode(cnv: string, mode: ChatMode): void {
+    if (!CHAT_MODES.includes(mode)) throw new StoreError('INVALID_INPUT', `invalid chat mode ${mode}`);
+    this.conversation(cnv);
+    this.db.prepare('UPDATE conversations SET mode = ? WHERE project_id = ? AND id = ?').run(mode, this.projectId, cnv);
+  }
+
+  setConversationPhase(cnv: string, phaseId: string): void {
+    this.conversation(cnv);
+    this.db.prepare('UPDATE conversations SET phase_id = ? WHERE project_id = ? AND id = ?').run(phaseId, this.projectId, cnv);
+  }
+
+  private toPlan(r: Row): PlanRow {
+    return { id: String(r.id), conversationId: String(r.conversation_id), state: r.state as PlanState, tasks: JSON.parse(String(r.tasks_json)) as PlannedTask[], reasons: JSON.parse(String(r.reasons_json)) as string[], createdAt: String(r.created_at) };
+  }
+
+  /** Um plano PENDING por conversa: um novo cancela o anterior (decisão do sistema). */
+  proposePlan(cnv: string, tasks: PlannedTask[], reasons: string[]): string {
+    if (!tasks.length) throw new StoreError('INVALID_INPUT', 'a plan needs at least one task');
+    return this.inWriteTx(() => {
+      this.conversation(cnv);
+      const old = this.pendingPlan(cnv);
+      if (old) this.decidePlan(old.id, 'cancelled', 'system');
+      const id = this.countId('plans', 'PLN');
+      this.db.prepare("INSERT INTO plans (project_id, id, conversation_id, state, tasks_json, reasons_json, created_at) VALUES (?, ?, ?, 'PENDING', ?, ?, ?)").run(this.projectId, id, cnv, JSON.stringify(tasks), JSON.stringify(reasons), this.now());
+      this.appendEvent({ eventType: 'PlanProposed', payload: { conversationId: cnv, planId: id, tasks: tasks.map((t) => ({ title: t.title, provider: t.provider, kind: t.kind, dependsOn: t.dependsOn })), reasons } });
+      return id;
+    });
+  }
+
+  getPlan(id: string): PlanRow | undefined {
+    const r = this.db.prepare('SELECT * FROM plans WHERE project_id = ? AND id = ?').get(this.projectId, id) as Row | undefined;
+    return r ? this.toPlan(r) : undefined;
+  }
+
+  pendingPlan(cnv: string): PlanRow | undefined {
+    const r = this.db.prepare("SELECT * FROM plans WHERE project_id = ? AND conversation_id = ? AND state = 'PENDING' ORDER BY id DESC LIMIT 1").get(this.projectId, cnv) as Row | undefined;
+    return r ? this.toPlan(r) : undefined;
+  }
+
+  /** Decide um plano PENDING; `edited` grava as tarefas editadas e aprova. */
+  decidePlan(id: string, decision: 'approved' | 'edited' | 'cancelled' | 'auto', by: string, tasks?: PlannedTask[]): void {
+    this.inWriteTx(() => {
+      const p = this.getPlan(id);
+      if (!p) throw new StoreError('NOT_FOUND', `plan ${id} not found`);
+      if (p.state !== 'PENDING') throw new StoreError('INVALID_TRANSITION', `plan ${id} is ${p.state}`);
+      const state: PlanState = decision === 'cancelled' ? 'CANCELLED' : 'APPROVED';
+      this.db.prepare('UPDATE plans SET state = ?, tasks_json = ? WHERE project_id = ? AND id = ?').run(state, JSON.stringify(tasks ?? p.tasks), this.projectId, id);
+      this.appendEvent({ eventType: 'PlanDecided', payload: { planId: id, decision, by } });
+    });
+  }
+
+  setPlanState(id: string, state: 'RUNNING' | 'DONE'): void {
+    const p = this.getPlan(id);
+    if (!p) throw new StoreError('NOT_FOUND', `plan ${id} not found`);
+    if ((state === 'RUNNING' && p.state !== 'APPROVED') || (state === 'DONE' && p.state !== 'RUNNING')) throw new StoreError('INVALID_TRANSITION', `plan ${id} ${p.state} -> ${state}`);
+    this.db.prepare('UPDATE plans SET state = ? WHERE project_id = ? AND id = ?').run(state, this.projectId, id);
+  }
+
+  addRestorePoint(cnv: string, r: { ref: string; commit: string; files: string[] }): number {
+    return this.inWriteTx(() => {
+      this.conversation(cnv);
+      const n = Number((this.db.prepare('SELECT count(*) n FROM restore_points WHERE project_id = ? AND conversation_id = ?').get(this.projectId, cnv) as Row).n) + 1;
+      this.db.prepare('INSERT INTO restore_points (project_id, conversation_id, n, ref, commit_sha, files_json, applied_at) VALUES (?, ?, ?, ?, ?, ?, NULL)').run(this.projectId, cnv, n, r.ref, r.commit, JSON.stringify(r.files));
+      this.appendEvent({ eventType: 'RestorePointCreated', payload: { conversationId: cnv, n, ref: r.ref, commit: r.commit, files: r.files } });
+      return n;
+    });
+  }
+
+  /** Último ponto ainda não aplicado (o que o próximo /desfazer usa). */
+  lastRestorePoint(cnv: string): RestorePointRow | undefined {
+    const r = this.db.prepare('SELECT * FROM restore_points WHERE project_id = ? AND conversation_id = ? AND applied_at IS NULL ORDER BY n DESC LIMIT 1').get(this.projectId, cnv) as Row | undefined;
+    return r ? { n: Number(r.n), ref: String(r.ref), commit: String(r.commit_sha), files: JSON.parse(String(r.files_json)) as string[], appliedAt: null } : undefined;
+  }
+
+  markRestoreApplied(cnv: string, n: number): void {
+    this.inWriteTx(() => {
+      this.db.prepare('UPDATE restore_points SET applied_at = ? WHERE project_id = ? AND conversation_id = ? AND n = ?').run(this.now(), this.projectId, cnv, n);
+      this.appendEvent({ eventType: 'RestorePointApplied', payload: { conversationId: cnv, n } });
+    });
+  }
+
   snapshot(): Snapshot {
     if (this.inTx) throw new StoreError('NESTED_TRANSACTION', 'snapshot cannot run inside a write transaction');
     this.db.exec('BEGIN');

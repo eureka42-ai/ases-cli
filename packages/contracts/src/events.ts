@@ -13,6 +13,8 @@ export const EVENT_TYPES = [
   'SecurityViolationBlocked', 'AuditExported', 'LegacyImported',
   // PHASE-09: metodologia ASES-300/500
   'MethodologySourceImported', 'RequirementCreated', 'RequirementUpdated', 'DecisionRecorded', 'ChangeRecorded',
+  // PHASE-18: chat com a IA principal e planos
+  'ConversationStarted', 'ChatMessageAdded', 'MainProviderChanged', 'PlanProposed', 'PlanDecided', 'ChatTurnFailed', 'RestorePointCreated', 'RestorePointApplied',
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
@@ -21,6 +23,10 @@ export const REDACTION_LEVELS = ['SAFE', 'REDACTED', 'SENSITIVE'] as const;
 const phaseId = z.string().regex(/^PHASE-\d{2,}$/);
 const taskId = z.string().regex(/^TAR-\d{4,}$/);
 const attemptId = z.string().regex(/^ATT-\d{4,}$/);
+const conversationId = z.string().regex(/^CNV-\d{4,}$/);
+const planId = z.string().regex(/^PLN-\d{4,}$/);
+const chatMode = z.enum(['manual', 'auto', 'hybrid']);
+const plannedTask = z.strictObject({ title: z.string().min(1), provider: z.string().min(1), kind: z.enum(['code', 'test', 'docs', 'review', 'other']), dependsOn: z.array(z.number().int().min(1)) });
 
 /** AER-REQ-065: eventos críticos têm payload validado e sem campos imprevistos. */
 export const CRITICAL_PAYLOADS = {
@@ -38,6 +44,14 @@ export const CRITICAL_PAYLOADS = {
   RequirementUpdated: z.strictObject({ id: z.string().regex(/^REQ-\d{3,}$/), field: z.enum(['status', 'approval', 'content']), from: z.string().nullable(), to: z.string(), note: z.string().nullable(), changeId: z.string().nullable() }),
   DecisionRecorded: z.strictObject({ id: z.string().regex(/^DEC-\d{4,}$/), questionId: z.string().min(1), state: z.string(), supersedes: z.string().nullable(), changeId: z.string().nullable() }),
   ChangeRecorded: z.strictObject({ id: z.string().regex(/^CHANGE-\d{4,}$/), reason: z.string().min(1), targets: z.array(z.string()), approvedBy: z.string().min(1) }),
+  ConversationStarted: z.strictObject({ conversationId, main: z.string().min(1), mode: chatMode }),
+  ChatMessageAdded: z.strictObject({ conversationId, n: z.number().int().min(1), role: z.enum(['user', 'main', 'system']), provider: z.string().nullable(), text: z.string(), redacted: z.boolean(), truncated: z.boolean() }),
+  MainProviderChanged: z.strictObject({ conversationId, from: z.string().min(1), to: z.string().min(1) }),
+  PlanProposed: z.strictObject({ conversationId, planId, tasks: z.array(plannedTask).min(1), reasons: z.array(z.string()) }),
+  PlanDecided: z.strictObject({ planId, decision: z.enum(['approved', 'edited', 'cancelled', 'auto']), by: z.string().min(1) }),
+  ChatTurnFailed: z.strictObject({ conversationId, code: z.string().min(1), message: z.string() }),
+  RestorePointCreated: z.strictObject({ conversationId, n: z.number().int().min(1), ref: z.string().min(1), commit: z.string().regex(/^[0-9a-f]{40,64}$/), files: z.array(z.string()) }),
+  RestorePointApplied: z.strictObject({ conversationId, n: z.number().int().min(1) }),
   TestRunCompleted: z.strictObject({ command: z.string().min(1), exitCode: z.number().int(), total: z.number().int().min(0), passed: z.number().int().min(0), failed: z.number().int().min(0), skipped: z.number().int().min(0) }),
 } as const satisfies Partial<Record<EventType, z.ZodType>>;
 

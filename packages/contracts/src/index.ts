@@ -5,3 +5,4 @@ export * from './manifest.ts';
 export * from './canonical.ts';
 export * from './events.ts';
 export * from './state-machine.ts';
+export * from './redact.ts';

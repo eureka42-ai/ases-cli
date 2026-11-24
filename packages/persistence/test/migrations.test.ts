@@ -77,3 +77,19 @@ describe('migrations (TAR-0006)', () => {
     db.close();
   });
 });
+
+describe('migration 5 (PHASE-18)', () => {
+  it('migration 5 applies on a v4 database and keeps data', () => {
+    const file = path.join(dir, 'v4.sqlite');
+    const v4 = openDatabase(file, MIGRATIONS.filter((m) => m.version <= 4));
+    expect(v4.schemaVersion).toBe(4);
+    v4.db.exec("INSERT INTO projects (id, name, created_at) VALUES ('prj_x', 'x', '2026-01-01T00:00:00.000Z')");
+    v4.db.close();
+    const v5 = openDatabase(file);
+    expect(v5.schemaVersion).toBe(5);
+    expect(v5.backupPath && existsSync(v5.backupPath)).toBe(true);
+    expect(v5.db.prepare("SELECT name FROM projects WHERE id = 'prj_x'").get()).toEqual({ name: 'x' });
+    expect(v5.db.prepare("SELECT count(*) n FROM sqlite_master WHERE name IN ('conversations','chat_messages','plans','restore_points')").get()).toEqual({ n: 4 });
+    v5.db.close();
+  });
+});

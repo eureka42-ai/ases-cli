@@ -285,5 +285,52 @@ CREATE TRIGGER events_append_only_delete BEFORE DELETE ON events
   );
   `,
   },
+  {
+    version: 5,
+    name: 'chat-conversations',
+    sql: `
+  CREATE TABLE conversations (
+    project_id TEXT NOT NULL REFERENCES projects(id),
+    id TEXT NOT NULL CHECK (id GLOB 'CNV-[0-9][0-9][0-9][0-9]*'),
+    main TEXT NOT NULL,
+    mode TEXT NOT NULL CHECK (mode IN ('manual','auto','hybrid')),
+    phase_id TEXT,
+    started_at TEXT NOT NULL,
+    PRIMARY KEY (project_id, id)
+  );
+  CREATE TABLE chat_messages (
+    project_id TEXT NOT NULL,
+    conversation_id TEXT NOT NULL,
+    n INTEGER NOT NULL CHECK (n >= 1),
+    role TEXT NOT NULL CHECK (role IN ('user','main','system')),
+    provider TEXT,
+    text TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (project_id, conversation_id, n),
+    FOREIGN KEY (project_id, conversation_id) REFERENCES conversations(project_id, id)
+  );
+  CREATE TABLE plans (
+    project_id TEXT NOT NULL,
+    id TEXT NOT NULL CHECK (id GLOB 'PLN-[0-9][0-9][0-9][0-9]*'),
+    conversation_id TEXT NOT NULL,
+    state TEXT NOT NULL CHECK (state IN ('PENDING','APPROVED','CANCELLED','RUNNING','DONE')),
+    tasks_json TEXT NOT NULL,
+    reasons_json TEXT NOT NULL DEFAULT '[]',
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (project_id, id),
+    FOREIGN KEY (project_id, conversation_id) REFERENCES conversations(project_id, id)
+  );
+  CREATE TABLE restore_points (
+    project_id TEXT NOT NULL,
+    conversation_id TEXT NOT NULL,
+    n INTEGER NOT NULL CHECK (n >= 1),
+    ref TEXT NOT NULL,
+    commit_sha TEXT NOT NULL,
+    files_json TEXT NOT NULL,
+    applied_at TEXT,
+    PRIMARY KEY (project_id, conversation_id, n),
+    FOREIGN KEY (project_id, conversation_id) REFERENCES conversations(project_id, id)
+  );
+  `,
+  },
 ];
-
