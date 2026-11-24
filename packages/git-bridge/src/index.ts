@@ -174,7 +174,8 @@ async function snapshotTo(root: string, ref: string): Promise<string> {
   return withTempIndex(async (env) => {
     const hasHead = await git(root, ['rev-parse', '--verify', '-q', 'HEAD']).then(() => true, () => false);
     await git(root, hasHead ? ['read-tree', 'HEAD'] : ['read-tree', '--empty'], env);
-    await git(root, ['add', '-A', '--', '.'], env);
+    // .ases/ é do engine (espelho, relatórios): nunca entra no ponto de restauração nem é desfeito
+    await git(root, ['add', '-A', '--', '.', ':(exclude).ases'], env);
     const tree = await git(root, ['write-tree'], env);
     const commit = await git(root, ['commit-tree', tree, ...(hasHead ? ['-p', 'HEAD'] : []), '-m', `AER restore point ${ref}`], { ...env, ...SNAPSHOT_AUTHOR });
     await git(root, ['update-ref', ref, commit]);
@@ -182,7 +183,7 @@ async function snapshotTo(root: string, ref: string): Promise<string> {
   });
 }
 
-const changedBetween = async (root: string, a: string, b: string) => (await git(root, ['diff', '--name-only', '--no-renames', a, b])).split('\n').filter(Boolean);
+const changedBetween = async (root: string, a: string, b: string) => (await git(root, ['diff', '--name-only', '--no-renames', a, b, '--', '.', ':(exclude).ases'])).split('\n').filter(Boolean);
 
 /** Antes de um turno da principal: guarda o estado atual em `ref`. `files` = o que já difere do HEAD. */
 export async function createRestorePoint(root: string, ref: string): Promise<{ commit: string; files: string[] }> {

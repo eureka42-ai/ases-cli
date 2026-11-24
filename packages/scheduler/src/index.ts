@@ -6,3 +6,4 @@ export * from './run.ts';
 export * from './continuity.ts';
 export * from './review.ts';
 export * from './chat-plan.ts';
+export * from './chat.ts';
