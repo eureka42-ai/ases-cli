@@ -6,7 +6,7 @@ import { copyFileSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { ProjectStore, exportHistory, importLegacy, sqliteVersion } from '@aer/persistence';
 import { SUPPORTED_TARGETS, defaultDeps, syncedFolderHint, targetStatus } from '@aer/platform-core';
-import { brandConfigLayers, findProjectRoot, initProject, isInterimProject, loadPlatformAdapter, paths, readInterimProject, readManifest } from '@aer/project-store';
+import { brandConfigLayers, chatConfig, findProjectRoot, initProject, isInterimProject, loadPlatformAdapter, paths, readInterimProject, readManifest } from '@aer/project-store';
 import { ClaudeCodeProvider } from '@aer/provider-claude';
 import { CodexProvider } from '@aer/provider-codex';
 import { createAntigravityProvider, createKimiProvider, createOpenCodeProvider } from '@aer/provider-acp';
@@ -15,6 +15,7 @@ import { writeReports } from './reports.ts';
 import { Engine } from './engine.ts';
 import { handleLine } from './commands.ts';
 import { runTui } from './tui.tsx';
+import { runWizard } from './wizard.tsx';
 import { attachRepl, connectResident, daemonStatus, runDaemon, startDaemon, stopDaemon } from './daemon.ts';
 
 const HELP = `Eureka42 · ASES Engineering Runtime — ases ${VERSIONS.app}
@@ -251,6 +252,8 @@ async function interactive(root: string, adapter: Awaited<ReturnType<typeof load
   }
   const engine = await Engine.start(root, adapter);
   if (ui.tui) {
+    // PHASE-18: primeiro uso sem principal configurada → assistente (sem IA) antes do chat
+    if (!chatConfig(root).main) await runWizard(engine, { color: ui.color, colorDepth: ui.colorDepth, unicode: ui.unicode, theme: ui.theme, logo: ui.logo });
     const reason = await runTui(engine, { color: ui.color, colorDepth: ui.colorDepth, unicode: ui.unicode, theme: ui.theme, logo: ui.logo });
     const r = await engine.stop();
     // §6.4/AER-REQ-090: impresso depois que o Ink devolveu o terminal

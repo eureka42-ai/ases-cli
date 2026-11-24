@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { createRestorePoint, markTurnEnd, resolveInside } from '@aer/git-bridge';
+import { createRestorePoint, markTurnEnd, repoRoot, resolveInside } from '@aer/git-bridge';
 import type { ChatMessageRow, PhaseRow, TaskRow } from '@aer/persistence';
 import { redactText, type AgentStreamEvent } from '@aer/provider-sdk';
 import { assignProviders, parseMainReply } from './chat-plan.ts';
@@ -93,7 +93,9 @@ export async function runChatTurn(d: WorkerDeps, o: { conversationId: string; me
   if (provider.requiresConsent && !d.consented?.has(provider.id)) return fail('CONSENT_REQUIRED', `autorize o uso da sua conta ${provider.id}: /config consentir ${provider.id}`);
 
   const ref = `refs/ases/restore/${cnv}/${n}`;
-  const point = await createRestorePoint(d.root, ref);
+  // sem Git não há ponto de restauração: o chat funciona, só o /desfazer fica indisponível
+  const inRepo = await repoRoot(d.root).then(() => true, () => false);
+  const point = inRepo ? await createRestorePoint(d.root, ref) : undefined;
   const tmp = mkdtempSync(path.join(os.tmpdir(), 'aer-chat-'));
   const instructionsFile = path.join(tmp, `${cnv}-${n}.md`);
   writeFileSync(instructionsFile, buildMainPrompt({
@@ -136,8 +138,8 @@ export async function runChatTurn(d: WorkerDeps, o: { conversationId: string; me
     o.signal.removeEventListener('abort', onAbort);
     rmSync(tmp, { recursive: true, force: true });
   }
-  const { touched } = await markTurnEnd(d.root, ref);
-  const restore = touched.length ? { n: d.mutate((s) => s.addRestorePoint(cnv, { ref, commit: point.commit, files: touched })), files: touched } : undefined;
+  const touched = point ? (await markTurnEnd(d.root, ref)).touched : [];
+  const restore = point && touched.length ? { n: d.mutate((s) => s.addRestorePoint(cnv, { ref, commit: point.commit, files: touched })), files: touched } : undefined;
   if (violation) return fail('SECURITY_VIOLATION', `${violation}${restore ? ' (use /desfazer para voltar as edições)' : ''}`);
   if (error) return fail(error.split(':')[0]!, error);
   if (exit?.exitCode !== 0) return fail('NONZERO_EXIT', `a principal terminou com código ${exit?.exitCode ?? exit?.signal ?? '?'}`);

@@ -127,3 +127,18 @@ describe('chat turn of the main IA (PHASE-18, TAR-0084)', () => {
     expect(p.trimEnd().endsWith('MENSAGEM NOVA')).toBe(true);
   });
 });
+
+describe('chat outside a Git repository (PHASE-18)', () => {
+  it('the turn still works; there is just no restore point', async () => {
+    const { mkdtempSync } = await import('node:fs');
+    const os = await import('node:os');
+    const root = mkdtempSync(path.join(os.tmpdir(), 'aer chat sem git '));
+    const s = ProjectStore.open(':memory:', P);
+    const d: WorkerDeps = { root, mutate: (fn) => fn(s), providers: { simulator: new SimulatorProvider(adapter) }, ttlMs: 30_000, timeoutMs: 15_000, consented: new Set() };
+    const cnv = s.startConversation('simulator', 'manual');
+    const r = await runChatTurn(d, { conversationId: cnv, message: 'edite o readme', main: 'simulator', ready: ['simulator'], signal: new AbortController().signal });
+    expect(r).toMatchObject({ ok: true, reply: 'SIMULATED: editei SIMULATED/CHAT.md' });
+    expect(r.ok && r.restore).toBeFalsy();
+    expect(s.lastRestorePoint(cnv)).toBeUndefined();
+  });
+});

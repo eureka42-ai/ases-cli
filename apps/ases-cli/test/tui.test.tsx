@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
@@ -14,6 +14,9 @@ async function engine(): Promise<Engine> {
   const dir = mkdtempSync(path.join(os.tmpdir(), 'aer-tui-'));
   dirs.push(dir);
   initProject(dir, adapter, 'tui');
+  // principal simulada: o texto livre nunca toca nas IAs reais desta máquina (PHASE-18)
+  const cfgFile = path.join(dir, '.ases', 'CONFIG.json');
+  writeFileSync(cfgFile, JSON.stringify({ ...JSON.parse(readFileSync(cfgFile, 'utf8')), chat: { main: 'simulator' } }, null, 2));
   return Engine.start(dir, adapter);
 }
 const ESC_COLOR = /\u001b\[(3[0-9]|9[0-7]|38;)/;
@@ -28,12 +31,13 @@ describe('ases TUI (TAR-0017)', () => {
     const e = await engine();
     const exits: string[] = [];
     const r = await renderForTest(<UiContext.Provider value={ui()}><AsesApp engine={e} onExit={(x) => exits.push(x)} /></UiContext.Provider>, 120, 24);
-    expect(txt(r)).toContain('⌘ Eureka42 | ASES CLI ● LIVE  tui · seq 1 · monitores 0');
+    expect(txt(r)).toContain('eureka42.org'); // banner verde a partir de 72 colunas (PHASE-18)
+    expect(txt(r)).toContain('● LIVE  tui · seq 1 · monitores 0');
     await r.press('/phase new Fundação\r'); // colar com Enter: vira um comando
     await type(r, '/task new PHASE-01 Auditar');
     await r.press(KEYS.enter);
     const f = txt(r);
-    expect(f).toContain('ases> /phase new Fundação');
+    expect(f).toContain('você> /phase new Fundação');
     expect(f).toContain('criada PHASE-01');
     expect(f).toContain('criada TAR-0001');
     expect(f).toMatch(/PHASE-01 PLANNED Fundação/);
@@ -50,14 +54,16 @@ describe('ases TUI (TAR-0017)', () => {
     await type(r, '/status');
     await r.press(KEYS.enter);
     await r.press(KEYS.up);
-    expect(txt(r)).toMatch(/ases> \/status█/);
+    expect(txt(r)).toMatch(/você> \/status█/);
     await r.press(KEYS.backspace);
-    expect(txt(r)).toMatch(/ases> \/statu█/);
+    expect(txt(r)).toMatch(/você> \/statu█/);
     await r.press(KEYS.enter);
     expect(txt(r)).toContain('comando desconhecido: /statu');
     await type(r, 'olá agente');
     await r.press(KEYS.enter);
     expect(txt(r)).not.toContain('ainda não implementado'); // PHASE-18: texto livre vai para a IA principal
+    for (let i = 0; i < 200 && !txt(r).includes('entendi — olá agente'); i++) await new Promise((x) => setTimeout(x, 50));
+    expect(txt(r)).toContain('simulator> SIMULATED: entendi — olá agente');
     await r.press(KEYS.tab);
     await r.press(KEYS.enter);
     expect(txt(r)).toMatch(/TAR-0001 — Uma/);
@@ -97,7 +103,7 @@ describe('ases TUI (TAR-0017)', () => {
       expect(plain.split('\n').length).toBeLessThanOrEqual(rows);
       if (!u.color) expect(r.lastFrame()).not.toMatch(ESC_COLOR);
       if (!u.unicode) expect(plain).not.toMatch(/[\u00B7\u00D7\u2014\u2190-\u21FF\u2300-\u23FF\u2500-\u25FF]/); // sem glifos; acentos do português permanecem
-      expect(plain.split('\n')[0]).toMatch(/LIVE/); // estado nunca some do cabeçalho
+      expect(plain.split('\n').slice(0, cols >= 72 && rows >= 24 ? 8 : 1).join('\n')).toMatch(/LIVE/); // estado nunca some do cabeçalho (com banner, na linha abaixo dele)
       r.unmount();
     }
     await e.stop();

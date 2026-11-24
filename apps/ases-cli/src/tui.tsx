@@ -2,6 +2,7 @@ import { Box, Text, render, useApp, useInput } from 'ink';
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { BrandHeader, HelpOverlay, KeyHints, Pane, StateText, StatusBadge, UiContext, symbols, useAccent, useTerminalSize, useUi, wrapLines, type Ui } from '@aer/tui-shared';
 import { handleLine } from './commands.ts';
+import { chatSession, filterMenu } from './chat-commands.ts';
 import type { Engine } from './engine.ts';
 
 /** O que a TUI precisa do engine; o Engine real satisfaz isto e os testes usam o mesmo Engine sobre um projeto temporário. */
@@ -9,7 +10,9 @@ type EngineLike = Pick<Engine, 'info' | 'store' | 'onChange' | 'mirrorError' | '
 
 const MAX_LOG = 1000;
 const KEYS: [string, string][] = [
-  ['Enter', 'executa o comando do prompt'],
+  ['Enter', 'envia a mensagem à principal ou executa o /comando; com plano pendente e prompt vazio, executa o plano'],
+  ['e / n', 'com plano pendente e prompt vazio: editar o item 1 / descartar o plano'],
+  ['/', 'abre o menu de comandos (↑↓ escolhe, Tab completa)'],
   ['↑ ↓', 'histórico de comandos (prompt) / seleção (tarefas)'],
   ['Tab', 'alterna foco: prompt / tarefas'],
   ['Enter (tarefas)', 'mostra o detalhe da tarefa selecionada'],
@@ -26,29 +29,48 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
   const app = useApp();
   const { columns, rows } = useTerminalSize();
   const [, setTick] = useState(0);
-  const [log, setLog] = useState<string[]>(['Bem-vindo. Digite /help para os comandos; abra `ases-tar` noutro terminal para acompanhar.']);
+  const [log, setLog] = useState<string[]>(['Bem-vindo. Converse com a IA principal em texto livre; /ajuda mostra os comandos. Abra `ases-tar` noutro terminal para acompanhar.']);
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [hIdx, setHIdx] = useState(-1);
   const [focus, setFocus] = useState<'prompt' | 'tasks'>('prompt');
   const [sel, setSel] = useState(0);
   const [help, setHelp] = useState(false);
+  const [menuSel, setMenuSel] = useState(0);
+  const [consentAsk, setConsentAsk] = useState<{ provider: string; message: string } | undefined>(undefined);
+  const [ready, setReady] = useState<number | undefined>(undefined);
   const armed = useRef<NodeJS.Timeout | undefined>(undefined);
+  const chat = chatSession(engine as Engine);
 
   useEffect(() => engine.onChange(() => setTick((n) => n + 1)), [engine]);
+  useEffect(() => {
+    // progresso das tarefas do plano no próprio chat; IAs prontas para o banner
+    chat.on({ onProgress: (p) => push(`  ${p.taskId} ${p.provider.padEnd(12)} ${p.state}${p.note ? ` · ${p.note}` : ''}`) });
+    let alive = true;
+    void chat.probeAll().then((pr) => alive && setReady(Object.values(pr).filter((x) => x.availability === 'READY').length), () => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [chat]);
   const push = (...lines: string[]) => setLog((cur) => [...cur, ...lines.flatMap((l) => l.split('\n'))].slice(-MAX_LOG));
   const exit = (reason: string) => {
     onExit(reason);
     app.exit();
   };
   const run = (line: string) => {
-    push(`ases> ${line}`);
+    const isChat = !line.startsWith('/');
+    if (isChat && chat.pending > 0) push(`na fila: ${line}`);
+    else push(`você> ${line}`);
     try {
       const out = handleLine(engine, line, ui.unicode);
       if (out === 'EXIT') return exit('/exit');
       if (out instanceof Promise) {
-        push(`executando${y.more} (acompanhe no ases-tar; /cancel TAR-XXXX para cancelar)`);
-        out.then(push, (err: Error & { code?: string }) => push(`erro${err.code ? ` ${err.code}` : ''}: ${err.message}`));
+        if (!isChat) push(`executando${y.more} (acompanhe no ases-tar; /parar para parar)`);
+        out.then((text) => {
+          push(text);
+          const m = /erro CONSENT_REQUIRED: autorize o uso da sua conta ([a-z0-9-]+)/.exec(text);
+          if (m && isChat) setConsentAsk({ provider: m[1]!, message: line });
+        }, (err: Error & { code?: string }) => push(`erro${err.code ? ` ${err.code}` : ''}: ${err.message}`));
       } else if (out) push(out);
     } catch (err) {
       const e = err as Error & { code?: string };
@@ -71,6 +93,36 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
     if (help) {
       if (key.escape || ch === '?') setHelp(false);
       return;
+    }
+    if (consentAsk) {
+      // a conta (cota/cobrança) é do usuário: nada roda antes do "s" (AER-REQ-123)
+      if (ch === 's' || ch === 'a') {
+        chat.grantConsent(consentAsk.provider, ch === 'a');
+        push(`${consentAsk.provider} autorizada${ch === 'a' ? ' e gravada no projeto' : ' nesta sessão'}`);
+        const again = consentAsk.message;
+        setConsentAsk(undefined);
+        run(again);
+      } else if (ch === 'n' || key.escape) {
+        push(`${consentAsk.provider}: não autorizado; nada foi enviado. Troque a principal com /ia <nome>`);
+        setConsentAsk(undefined);
+      }
+      return;
+    }
+    const plan = engine.store.currentConversation() ? engine.store.pendingPlan(engine.store.currentConversation()!.id) : undefined;
+    if (plan && focus === 'prompt' && input === '') {
+      if (key.return) return run('/plano executar');
+      if (ch === 'n') return run('/cancel');
+      if (ch === 'e') return setInput('/plano editar 1 provider=');
+    }
+    const menu = focus === 'prompt' && input.startsWith('/') && !input.includes(' ') ? filterMenu(input) : [];
+    if (menu.length) {
+      if (key.upArrow) return setMenuSel((i) => Math.max(0, i - 1));
+      if (key.downArrow) return setMenuSel((i) => Math.min(menu.length - 1, i + 1));
+      if (key.tab) {
+        setInput(`${menu[Math.min(menuSel, menu.length - 1)]!.cmd} `);
+        setMenuSel(0);
+        return;
+      }
     }
     if (key.ctrl && ch === 'l') return setLog([]);
     if (key.tab) return setFocus((f) => (f === 'prompt' ? 'tasks' : 'prompt'));
@@ -103,7 +155,10 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
       }
       return;
     }
-    if (key.backspace || key.delete) return setInput((s) => [...s].slice(0, -1).join(''));
+    if (key.backspace || key.delete) {
+      setMenuSel(0);
+      return setInput((s) => [...s].slice(0, -1).join(''));
+    }
     if (ch === '?' && input === '') return setHelp(true);
     // só texto imprimível (colar várias linhas vira um comando por linha)
     if (ch && !key.ctrl && !key.meta) {
@@ -113,19 +168,30 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
         if (first.trim()) run(first.trim());
         for (const p of parts.slice(1, -1)) if (p.trim()) run(p.trim());
         setInput(parts.at(-1) ?? '');
-      } else setInput((s) => s + ch.replace(/[\u0000-\u001f\u007f]/g, ''));
+      } else {
+        setMenuSel(0);
+        setInput((s) => s + ch.replace(/[\u0000-\u001f\u007f]/g, ''));
+      }
     }
   });
 
   const info = engine.info;
   const wide = columns >= 100;
-  const bodyRows = Math.max(3, rows - 4); // cabeçalho + prompt + rodapé + margem
+  const conv = engine.store.currentConversation();
+  const mainName = conv?.main ?? chat.config().main ?? '…';
+  const pendingPlan = conv ? engine.store.pendingPlan(conv.id) : undefined;
+  const menuItems = focus === 'prompt' && input.startsWith('/') && !input.includes(' ') && !consentAsk ? filterMenu(input).slice(0, Math.max(3, Math.min(12, rows - 14))) : [];
+  // banner grande só com espaço: 72+ colunas e altura para ainda caber a sessão
+  const bannerOn = columns >= 72 && rows >= 24;
+  const headerRows = bannerOn ? 8 : 1;
+  const extraRows = menuItems.length + (consentAsk ? 1 : 0) + (pendingPlan && !consentAsk ? 1 : 0);
+  const bodyRows = Math.max(3, rows - 3 - headerRows - extraRows); // cabeçalho + prompt + rodapé + margem
   const visible = Math.max(1, bodyRows - 3);
   const sideWidth = Math.min(48, Math.floor(columns * 0.38));
   const logWidth = wide ? columns - sideWidth : columns;
 
   const header = (
-    <BrandHeader app="ASES CLI" columns={columns}>
+    <BrandHeader app="ASES CLI" columns={columns} {...(bannerOn ? { banner: { main: mainName, ...(ready !== undefined ? { ready } : {}) } } : {})}>
       <StatusBadge status="LIVE" />
       <Text wrap="truncate-end">{`  ${info.name}${y.sep}seq ${info.lastSeq}${y.sep}monitores ${info.monitors}${engine.mirrorError ? `${y.sep}ESPELHO PENDENTE` : ''}`}</Text>
     </BrandHeader>
@@ -156,11 +222,14 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
     <Box flexDirection="column" width={columns}>
       {header}
       {body}
+      {menuItems.map((m, i) => <Text key={m.cmd} wrap="truncate-end" inverse={i === Math.min(menuSel, menuItems.length - 1)}>{`  ${m.cmd.padEnd(11)} ${m.desc}`}</Text>)}
+      {consentAsk ? <Text wrap="truncate-end" bold>{`Autorizar o uso da sua conta ${consentAsk.provider}? Ela usa a SUA cota. [s] nesta sessão  [a] sempre neste projeto  [n] não`}</Text> : null}
+      {pendingPlan && !consentAsk ? <Text wrap="truncate-end">{`${pendingPlan.id} pendente: [Enter] executar  [e] editar  [n] descartar`}</Text> : null}
       <Text wrap="truncate-start">
-        <Text bold {...(accent ? { color: accent } : {})}>ases&gt; </Text>
+        <Text bold {...(accent ? { color: accent } : {})}>você&gt; </Text>
         {`${input}${focus === 'prompt' ? cursor : ''}`}
       </Text>
-      <KeyHints hints={[['Enter', 'executar'], [y.updown, 'histórico'], ['Tab', 'tarefas'], ['?', 'ajuda'], ['Ctrl+L', 'limpar'], [ui.unicode ? 'Ctrl+C×2' : 'Ctrl+Cx2', 'sair']]} />
+      <KeyHints hints={[['Enter', 'enviar'], ['/', 'comandos'], [y.updown, 'histórico'], ['Tab', 'tarefas'], ['?', 'ajuda'], [ui.unicode ? 'Ctrl+C×2' : 'Ctrl+Cx2', 'sair']]} />
     </Box>
   );
 }

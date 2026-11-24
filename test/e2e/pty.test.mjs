@@ -1,6 +1,6 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { BIN, requireBuild, runSync, start, tempProject } from './helpers.mjs';
+import { BIN, requireBuild, runSync, start, tempProject, useSimulatedMain } from './helpers.mjs';
 
 // Pseudo-terminal real via `script` (macOS/Linux). No Windows: NOT_RUN (ConPTY exige outro harness, PHASE-15).
 const hasScript = process.platform !== 'win32' && spawnSync('sh', ['-c', 'command -v script'], { stdio: 'ignore' }).status === 0;
@@ -56,6 +56,7 @@ describe.runIf(hasScript)('TUIs in a real pseudo-terminal (TAR-0020)', () => {
   const procs = [];
   beforeAll(() => {
     expect(runSync(BIN.ases, ['init', '--name', 'pty'], p.dir).status).toBe(0);
+    useSimulatedMain(p.dir); // sem isso o assistente de primeiro uso abre antes do chat
   });
   afterEach(async () => {
     // nenhum processo de um teste sobrevive para o próximo (o engine é escritor único)
@@ -72,7 +73,7 @@ describe.runIf(hasScript)('TUIs in a real pseudo-terminal (TAR-0020)', () => {
   it('ases: TUI starts, a typed command creates a phase, Ctrl+C twice exits cleanly', async () => {
     const t = pty(BIN.ases, [], p.dir);
     procs.push(t);
-    await t.waitFor((s) => s.includes('ASES CLI') && s.includes('ases>'));
+    await t.waitFor((s) => (s.includes('Eureka42') || s.includes('eureka42.org')) && s.includes('você>'));
     expect(t.raw()).toMatch(/\u001b\[38;2;34;197;94m/); // verde truecolor no TTY (padrão desde a 1.1.0)
     await t.keys('/phase new Pela TUI\r');
     await t.waitFor((s) => s.includes('criada PHASE-01'));
@@ -105,7 +106,7 @@ describe.runIf(hasScript)('TUIs in a real pseudo-terminal (TAR-0020)', () => {
   it('NO_COLOR in a TTY: the ases TUI emits no color codes', async () => {
     const t = pty(BIN.ases, [], p.dir, { NO_COLOR: '1' });
     procs.push(t);
-    await t.waitFor((s) => s.includes('ASES CLI') && s.includes('ases>'));
+    await t.waitFor((s) => (s.includes('Eureka42') || s.includes('eureka42.org')) && s.includes('você>'));
     expect(t.raw()).not.toMatch(/\u001b\[(3[0-9]|9[0-7]|38;)/);
     // um Ctrl+C por vez: enviados juntos chegam num único bloco (\x03\x03) em runners lentos e não são Ctrl+C
     // O Ink liga o raw mode num effect depois do 1º desenho; um Ctrl+C antes disso vira SIGINT do tty (eco "^C") e inicia o

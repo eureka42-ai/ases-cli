@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { BIN, requireBuild, runSync, start, tempProject } from './helpers.mjs';
+import { BIN, requireBuild, runSync, start, tempProject, useSimulatedMain } from './helpers.mjs';
 
 // TAR-0070 (AER-REQ-234): TUIs num ConPTY real do Windows via node-pty. O node-pty NÃO é dependência do projeto:
 // o CI do Windows instala só para este teste (`npm install --no-save node-pty@1.1.0`) e liga AER_REQUIRE_CONPTY=1,
@@ -63,6 +63,7 @@ describe.runIf(pty)('TUIs in a real Windows ConPTY (TAR-0070)', () => {
   const procs = [];
   beforeAll(() => {
     expect(runSync(BIN.ases, ['init', '--name', 'conpty'], p.dir, {}, 60_000).status).toBe(0);
+    useSimulatedMain(p.dir); // sem isso o assistente de primeiro uso abre antes do chat
   });
   afterEach(async () => {
     for (const x of procs.splice(0)) {
@@ -82,7 +83,7 @@ describe.runIf(pty)('TUIs in a real Windows ConPTY (TAR-0070)', () => {
   it('ases: logo, help with ? and Esc, a typed command, resize to 40 columns, Ctrl+C twice exits 0', async () => {
     const t = conpty(BIN.ases, [], p.dir, { WT_SESSION: 'aer-e2e' }); // como o Windows Terminal se anuncia
     procs.push(t);
-    await t.waitFor((s) => s.includes('ASES CLI') && s.includes('ases>'), 30_000);
+    await t.waitFor((s) => (s.includes('Eureka42') || s.includes('eureka42.org')) && s.includes('você>'), 30_000);
     expect(t.raw()).toMatch(/\u001b\[38;2;34;197;94m/); // verde truecolor no Windows Terminal
     expect(t.text()).toContain('⌘'); // logo Unicode, não o fallback E42
     await t.openHelp();
@@ -119,7 +120,7 @@ describe.runIf(pty)('TUIs in a real Windows ConPTY (TAR-0070)', () => {
   it('NO_COLOR in ConPTY: no color codes, text complete', async () => {
     const t = conpty(BIN.ases, [], p.dir, { NO_COLOR: '1' });
     procs.push(t);
-    await t.waitFor((s) => s.includes('ASES CLI') && s.includes('ases>'), 30_000);
+    await t.waitFor((s) => (s.includes('Eureka42') || s.includes('eureka42.org')) && s.includes('você>'), 30_000);
     await t.openHelp();
     expect(t.raw()).not.toMatch(/\u001b\[(3[0-9]|9[0-7]|38;)/);
     await t.keys('\u001b');

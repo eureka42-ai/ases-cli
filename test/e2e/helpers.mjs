@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -46,3 +46,10 @@ export function start(bin, args, cwd) {
 }
 
 export const jsonl = (text) => text.split('\n').filter(Boolean).map((l) => JSON.parse(l));
+
+/** PHASE-18: grava `chat.main = simulator` no CONFIG do projeto (o assistente de primeiro uso não abre; nenhuma IA real roda). */
+export function useSimulatedMain(dir) {
+  const file = path.join(dir, '.ases', 'CONFIG.json');
+  const cfg = JSON.parse(readFileSync(file, 'utf8'));
+  writeFileSync(file, `${JSON.stringify({ ...cfg, chat: { ...(cfg.chat ?? {}), main: 'simulator' } }, null, 2)}\n`);
+}
