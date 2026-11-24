@@ -153,10 +153,6 @@ export class CodexProvider implements AgentProvider {
     const base = { providerId: this.id, contractVersion: this.contractVersion, simulated: false, contractStatus: 'UNVERIFIED' as const };
     const fail = (availability: ProviderAvailability, evidence: string[], extra: Partial<ProviderProbeResult> = {}): ProviderProbeResult => ({ ...base, ...extra, availability, capabilities: caps(false), evidence });
     if (!exe) return fail('NOT_INSTALLED', ['codex not found in PATH']);
-    if (/\.(cmd|bat)$/i.test(exe)) {
-      // shortcut: shim .cmd do npm no Windows não roda com shell:false (Node recusa); resolver o .js do pacote na PHASE-15
-      return fail('UNSUPPORTED_VERSION', [`${exe}: npm .cmd shim cannot be spawned without a shell`], { executable: exe });
-    }
     const cwd = os.homedir();
     const v = await runShort(this.platform, exe, [...(this.o.prefixArgs ?? []), '--version'], { cwd, env: this.env(), timeoutMs: this.o.probeTimeoutMs ?? 10_000 });
     const version = /(\d+\.\d+\.\d+)/.exec(v.stdout)?.[1];

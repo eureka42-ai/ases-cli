@@ -303,7 +303,6 @@ export class AcpProvider implements AgentProvider {
     const base = { providerId: this.id, contractVersion: this.contractVersion, simulated: false, contractStatus: 'UNVERIFIED' as const };
     const fail = (availability: ProviderAvailability, evidence: string[], extra: Partial<ProviderProbeResult> = {}): ProviderProbeResult => ({ ...base, ...extra, availability, capabilities: caps(false), evidence });
     if (!exe) return fail('NOT_INSTALLED', [`${this.spec.binary} not found in PATH`]);
-    if (/\.(cmd|bat)$/i.test(exe)) return fail('UNSUPPORTED_VERSION', [`${exe}: npm .cmd shim cannot be spawned without a shell`], { executable: exe });
     const v = await runShort(this.platform, exe, [...(this.o.prefixArgs ?? []), ...this.spec.versionArgs], { cwd: os.homedir(), env: this.env(), timeoutMs: this.o.probeTimeoutMs ?? 15_000 });
     const version = /(\d+\.\d+\.\d+)/.exec(`${v.stdout}\n${v.stderr}`)?.[1];
     if (v.exitCode !== 0 || !version) return fail('UNKNOWN', [`${this.spec.versionArgs.join(' ')} ${v.timedOut ? 'TIMEOUT' : `exit ${v.exitCode}`}`], { executable: exe });

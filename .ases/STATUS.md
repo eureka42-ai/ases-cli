@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 675 (PhaseUpdated, 2026-11-24T18:16:08.648Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 679 (PhaseUpdated, 2026-11-24T18:29:51.847Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -21,6 +21,7 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | PHASE-16 | Eureka42 Branding, UX portátil e release estável | COMPLETED |
 | PHASE-13 | Brain, Swarm, Arena e recursos avançados (pós-MVP) | PLANNED |
 | PHASE-14 | Time Machine, Digital Twin e Learning Engine | PLANNED |
+| PHASE-17 | Manutenção 1.0.x | RUNNING |
 
 ## Tarefas
 | Tarefa | Fase | Título | Estado | Último teste | Evidência |
@@ -100,5 +101,6 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0073 | PHASE-16 | Precedência de tema e logo: CLI > projeto > global > padrão | COMPLETED | — | .ases/evidence/PHASE-16-verify.md |
 | TAR-0074 | PHASE-16 | Sem animação nas TUIs (verificação automática) e larguras 40/50/80/120 nas duas TUIs | COMPLETED | — | .ases/evidence/PHASE-16-verify.md |
 | TAR-0075 | PHASE-16 | Gate de release cross-platform: matriz, pacote por plataforma e notas de versão | COMPLETED | — | docs/RELEASE_NOTES_RASCUNHO.md<br>docs/RELEASE_NOTES_1.0.0.md<br>docs/MATRIZ_SUPORTE.md<br>.ases/evidence/PHASE-16-verify.md |
+| TAR-0076 | PHASE-17 | Windows: providers instalados por npm (shim .cmd) executados sem shell | PLANNED | — | — |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

@@ -1,4 +1,11 @@
-# AER 1.0.0: notas de versão (TAR-0075, 24/11/2026)
+# AER 1.0.x: notas de versão
+
+## 1.0.1 (24/11/2026)
+- **Correção (Windows):** os providers instalados com `npm install -g`, como `claude.cmd` e `codex.cmd`, não eram encontrados e o `ases doctor` não os mostrava como READY.
+  - **Causa:** o Node não executa `.cmd` sem shell, e o AER não usa shell.
+  - **Correção:** o AER lê o alvo do shim do npm (o script JS, rodado pelo Node, ou o `.exe`) e executa esse alvo direto, ainda sem shell. Qualquer outro `.cmd` continua recusado.
+
+## 1.0.0 (TAR-0075, 24/11/2026)
 
 **Instalar:** `npm install -g @eureka42-ai/aer`, publicado pela conta npm `eureka42-ai`. O mesmo pacote existe como `.tgz` autocontido, gerado por `node scripts/pack.mjs`, que instala sem rede.
 

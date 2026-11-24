@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0076",
+  "phaseId": "PHASE-17",
+  "title": "Windows: providers instalados por npm (shim .cmd) executados sem shell",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-109",
+    "AER-REQ-229"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

@@ -13,7 +13,7 @@ describe('built bins (TAR-0011, AER-REQ-004, AER-REQ-245, AER-REQ-247)', () => {
     for (const bin of [BIN.ases, BIN.tar]) {
       const v = runSync(bin, ['--version'], p.dir);
       expect(v.status).toBe(0);
-      expect(v.stdout).toMatch(/^ases(-tar)? 1\.0\.0 \(protocol 1\)\n$/);
+      expect(v.stdout).toMatch(/^ases(-tar)? 1\.0\.1 \(protocol 1\)\n$/);
       const h = runSync(bin, ['--help'], p.dir);
       expect(h.status).toBe(0);
       expect(h.stdout).toMatch(/Eureka42/);
@@ -23,7 +23,7 @@ describe('built bins (TAR-0011, AER-REQ-004, AER-REQ-245, AER-REQ-247)', () => {
 
   it('--json output is pure JSON (no banner, no ANSI)', () => {
     const v = runSync(BIN.ases, ['--version', '--json'], p.dir);
-    expect(JSON.parse(v.stdout)).toEqual({ app: '1.0.0', protocol: 1 });
+    expect(JSON.parse(v.stdout)).toEqual({ app: '1.0.1', protocol: 1 });
     const d = runSync(BIN.ases, ['doctor', '--json'], p.dir);
     expect(d.status).toBe(0);
     const report = JSON.parse(d.stdout);

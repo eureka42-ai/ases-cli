@@ -1,6 +1,6 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { chmodSync, existsSync, lstatSync, mkdirSync, realpathSync, renameSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { NotImplementedError, PlatformError } from './errors.ts';
@@ -207,6 +207,11 @@ export function syncedFolderHint(id: PlatformId, deps: PlatformDeps, dir: string
  * a árvore é encerrada por `taskkill /T`.
  */
 export function spawnManagedProcess(id: PlatformId, command: string, args: readonly string[], options: SpawnOptions): ManagedProcess {
+  if (id === 'win32' && /\.(cmd|bat)$/i.test(command)) {
+    const target = resolveCmdShim(command);
+    if (!target) throw new PlatformError('SPAWN_FAILED', `${command}: .cmd/.bat sem alvo reconhecível; o AER não executa scripts de shell`);
+    [command, args] = [target.command, [...target.args, ...args]];
+  }
   const child = spawn(command, [...args], {
     cwd: options.cwd, env: { ...(options.env ?? process.env) }, shell: false, detached: id !== 'win32', windowsHide: true, stdio: [options.stdin ?? 'ignore', 'pipe', 'pipe'],
   }) as ManagedProcess['child'];
@@ -219,6 +224,28 @@ export function spawnManagedProcess(id: PlatformId, command: string, args: reado
     throw new PlatformError('SPAWN_FAILED', `could not start ${command}`);
   }
   return { pid: child.pid, child, exited };
+}
+
+/**
+ * Shim `.cmd` do npm no Windows (`claude.cmd`, `codex.cmd`…): o Node recusa `.cmd` com shell:false e o AER não usa shell.
+ * Lê o alvo que o shim chamaria (`"%dp0%\…\cli.js" %*` ou um `.exe`) e devolve como rodá-lo direto: script JS pelo
+ * próprio Node, `.exe` como está. Qualquer outro `.cmd` → undefined (não executa).
+ */
+export function resolveCmdShim(file: string, nodePath: string = process.execPath): { command: string; args: string[] } | undefined {
+  let text: string;
+  try {
+    text = readFileSync(file, 'utf8');
+  } catch {
+    return undefined;
+  }
+  // o último caminho %dp0% do shim é o alvo (os anteriores são o node.exe opcional ao lado do shim)
+  const rel = [...text.matchAll(/"%~?dp0%?\\?([^"%]+)"/gi)].map((m) => m[1]!).filter((r) => !/^node\.exe$/i.test(r)).at(-1);
+  if (!rel) return undefined;
+  const target = path.resolve(path.dirname(file), ...rel.split('\\'));
+  if (!existsSync(target)) return undefined;
+  if (/\.(c|m)?js$/i.test(target)) return { command: nodePath, args: [target] };
+  if (/\.exe$/i.test(target)) return { command: target, args: [] };
+  return undefined;
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

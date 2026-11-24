@@ -1,11 +1,11 @@
 import { spawnSync } from 'node:child_process';
-import { chmodSync, mkdtempSync, mkdirSync, readFileSync, rmSync, statSync, symlinkSync } from 'node:fs';
+import { chmodSync, mkdtempSync, mkdirSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import {
   NotImplementedError, PlatformError, assertSupportedTarget, createBaseAdapter, createLocalIpcEndpoint, detectPlatform, ensurePrivateDir, syncedFolderHint, targetStatus, windowsDirAcl, writePrivateFile,
-  getRuntimeDir, getTerminalCapabilities, normalizeProjectPath, type PlatformDeps,
+  getRuntimeDir, getTerminalCapabilities, normalizeProjectPath, resolveCmdShim, spawnManagedProcess, type PlatformDeps,
 } from '../src/index.ts';
 
 const mac: PlatformDeps = { env: {}, tmpdir: '/var/folders/ab/xyz/T', homedir: '/Users/u', username: 'u' };
@@ -181,4 +181,31 @@ describe.runIf(process.platform === 'win32')('Windows private dir DACL (TAR-0066
     symlinkSync(dir, link, 'junction');
     expect(() => ensurePrivateDir('win32', link)).toThrow(/not a real directory/);
   }, 60_000);
+});
+
+// Shim gerado pelo `npm install -g` no Windows (cmd-shim), como o do claude e do codex
+const NPM_SHIM = (target: string) => `@ECHO off\r\nGOTO start\r\n:find_dp0\r\nSET dp0=%~dp0\r\nEXIT /b\r\n:start\r\nSETLOCAL\r\nCALL :find_dp0\r\n\r\nIF EXIST "%dp0%\\node.exe" (\r\n  SET "_prog=%dp0%\\node.exe"\r\n) ELSE (\r\n  SET "_prog=node"\r\n  SET PATHEXT=%PATHEXT:;.JS;=;%\r\n)\r\n\r\nendLocal & goto #_undefined_# 2>NUL || title %COMSPEC% & "%_prog%"  "%dp0%\\${target}" %*\r\n`;
+
+describe('npm .cmd shims on Windows (providers instalados com npm -g)', () => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'aer-shim-'));
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+  mkdirSync(path.join(dir, 'node_modules', '@x', 'cli'), { recursive: true });
+  writeFileSync(path.join(dir, 'node_modules', '@x', 'cli', 'cli.js'), 'console.log(`fake 9.9.9 ${process.argv.slice(2).join("|")}`)\n');
+  writeFileSync(path.join(dir, 'fake.cmd'), NPM_SHIM('node_modules\\@x\\cli\\cli.js'));
+  writeFileSync(path.join(dir, 'other.cmd'), '@echo off\r\necho hi\r\n');
+
+  it('resolves the JS target to node + script; unknown .cmd is refused', () => {
+    expect(resolveCmdShim(path.join(dir, 'fake.cmd'), '/node')).toEqual({ command: '/node', args: [path.join(dir, 'node_modules', '@x', 'cli', 'cli.js')] });
+    expect(resolveCmdShim(path.join(dir, 'other.cmd'))).toBeUndefined();
+    expect(resolveCmdShim(path.join(dir, 'missing.cmd'))).toBeUndefined();
+  });
+
+  it.runIf(process.platform === 'win32')('spawnManagedProcess runs the shim target without a shell, args intact', async () => {
+    const p = spawnManagedProcess('win32', path.join(dir, 'fake.cmd'), ['--version', 'a b&c'], { cwd: dir });
+    let out = '';
+    p.child.stdout.on('data', (d: Buffer) => (out += d.toString()));
+    expect((await p.exited).exitCode).toBe(0);
+    expect(out.trim()).toBe('fake 9.9.9 --version|a b&c');
+    expect(() => spawnManagedProcess('win32', path.join(dir, 'other.cmd'), [], { cwd: dir })).toThrow(/sem alvo/);
+  });
 });
