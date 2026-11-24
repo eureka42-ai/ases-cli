@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 586 (TaskUpdated, 2026-11-24T13:58:51.162Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 598 (TaskUpdated, 2026-11-24T14:16:34.005Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -89,10 +89,10 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0062 | PHASE-12 | Matriz CI de OS e arquiteturas com smoke do pacote instalado (bash, zsh, PowerShell) | COMPLETED | — | .ases/evidence/PHASE-12-verify.md |
 | TAR-0063 | PHASE-12 | Hardening E2E, docs por SO e auditoria do DoD (P0 sem exceção aberta) | COMPLETED | — | docs/AUDITORIA_P0.md<br>.ases/evidence/PHASE-12-verify.md |
 | TAR-0064 | PHASE-12 | Fecha 5 P0 da auditoria (095, 097, 027, 171, 048) e registra as exceções aprovadas | COMPLETED | — | docs/AUDITORIA_P0.md<br>.ases/evidence/PHASE-12-verify.md |
-| TAR-0065 | PHASE-15 | SecretStore Windows (Credential Manager, segredo só por stdin, falha fechado) | RUNNING | — | — |
-| TAR-0066 | PHASE-15 | ACL do runtime dir e do Named Pipe no Windows verificadas (icacls) | RUNNING | — | — |
-| TAR-0067 | PHASE-15 | Caminhos Windows: UNC, junction, letra de unidade, acentos e espaços | RUNNING | — | — |
-| TAR-0068 | PHASE-15 | Matriz de suporte publicada por SO/arquitetura com PASS/FAIL/NOT_RUN e doctor | RUNNING | — | — |
-| TAR-0069 | PHASE-15 | TUI em ConPTY/Windows Terminal ou registro NOT_RUN honesto | PLANNED | — | — |
+| TAR-0065 | PHASE-15 | SecretStore Windows (Credential Manager, segredo só por stdin, falha fechado) | REVIEW | — | .ases/evidence/PHASE-15-verify.md |
+| TAR-0066 | PHASE-15 | ACL do runtime dir e do Named Pipe no Windows verificadas (icacls) | REVIEW | — | .ases/evidence/PHASE-15-verify.md |
+| TAR-0067 | PHASE-15 | Caminhos Windows: UNC, junction, letra de unidade, acentos e espaços | REVIEW | — | .ases/evidence/PHASE-15-verify.md |
+| TAR-0068 | PHASE-15 | Matriz de suporte publicada por SO/arquitetura com PASS/FAIL/NOT_RUN e doctor | REVIEW | — | .ases/evidence/PHASE-15-verify.md |
+| TAR-0069 | PHASE-15 | TUI em ConPTY/Windows Terminal ou registro NOT_RUN honesto | FAILED | — | docs/SUPORTE_TERMINAIS_WINDOWS.md |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

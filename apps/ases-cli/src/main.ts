@@ -5,7 +5,7 @@ import { LOGO_MODES, THEMES, pickLogoMode, renderBrand, type LogoMode, type Them
 import { copyFileSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { ProjectStore, exportHistory, importLegacy, sqliteVersion } from '@aer/persistence';
-import { defaultDeps, syncedFolderHint, targetStatus } from '@aer/platform-core';
+import { SUPPORTED_TARGETS, defaultDeps, syncedFolderHint, targetStatus } from '@aer/platform-core';
 import { findProjectRoot, initProject, isInterimProject, loadPlatformAdapter, paths, readInterimProject, readManifest } from '@aer/project-store';
 import { ClaudeCodeProvider } from '@aer/provider-claude';
 import { CodexProvider } from '@aer/provider-codex';
@@ -113,7 +113,8 @@ async function main(argv: string[]): Promise<number> {
       providers: await probeProviders(adapter),
       secretStore: await adapter.getSecretStore().probe(),
       target: { id: `${process.platform}-${process.arch}`, status: targetStatus(process.platform, process.arch) },
-      support: { tested: 'darwin-arm64 (ALPHA, testes locais)', notRun: ['win32-x64', 'linux-x64', 'win32-arm64', 'linux-arm64'], outOfScope: ['darwin-x64 (CHANGE-0001)'] },
+      // o resultado por alvo vem do CI (job support-matrix), não do binário; aqui só o nível declarado e o que nunca foi testado
+      support: { targets: SUPPORTED_TARGETS, matrix: 'docs/MATRIZ_SUPORTE.md (gerada dos jobs reais do CI; NOT_RUN não é PASS)', notRun: ['TUI interativa no ConPTY/Windows Terminal (AER-REQ-234)'], outOfScope: ['darwin-x64 (CHANGE-0001)'] },
     };
     if (values.json) console.log(JSON.stringify(report));
     else {

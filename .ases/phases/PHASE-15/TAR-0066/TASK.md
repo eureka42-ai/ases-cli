@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0066 |
 | phase_id | PHASE-15 |
-| estado | RUNNING (v4) |
+| estado | REVIEW (v6) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |
@@ -25,7 +25,7 @@ ACL do runtime dir e do Named Pipe no Windows verificadas (icacls)
 - nenhum (validação NÃO concluída)
 
 ## Evidências, revisões e handoffs
-- nenhuma
+- EVIDENCE .ases/evidence/PHASE-15-verify.md (sha256 ff7cba51786d…) — CI Windows/Linux 6/6 run 45411121443
 
 ## Critério de saída
 COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

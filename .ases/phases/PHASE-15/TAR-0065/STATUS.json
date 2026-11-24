@@ -4,13 +4,18 @@
   "taskId": "TAR-0065",
   "phaseId": "PHASE-15",
   "title": "SecretStore Windows (Credential Manager, segredo só por stdin, falha fechado)",
-  "state": "RUNNING",
-  "version": 4,
+  "state": "REVIEW",
+  "version": 6,
   "reqs": [
     "AER-REQ-122",
     "AER-REQ-229"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-15-verify.md",
+      "sha256": "ff7cba51786d450e3109066c66f96ba69261f99e07b6710d6028b7cec5c66fb6"
+    }
+  ],
   "lastTest": null
 }

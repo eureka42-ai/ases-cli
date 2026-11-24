@@ -4,12 +4,17 @@
   "taskId": "TAR-0069",
   "phaseId": "PHASE-15",
   "title": "TUI em ConPTY/Windows Terminal ou registro NOT_RUN honesto",
-  "state": "PLANNED",
-  "version": 1,
+  "state": "FAILED",
+  "version": 5,
   "reqs": [
     "AER-REQ-234"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": "docs/SUPORTE_TERMINAIS_WINDOWS.md",
+      "sha256": "1596ca36f07ae07f0886b2eb9284ceca3d33700ef44ea18c7ccc5887e9bd403c"
+    }
+  ],
   "lastTest": null
 }

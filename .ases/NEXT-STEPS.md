@@ -1,4 +1,4 @@
-# Próximos passos (atualizado 24/11/2026, MVP concluído)
+# Próximos passos (atualizado 24/11/2026, MVP concluído; PHASE-15 em REVIEW)
 
 **Local do projeto:** `~/Projetos/eureka42/ases-cli` (clone de `eureka42-ai/ases-cli`, privado). A cópia antiga em `~/Desktop/ASES CLI` está numa pasta sincronizada pelo iCloud e **não deve mais ser usada**: o iCloud criou cópias de conflito de arquivos do `.ases/`, e o banco SQLite corre risco lá. Abra o Claude Code na pasta nova.
 
@@ -22,6 +22,10 @@
 7. **PHASE-12: COMPLETED** (24/11/2026). Aprovada pelo responsável e integrada em `main` (`11a9122`). **MVP (PHASE-01..12) concluído.**
    - CI Linux/Windows 6/6 (runs 45402093641 e 45404023025). macOS cancelado na fila do GitHub, só local: 275/275 e pack-smoke ok.
    - Exceções P0 aprovadas (pós-MVP): 020, 025, 026, 029, 049, 082, 083, 086, 128, 174, 230, 234 (`docs/AUDITORIA_P0.md`).
+7b. **PHASE-15 (Portabilidade Windows/Linux verificada): em REVIEW** (branch `ases/PHASE-15`; `.ases/evidence/PHASE-15-verify.md`, ADR-0018, `docs/MATRIZ_SUPORTE.md`).
+   - A ordem do plano mestre foi mantida. PHASE-13..16 existem no engine; a 15 vem primeiro (`/phase order`) porque é obrigatória para o lançamento multiplataforma.
+   - TAR-0065..0068 estão em REVIEW: Credential Manager, DACL, caminhos UNC/junction/subst e matriz de suporte, todos com CI Windows real.
+   - TAR-0069 (TUI no ConPTY) está FAILED/NOT_RUN e aguarda o responsável: rodar o roteiro manual (`docs/SUPORTE_TERMINAIS_WINDOWS.md`), ou aprovar o `node-pty` (dependência nativa) para um harness automático.
 8. **Decisões do responsável (23/11/2026):**
    - **Licença:** CC BY-NC-ND 4.0, Open Access (`LICENSE`; `package.json` com `CC-BY-NC-ND-4.0`). AER-REQ-210 atendido.
    - **Termos dos providers:** o responsável declarou que todos os vendors autorizaram a orquestração. A declaração está registrada; os documentos de autorização não estão no repositório.

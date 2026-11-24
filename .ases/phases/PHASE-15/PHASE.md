@@ -7,11 +7,11 @@
 ## Tarefas e dependências (DAG)
 | Tarefa | Estado | Provider | Depende de | Requisitos |
 |---|---|---|---|---|
-| TAR-0065 — SecretStore Windows (Credential Manager, segredo só por stdin, falha fechado) | RUNNING | — | — | AER-REQ-122, AER-REQ-229 |
-| TAR-0066 — ACL do runtime dir e do Named Pipe no Windows verificadas (icacls) | RUNNING | — | — | AER-REQ-227 |
-| TAR-0067 — Caminhos Windows: UNC, junction, letra de unidade, acentos e espaços | RUNNING | — | — | AER-REQ-230 |
-| TAR-0068 — Matriz de suporte publicada por SO/arquitetura com PASS/FAIL/NOT_RUN e doctor | RUNNING | — | — | AER-REQ-225, AER-REQ-233, AER-REQ-238, AER-REQ-239 |
-| TAR-0069 — TUI em ConPTY/Windows Terminal ou registro NOT_RUN honesto | PLANNED | — | — | AER-REQ-234 |
+| TAR-0065 — SecretStore Windows (Credential Manager, segredo só por stdin, falha fechado) | REVIEW | — | — | AER-REQ-122, AER-REQ-229 |
+| TAR-0066 — ACL do runtime dir e do Named Pipe no Windows verificadas (icacls) | REVIEW | — | — | AER-REQ-227 |
+| TAR-0067 — Caminhos Windows: UNC, junction, letra de unidade, acentos e espaços | REVIEW | — | — | AER-REQ-230 |
+| TAR-0068 — Matriz de suporte publicada por SO/arquitetura com PASS/FAIL/NOT_RUN e doctor | REVIEW | — | — | AER-REQ-225, AER-REQ-233, AER-REQ-238, AER-REQ-239 |
+| TAR-0069 — TUI em ConPTY/Windows Terminal ou registro NOT_RUN honesto | FAILED | — | — | AER-REQ-234 |
 
 ## Critérios
 - **Entrada:** tarefas com requisitos ligados e dependências sem ciclo.
