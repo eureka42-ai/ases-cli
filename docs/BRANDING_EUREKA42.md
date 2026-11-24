@@ -11,7 +11,25 @@ Ink/React em terminal não pode escolher tipografia independente da fonte monoes
 ## Comportamento
 
 - `ases` usa full/compact/minimal/ascii adaptativo no welcome; `ases-tar` usa compact/minimal no cabeçalho.
-- `--theme teal|blue|purple|gold|mono|auto`; `--logo full|compact|minimal|ascii`; `--no-banner`, `--no-animation`, `--no-color` (plano de interface, a implementar).
+- `--theme auto|teal|blue|purple|gold|mono|contrast`; `--logo full|compact|minimal|ascii`; `--no-banner`, `--no-animation`, `--no-color` (implementados na PHASE-16).
+- **Precedência** (AER-REQ-249): `--theme`/`--logo` > `ui.theme`/`ui.logo` em `.ases/CONFIG.json` > os mesmos campos na config global do usuário > padrão. A config global fica em `%APPDATA%\ases\config.json` no Windows e em `$XDG_CONFIG_HOME/ases/config.json` (ou `~/.config/ases/config.json`) nos outros sistemas. Valor inválido em qualquer camada é erro que cita a origem.
+- **`auto`** (padrão): `teal` com 256 cores ou mais, `contrast` com 16 cores, `mono` sem cor.
+- **Profundidade de cor:** truecolor (`COLORTERM=truecolor`, Windows Terminal, iTerm2, VS Code, WezTerm), 256 cores (`TERM=*256color`, Terminal.app) ou 16 cores (na dúvida). A paleta é aproximada para o cubo de 256 cores ou para a cor ANSI mais próxima; nada sai em truecolor num terminal de 16 cores.
+- **Animação:** as TUIs não têm nenhuma (nada de spinner ou timer de desenho). `--no-animation` é aceito por compatibilidade e não muda nada. Um teste falha se aparecer um timer nas TUIs (AER-REQ-246).
+- **Contraste medido** (WCAG 2.x, cor de acento sobre fundo puro):
+
+  | Tema | Acento | Fundo preto | Fundo branco |
+  |---|---|---|---|
+  | teal | `#009688` | 5,72 | 3,67 |
+  | blue | `#184BC8` | **2,88** | 7,29 |
+  | purple | `#8239B6` | 3,21 | 6,54 |
+  | gold | `#D79516` | 8,20 | **2,56** |
+
+  Leitura da tabela:
+  - Todos os temas passam de 3:1, o mínimo para elemento gráfico ou texto grande em negrito, em pelo menos um fundo.
+  - `blue` fica abaixo disso em fundo escuro, e `gold` em fundo claro.
+  - O tema `contrast` usa a cor padrão do terminal em negrito e inverso, então tem contraste máximo em qualquer fundo.
+  - O status nunca depende só da cor: o texto do estado é sempre escrito.
 - `NO_COLOR=1`, `TERM=dumb`, ausência de TTY e `--json` impedem banners ANSI; `--json` mantém stdout estritamente estruturado.
 - Acessibilidade: alto contraste, foco de teclado, screen-reader/logs em texto, não usar cor como único indicador de status.
 - As cores HEX de `branding/BRAND_TOKENS.json` são aproximações visuais **PROPOSTAS** a calibrar; não são paleta oficial certificada por um arquivo vetorial.

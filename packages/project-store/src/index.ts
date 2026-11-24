@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import path from 'node:path';
 import { ManifestSchema, VERSIONS, type EventEnvelope, type Manifest, type PhaseState, type TaskState } from '@aer/contracts';
 import { assertSupportedTarget, writePrivateFile, type LocalIpcEndpoint, type PlatformAdapter } from '@aer/platform-core';
@@ -12,7 +13,7 @@ export const paths = (root: string) => {
 };
 
 export class ProjectError extends Error {
-  readonly code: 'NOT_A_PROJECT' | 'INTERIM_PROJECT' | 'INVALID_MANIFEST' | 'ENGINE_NOT_RUNNING' | 'DB_MISSING';
+  readonly code: 'NOT_A_PROJECT' | 'INTERIM_PROJECT' | 'INVALID_MANIFEST' | 'ENGINE_NOT_RUNNING' | 'DB_MISSING' | 'CONFIG_INVALID';
   constructor(code: ProjectError['code'], message: string) {
     super(message);
     this.name = 'ProjectError';
@@ -157,4 +158,31 @@ export function readInterimProject(root: string): InterimProject {
     }
   }
   return out;
+}
+
+/** Arquivo de configuração global do usuário: `%APPDATA%\ases\config.json` no Windows, `$XDG_CONFIG_HOME/ases/config.json` (ou `~/.config`) nos outros. */
+export function globalConfigFile(platform: string = process.platform, env: Readonly<Record<string, string | undefined>> = process.env, home: string = homedir()): string {
+  if (platform === 'win32') return path.win32.join(env.APPDATA ?? path.win32.join(home, 'AppData', 'Roaming'), 'ases', 'config.json');
+  return path.posix.join(env.XDG_CONFIG_HOME || path.posix.join(home, '.config'), 'ases', 'config.json');
+}
+
+/** Bloco `ui` (theme/logo) de um JSON de configuração; ausente = {}; JSON inválido = erro com o arquivo. */
+function readUi(file: string): { theme?: unknown; logo?: unknown } {
+  if (!existsSync(file)) return {};
+  let j: unknown;
+  try {
+    j = JSON.parse(readFileSync(file, 'utf8'));
+  } catch (err) {
+    throw new ProjectError('CONFIG_INVALID', `${file}: ${(err as Error).message}`);
+  }
+  const ui = (j as { ui?: unknown } | null)?.ui;
+  return ui && typeof ui === 'object' ? { theme: (ui as { theme?: unknown }).theme, logo: (ui as { logo?: unknown }).logo } : {};
+}
+
+/** Camadas de preferência de marca abaixo da CLI, na ordem de precedência: projeto (`.ases/CONFIG.json`) > global (AER-REQ-249). */
+export function brandConfigLayers(root: string | undefined, globalFile: string = globalConfigFile()): { source: string; theme?: unknown; logo?: unknown }[] {
+  return [
+    ...(root ? [{ source: '.ases/CONFIG.json', ...readUi(path.join(root, ASES_DIR, 'CONFIG.json')) }] : []),
+    { source: globalFile, ...readUi(globalFile) },
+  ];
 }

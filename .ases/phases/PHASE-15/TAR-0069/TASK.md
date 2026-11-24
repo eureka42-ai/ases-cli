@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0069 |
 | phase_id | PHASE-15 |
-| estado | FAILED (v5) |
+| estado | CANCELLED (v8) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |

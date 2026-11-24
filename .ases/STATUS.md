@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 598 (TaskUpdated, 2026-11-24T14:16:34.005Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 637 (TaskUpdated, 2026-11-24T14:59:03.989Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -17,8 +17,8 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | PHASE-10 | Segurança e registry de extensões | COMPLETED |
 | PHASE-11 | Continuidade, métricas e review | COMPLETED |
 | PHASE-12 | Daemon local, portabilidade final e release multiplataforma | COMPLETED |
-| PHASE-15 | Portabilidade Windows e Linux verificada | PLANNED |
-| PHASE-16 | Eureka42 Branding, UX portátil e release estável | PLANNED |
+| PHASE-15 | Portabilidade Windows e Linux verificada | COMPLETED |
+| PHASE-16 | Eureka42 Branding, UX portátil e release estável | RUNNING |
 | PHASE-13 | Brain, Swarm, Arena e recursos avançados (pós-MVP) | PLANNED |
 | PHASE-14 | Time Machine, Digital Twin e Learning Engine | PLANNED |
 
@@ -89,10 +89,16 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0062 | PHASE-12 | Matriz CI de OS e arquiteturas com smoke do pacote instalado (bash, zsh, PowerShell) | COMPLETED | — | .ases/evidence/PHASE-12-verify.md |
 | TAR-0063 | PHASE-12 | Hardening E2E, docs por SO e auditoria do DoD (P0 sem exceção aberta) | COMPLETED | — | docs/AUDITORIA_P0.md<br>.ases/evidence/PHASE-12-verify.md |
 | TAR-0064 | PHASE-12 | Fecha 5 P0 da auditoria (095, 097, 027, 171, 048) e registra as exceções aprovadas | COMPLETED | — | docs/AUDITORIA_P0.md<br>.ases/evidence/PHASE-12-verify.md |
-| TAR-0065 | PHASE-15 | SecretStore Windows (Credential Manager, segredo só por stdin, falha fechado) | REVIEW | — | .ases/evidence/PHASE-15-verify.md |
-| TAR-0066 | PHASE-15 | ACL do runtime dir e do Named Pipe no Windows verificadas (icacls) | REVIEW | — | .ases/evidence/PHASE-15-verify.md |
-| TAR-0067 | PHASE-15 | Caminhos Windows: UNC, junction, letra de unidade, acentos e espaços | REVIEW | — | .ases/evidence/PHASE-15-verify.md |
-| TAR-0068 | PHASE-15 | Matriz de suporte publicada por SO/arquitetura com PASS/FAIL/NOT_RUN e doctor | REVIEW | — | .ases/evidence/PHASE-15-verify.md |
-| TAR-0069 | PHASE-15 | TUI em ConPTY/Windows Terminal ou registro NOT_RUN honesto | FAILED | — | docs/SUPORTE_TERMINAIS_WINDOWS.md |
+| TAR-0065 | PHASE-15 | SecretStore Windows (Credential Manager, segredo só por stdin, falha fechado) | COMPLETED | — | .ases/evidence/PHASE-15-verify.md |
+| TAR-0066 | PHASE-15 | ACL do runtime dir e do Named Pipe no Windows verificadas (icacls) | COMPLETED | — | .ases/evidence/PHASE-15-verify.md |
+| TAR-0067 | PHASE-15 | Caminhos Windows: UNC, junction, letra de unidade, acentos e espaços | COMPLETED | — | .ases/evidence/PHASE-15-verify.md |
+| TAR-0068 | PHASE-15 | Matriz de suporte publicada por SO/arquitetura com PASS/FAIL/NOT_RUN e doctor | COMPLETED | — | .ases/evidence/PHASE-15-verify.md |
+| TAR-0069 | PHASE-15 | TUI em ConPTY/Windows Terminal ou registro NOT_RUN honesto | CANCELLED | — | docs/SUPORTE_TERMINAIS_WINDOWS.md |
+| TAR-0070 | PHASE-16 | TUI em ConPTY/Windows Terminal: roteiro manual do responsável ou harness automático (vem da TAR-0069) | PLANNED | — | — |
+| TAR-0071 | PHASE-16 | Profundidade de cor: truecolor, 256 e 16 cores pelo terminal | RUNNING | — | — |
+| TAR-0072 | PHASE-16 | Tema de alto contraste e tema auto, com razão de contraste medida | RUNNING | — | — |
+| TAR-0073 | PHASE-16 | Precedência de tema e logo: CLI > projeto > global > padrão | RUNNING | — | — |
+| TAR-0074 | PHASE-16 | Sem animação nas TUIs (verificação automática) e larguras 40/50/80/120 nas duas TUIs | RUNNING | — | — |
+| TAR-0075 | PHASE-16 | Gate de release cross-platform: matriz, pacote por plataforma e notas de versão | PLANNED | — | — |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

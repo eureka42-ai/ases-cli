@@ -75,3 +75,22 @@ describe('loadPlatformAdapter (CHANGE-0001)', () => {
     expect((await loadPlatformAdapter('linux', 'x64')).id).toBe('linux');
   });
 });
+
+describe('brand preferences from config files (TAR-0073, AER-REQ-249)', () => {
+  it('reads ui.theme/ui.logo from the project, then the global file; bad JSON names the file', async () => {
+    const { brandConfigLayers, globalConfigFile } = await import('../src/index.ts');
+    const d = mkdtempSync(path.join(os.tmpdir(), 'aer cfg ç '));
+    mkdirSync(path.join(d, '.ases'));
+    writeFileSync(path.join(d, '.ases', 'CONFIG.json'), JSON.stringify({ schemaVersion: 1, ui: { theme: 'purple' } }));
+    const g = path.join(d, 'global.json');
+    writeFileSync(g, JSON.stringify({ ui: { theme: 'gold', logo: 'minimal' } }));
+    expect(brandConfigLayers(d, g)).toEqual([{ source: '.ases/CONFIG.json', theme: 'purple', logo: undefined }, { source: g, theme: 'gold', logo: 'minimal' }]);
+    expect(brandConfigLayers(undefined, path.join(d, 'nao-existe.json'))).toEqual([{ source: path.join(d, 'nao-existe.json') }]);
+    writeFileSync(g, '{ quebrado');
+    expect(() => brandConfigLayers(undefined, g)).toThrow(/global\.json/);
+    expect(globalConfigFile('win32', { APPDATA: 'C:\\Users\\u\\AppData\\Roaming' }, 'C:\\Users\\u')).toBe('C:\\Users\\u\\AppData\\Roaming\\ases\\config.json');
+    expect(globalConfigFile('linux', { XDG_CONFIG_HOME: '/x' }, '/home/u')).toBe('/x/ases/config.json');
+    expect(globalConfigFile('darwin', {}, '/Users/u')).toBe('/Users/u/.config/ases/config.json');
+    rmSync(d, { recursive: true, force: true });
+  });
+});

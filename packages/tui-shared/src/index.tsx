@@ -10,6 +10,7 @@ export interface Ui {
   unicode: boolean;
   theme: ThemeName;
   logo?: LogoMode | undefined;
+  colorDepth?: 0 | 4 | 8 | 24 | undefined;
 }
 export const UiContext = createContext<Ui>({ color: false, unicode: false, theme: 'teal' });
 export const useUi = (): Ui => useContext(UiContext);
@@ -46,7 +47,7 @@ export function BrandHeader({ app, columns, children }: { app: AppName; columns:
   const picked = pickLogoMode({ columns, unicode: ui.unicode }, ui.logo);
   const mode: LogoMode = picked === 'full' ? 'compact' : picked;
   // ASCII completo tem 25+ colunas: em terminal estreito fica só "[E42] APP" para o estado caber na mesma linha
-  const brand = mode === 'ascii' && columns < 60 ? `${GLYPH_FALLBACK} ${app}` : renderBrand({ app, mode, theme: ui.theme, color: ui.color });
+  const brand = mode === 'ascii' && columns < 60 ? `${GLYPH_FALLBACK} ${app}` : renderBrand({ app, mode, theme: ui.theme, color: ui.color, ...(ui.colorDepth !== undefined ? { colorDepth: ui.colorDepth } : {}) });
   return (
     <Box width={columns} overflow="hidden">
       <Box flexShrink={0}><Text>{brand}</Text></Box>

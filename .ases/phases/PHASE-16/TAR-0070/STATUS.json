@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0070",
+  "phaseId": "PHASE-16",
+  "title": "TUI em ConPTY/Windows Terminal: roteiro manual do responsável ou harness automático (vem da TAR-0069)",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-234"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

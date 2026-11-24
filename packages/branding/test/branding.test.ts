@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { LOGO_MODES, THEMES, pickLogoMode, renderBrand, stripAnsi, type ThemeName } from '../src/index.ts';
+import { LOGO_MODES, THEMES, fgCode, pickLogoMode, renderBrand, resolveBrandPrefs, resolveTheme, stripAnsi, type ThemeName } from '../src/index.ts';
 
 describe('Eureka42 brand (AER-REQ-240..248)', () => {
   it('tokens match branding/BRAND_TOKENS.json (single source, AER-REQ-248)', () => {
@@ -43,5 +43,45 @@ describe('Eureka42 brand (AER-REQ-240..248)', () => {
     expect(pickLogoMode({ columns: 40, unicode: true })).toBe('minimal');
     expect(pickLogoMode({ columns: 0, unicode: true })).toBe('compact');
     expect(pickLogoMode({ columns: undefined, unicode: true })).toBe('compact');
+  });
+});
+
+// WCAG 2.x: luminância relativa e razão de contraste
+const lum = (hex: string) => {
+  const [r, g, b] = [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)) as [number, number, number];
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const ratio = (a: string, b: string) => {
+  const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m) as [number, number];
+  return (x + 0.05) / (y + 0.05);
+};
+
+describe('color depth, contrast and preferences (PHASE-16, TAR-0071..0073)', () => {
+  it('approximates the palette to 256 and 16 colors; no truecolor escape below 24 bits (AER-REQ-243)', () => {
+    expect(fgCode('#009688', 24)).toBe('38;2;0;150;136');
+    expect(fgCode('#009688', 8)).toBe('38;5;37'); // cubo 6x6x6: 16 + 36·0 + 6·3 + 3
+    expect(fgCode('#009688', 4)).toBe('36');
+    for (const theme of ['teal', 'blue', 'purple', 'gold'] as const) {
+      for (const depth of [4, 8] as const) expect(renderBrand({ app: 'ASES CLI', mode: 'compact', theme, color: true, colorDepth: depth })).not.toMatch(/38;2;/);
+    }
+    expect(renderBrand({ app: 'ASES CLI', mode: 'compact', theme: 'teal', color: true, colorDepth: 0 })).toBe(stripAnsi(renderBrand({ app: 'ASES CLI', mode: 'compact' })));
+  });
+
+  it('every color theme reaches 3:1 on a dark or a light background; contrast uses terminal fg bold+inverse', () => {
+    const table = (['teal', 'blue', 'purple', 'gold'] as const).map((t) => ({ t, dark: ratio(THEMES[t].accent, '#000000'), light: ratio(THEMES[t].accent, '#FFFFFF') }));
+    for (const r of table) expect(Math.max(r.dark, r.light)).toBeGreaterThanOrEqual(3);
+    // medido e registrado em docs/BRANDING_EUREKA42.md: só o blue fica abaixo de 3:1 em fundo preto
+    expect(table.filter((r) => r.dark < 3).map((r) => r.t)).toEqual(['blue']);
+    expect(renderBrand({ app: 'ASES CLI', mode: 'compact', theme: 'contrast', color: true })).toContain('\u001b[1;7m⌘');
+  });
+
+  it('auto picks by color depth; precedence CLI > project > global > default, invalid value names its source (AER-REQ-249)', () => {
+    expect([24, 8, 4, 0].map((d) => resolveTheme('auto', d as 0 | 4 | 8 | 24))).toEqual(['teal', 'teal', 'contrast', 'mono']);
+    expect(resolveTheme('gold', 4)).toBe('gold');
+    const p = resolveBrandPrefs([{ source: 'cli' }, { source: 'project', theme: 'purple' }, { source: 'global', theme: 'gold', logo: 'minimal' }]);
+    expect(p).toEqual({ theme: 'purple', logo: 'minimal', themeSource: 'project', logoSource: 'global' });
+    expect(resolveBrandPrefs([{ source: 'cli', theme: 'blue' }, { source: 'project', theme: 'purple' }]).theme).toBe('blue');
+    expect(resolveBrandPrefs([{ source: 'cli' }])).toEqual({ theme: 'auto', logo: undefined, themeSource: 'default', logoSource: 'default' });
+    expect(() => resolveBrandPrefs([{ source: '.ases/CONFIG.json', theme: 'pink' }])).toThrow(/invalid theme "pink" in \.ases\/CONFIG\.json/);
   });
 });

@@ -36,6 +36,10 @@
     "mono": {
       "accent": null,
       "accent2": null
+    },
+    "contrast": {
+      "accent": null,
+      "accent2": null
     }
   },
   "accessibility": {
@@ -50,5 +54,6 @@
     ]
   },
   "showLogoOnPipedStdout": false,
-  "showLogoOnJsonStdout": false
+  "showLogoOnJsonStdout": false,
+  "_contrastNotice": "contrast: cor padrão do terminal em negrito/inverso (contraste máximo em qualquer fundo); auto: teal com 256+ cores, contrast com 16, mono sem cor"
 }

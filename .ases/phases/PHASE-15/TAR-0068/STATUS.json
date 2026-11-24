@@ -4,8 +4,8 @@
   "taskId": "TAR-0068",
   "phaseId": "PHASE-15",
   "title": "Matriz de suporte publicada por SO/arquitetura com PASS/FAIL/NOT_RUN e doctor",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-225",
     "AER-REQ-233",

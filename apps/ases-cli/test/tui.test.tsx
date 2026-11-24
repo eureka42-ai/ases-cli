@@ -86,7 +86,7 @@ describe('ases TUI (TAR-0017)', () => {
     await e.stop();
   });
 
-  it.each([[40, 16], [80, 24], [120, 35]])('fits %ix%i, NO_COLOR has no color codes, ASCII has no glyphs', async (cols, rows) => {
+  it.each([[40, 16], [50, 16], [80, 24], [120, 35]])('fits %ix%i, NO_COLOR has no color codes, ASCII has no glyphs', async (cols, rows) => {
     const e = await engine();
     e.mutate((s) => s.createTask({ phaseId: s.createPhase('Fase com nome razoavelmente longo sem acento'), title: 'Tarefa com titulo comprido o bastante para precisar de corte' }));
     for (const u of [ui(), ui({ color: true }), ui({ unicode: false })]) {

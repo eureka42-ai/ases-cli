@@ -1,12 +1,12 @@
 import readline from 'node:readline';
 import { parseArgs } from 'node:util';
 import { VERSIONS } from '@aer/contracts';
-import { LOGO_MODES, THEMES, pickLogoMode, renderBrand, type LogoMode, type ThemeName } from '@aer/branding';
+import { LOGO_MODES, THEME_CHOICES, pickLogoMode, renderBrand, resolveBrandPrefs, resolveTheme, type LogoMode, type ThemeName } from '@aer/branding';
 import { copyFileSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { ProjectStore, exportHistory, importLegacy, sqliteVersion } from '@aer/persistence';
 import { SUPPORTED_TARGETS, defaultDeps, syncedFolderHint, targetStatus } from '@aer/platform-core';
-import { findProjectRoot, initProject, isInterimProject, loadPlatformAdapter, paths, readInterimProject, readManifest } from '@aer/project-store';
+import { brandConfigLayers, findProjectRoot, initProject, isInterimProject, loadPlatformAdapter, paths, readInterimProject, readManifest } from '@aer/project-store';
 import { ClaudeCodeProvider } from '@aer/provider-claude';
 import { CodexProvider } from '@aer/provider-codex';
 import { createAntigravityProvider, createKimiProvider, createOpenCodeProvider } from '@aer/provider-acp';
@@ -28,7 +28,8 @@ Uso:
   ases daemon start | stop | status   motor residente: tarefas seguem com o terminal fechado; o ases vira cliente dele
 
 Opções:
-  --no-color   --no-banner   --no-tui   --theme teal|blue|purple|gold|mono   --logo full|compact|minimal|ascii
+  --no-color   --no-banner   --no-tui   --no-animation (aceito; as TUIs não animam)   --theme auto|teal|blue|purple|gold|mono|contrast   --logo full|compact|minimal|ascii
+  tema e logo: --theme/--logo > .ases/CONFIG.json (ui.theme, ui.logo) > config global do usuário > auto
   --json       saída estritamente JSON (sem banner/ANSI)   --version   --help
 
 Ainda NÃO implementados (resposta explícita, nunca falso sucesso):
@@ -47,7 +48,7 @@ async function main(argv: string[]): Promise<number> {
     allowPositionals: true,
     options: {
       help: { type: 'boolean' }, version: { type: 'boolean' }, json: { type: 'boolean' }, name: { type: 'string' },
-      'no-color': { type: 'boolean' }, 'no-banner': { type: 'boolean' }, 'no-tui': { type: 'boolean' }, theme: { type: 'string' }, logo: { type: 'string' },
+      'no-color': { type: 'boolean' }, 'no-banner': { type: 'boolean' }, 'no-tui': { type: 'boolean' }, 'no-animation': { type: 'boolean' }, theme: { type: 'string' }, logo: { type: 'string' },
     },
   });
   if (values.version) {
@@ -58,18 +59,22 @@ async function main(argv: string[]): Promise<number> {
     process.stdout.write(HELP);
     return 0;
   }
-  if (values.theme && !(values.theme in THEMES)) throw new UsageError(`invalid --theme ${values.theme}`);
+  if (values.theme && !(THEME_CHOICES as readonly string[]).includes(values.theme)) throw new UsageError(`invalid --theme ${values.theme}`);
   if (values.logo && !(LOGO_MODES as readonly string[]).includes(values.logo)) throw new UsageError(`invalid --logo ${values.logo}`);
 
   const adapter = await loadPlatformAdapter();
   const caps = adapter.getTerminalCapabilities(process.stdout);
+  // CLI > .ases/CONFIG.json > config global > padrão (AER-REQ-249)
+  const prefs = resolveBrandPrefs([{ source: '--theme/--logo', theme: values.theme, logo: values.logo }, ...brandConfigLayers(findProjectRoot(process.cwd()))]);
+  const color = caps.color && !values['no-color'] && !values.json;
   const ui = {
-    color: caps.color && !values['no-color'] && !values.json,
+    color,
+    colorDepth: color ? caps.colorDepth : 0,
     banner: caps.isTTY && !values['no-banner'] && !values.json,
-    theme: (values.theme ?? 'teal') as ThemeName,
-    mode: pickLogoMode(caps, values.logo as LogoMode | undefined),
+    theme: resolveTheme(prefs.theme, color ? caps.colorDepth : 0),
+    mode: pickLogoMode(caps, prefs.logo),
     unicode: caps.unicode,
-    logo: values.logo as LogoMode | undefined,
+    logo: prefs.logo,
     tui: !values['no-tui'] && !values.json && caps.isTTY && process.stdin.isTTY === true && process.env.TERM !== 'dumb' && !caps.ci,
   };
   const [cmd] = positionals;
@@ -231,7 +236,7 @@ async function probeProviders(adapter: Awaited<ReturnType<typeof loadPlatformAda
 
 const exitNote = (n: number) => (n ? `${n} tarefa(s) em execução cancelada(s), árvore de processos encerrada` : 'Nenhuma tarefa estava em execução');
 
-async function interactive(root: string, adapter: Awaited<ReturnType<typeof loadPlatformAdapter>>, ui: { color: boolean; banner: boolean; theme: ThemeName; mode: LogoMode; unicode: boolean; logo: LogoMode | undefined; tui: boolean }): Promise<number> {
+async function interactive(root: string, adapter: Awaited<ReturnType<typeof loadPlatformAdapter>>, ui: { color: boolean; colorDepth: 0 | 4 | 8 | 24; banner: boolean; theme: ThemeName; mode: LogoMode; unicode: boolean; logo: LogoMode | undefined; tui: boolean }): Promise<number> {
   const synced = syncedFolderHint(adapter.id, defaultDeps(), root);
   if (synced) console.error(`AVISO: o projeto está numa pasta sincronizada (${synced}). O sync pode copiar o banco SQLite no meio de uma escrita e corrompê-lo; mova o projeto para uma pasta não sincronizada.`);
   // há um motor residente neste projeto? então este `ases` é só um cliente dele (PHASE-12)
@@ -246,13 +251,13 @@ async function interactive(root: string, adapter: Awaited<ReturnType<typeof load
   }
   const engine = await Engine.start(root, adapter);
   if (ui.tui) {
-    const reason = await runTui(engine, { color: ui.color, unicode: ui.unicode, theme: ui.theme, logo: ui.logo });
+    const reason = await runTui(engine, { color: ui.color, colorDepth: ui.colorDepth, unicode: ui.unicode, theme: ui.theme, logo: ui.logo });
     const r = await engine.stop();
     // §6.4/AER-REQ-090: impresso depois que o Ink devolveu o terminal
     console.log(`${reason}: engine encerrado. ${exitNote(r.cancelled)}; estado salvo até seq ${r.lastSeq}.`);
     return 0;
   }
-  if (ui.banner) console.log(renderBrand({ app: 'ASES CLI', mode: ui.mode, theme: ui.theme, color: ui.color }));
+  if (ui.banner) console.log(renderBrand({ app: 'ASES CLI', mode: ui.mode, theme: ui.theme, color: ui.color, colorDepth: ui.colorDepth }));
   console.log(`engine ready: ${engine.info.name} (${engine.info.projectId}), seq ${engine.info.lastSeq}, journal ${engine.info.journalMode}`);
   console.log('Abra `ases-tar` em outro terminal, na mesma pasta, para acompanhar. /help para comandos.');
 

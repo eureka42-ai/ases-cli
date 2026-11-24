@@ -4,8 +4,8 @@
   "taskId": "TAR-0066",
   "phaseId": "PHASE-15",
   "title": "ACL do runtime dir e do Named Pipe no Windows verificadas (icacls)",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-227"
   ],

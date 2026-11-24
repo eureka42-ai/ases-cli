@@ -1,8 +1,8 @@
 import { parseArgs } from 'node:util';
 import { VERSIONS, type EventEnvelope } from '@aer/contracts';
-import { LOGO_MODES, THEMES, pickLogoMode, renderBrand, type LogoMode, type ThemeName } from '@aer/branding';
+import { LOGO_MODES, THEME_CHOICES, pickLogoMode, renderBrand, resolveBrandPrefs, resolveTheme } from '@aer/branding';
 import type { Snapshot } from '@aer/persistence';
-import { findProjectRoot, loadPlatformAdapter, readManifest } from '@aer/project-store';
+import { brandConfigLayers, findProjectRoot, loadPlatformAdapter, readManifest } from '@aer/project-store';
 import { formatEvent, isError } from './format.ts';
 import { Monitor, type LinkStatus, type MonitorHandlers } from './monitor.ts';
 import { runTui } from './tui.tsx';
@@ -15,7 +15,8 @@ Uso:
   ases-tar --follow --format jsonl stream de eventos em JSONL no stdout (estado da conexão no stderr)
   ases-tar --json                  snapshot único em JSON e sai
 Filtros: --task TAR-XXXX  --phase PHASE-XX  --from-seq N  --errors (só severidade error/critical)
-Opções: --no-color  --no-banner  --theme teal|blue|purple|gold|mono  --logo full|compact|minimal|ascii  --version  --help
+Opções: --no-color  --no-banner  --no-animation (aceito; as TUIs não animam)  --theme auto|teal|blue|purple|gold|mono|contrast  --logo full|compact|minimal|ascii  --version  --help
+Tema e logo: --theme/--logo > .ases/CONFIG.json (ui.theme, ui.logo) > config global do usuário > auto
 Ainda NÃO implementado: --history (Replay)
 
 O ases-tar nunca altera estado: conecta com o token de monitor, que o engine recusa para qualquer método mutante.
@@ -29,7 +30,7 @@ async function main(argv: string[]): Promise<number> {
     options: {
       help: { type: 'boolean' }, version: { type: 'boolean' }, json: { type: 'boolean' }, follow: { type: 'boolean' },
       format: { type: 'string' }, task: { type: 'string' }, phase: { type: 'string' }, 'from-seq': { type: 'string' },
-      'no-color': { type: 'boolean' }, 'no-banner': { type: 'boolean' }, 'no-tui': { type: 'boolean' }, theme: { type: 'string' }, logo: { type: 'string' },
+      'no-color': { type: 'boolean' }, 'no-banner': { type: 'boolean' }, 'no-tui': { type: 'boolean' }, 'no-animation': { type: 'boolean' }, theme: { type: 'string' }, logo: { type: 'string' },
       errors: { type: 'boolean' }, history: { type: 'boolean' }, live: { type: 'boolean' },
     },
   });
@@ -47,7 +48,7 @@ async function main(argv: string[]): Promise<number> {
   }
   const format = values.format ?? 'text';
   if (format !== 'text' && format !== 'jsonl') throw new UsageError(`invalid --format ${format}`);
-  if (values.theme && !(values.theme in THEMES)) throw new UsageError(`invalid --theme ${values.theme}`);
+  if (values.theme && !(THEME_CHOICES as readonly string[]).includes(values.theme)) throw new UsageError(`invalid --theme ${values.theme}`);
   if (values.logo && !(LOGO_MODES as readonly string[]).includes(values.logo)) throw new UsageError(`invalid --logo ${values.logo}`);
   const fromSeq = values['from-seq'] === undefined ? undefined : Number(values['from-seq']);
   if (fromSeq !== undefined && (!Number.isInteger(fromSeq) || fromSeq < 0)) throw new UsageError('--from-seq must be an integer >= 0');
@@ -71,7 +72,9 @@ async function main(argv: string[]): Promise<number> {
   const caps = adapter.getTerminalCapabilities(process.stdout);
   const jsonl = format === 'jsonl';
   const color = caps.color && !values['no-color'] && !jsonl;
-  const theme = (values.theme ?? 'teal') as ThemeName;
+  const prefs = resolveBrandPrefs([{ source: '--theme/--logo', theme: values.theme, logo: values.logo }, ...brandConfigLayers(root)]);
+  const colorDepth = color ? caps.colorDepth : 0;
+  const theme = resolveTheme(prefs.theme, colorDepth);
   const filter = { task: values.task, phase: values.phase, errors: values.errors };
   const keep = (e: EventEnvelope) => (!filter.task || e.taskId === filter.task) && (!filter.phase || e.phaseId === filter.phase) && (!values.errors || isError(e));
 
@@ -83,13 +86,13 @@ async function main(argv: string[]): Promise<number> {
       onSnapshot: (s, r) => target.h?.onSnapshot?.(s, r),
       onEvent: (e) => target.h?.onEvent(e),
     });
-    await runTui(monitor, { color, unicode: caps.unicode, theme, logo: values.logo as LogoMode | undefined }, manifest.name, filter, target);
+    await runTui(monitor, { color, colorDepth, unicode: caps.unicode, theme, logo: prefs.logo }, manifest.name, filter, target);
     return 0;
   }
 
   // modo linha: texto legível ou JSONL estrito (estado no stderr, AER-REQ-247)
   const showBanner = caps.isTTY && !values['no-banner'] && !jsonl;
-  const brand = (s: LinkStatus) => renderBrand({ app: 'ASES-TAR', mode: pickLogoMode(caps, (values.logo as LogoMode | undefined) ?? 'compact'), theme, color, status: s });
+  const brand = (s: LinkStatus) => renderBrand({ app: 'ASES-TAR', mode: pickLogoMode(caps, prefs.logo ?? 'compact'), theme, color, colorDepth, status: s });
   let lastLine = '';
   const status = (s: LinkStatus, d: string) => {
     if (`${s} ${d}` === lastLine) return; // só mudanças, não cada nova tentativa

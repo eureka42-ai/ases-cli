@@ -50,7 +50,7 @@ describe('terminal capabilities (AER-REQ-245, AER-REQ-089)', () => {
   const utf8 = { LANG: 'pt_BR.UTF-8' };
 
   it('enables color+unicode on a UTF-8 TTY', () => {
-    expect(getTerminalCapabilities('darwin', utf8, tty)).toEqual({ isTTY: true, color: true, unicode: true, columns: 80, rows: 24, ci: false });
+    expect(getTerminalCapabilities('darwin', utf8, tty)).toEqual({ isTTY: true, color: true, unicode: true, columns: 80, rows: 24, ci: false, colorDepth: 4 });
   });
 
   it('detects CI like is-in-ci (Ink only paints the last frame there)', () => {

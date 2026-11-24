@@ -4,8 +4,8 @@
   "taskId": "TAR-0069",
   "phaseId": "PHASE-15",
   "title": "TUI em ConPTY/Windows Terminal ou registro NOT_RUN honesto",
-  "state": "FAILED",
-  "version": 5,
+  "state": "CANCELLED",
+  "version": 8,
   "reqs": [
     "AER-REQ-234"
   ],

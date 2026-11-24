@@ -11,6 +11,8 @@ export interface TerminalCapabilities {
   rows: number | undefined;
   /** ambiente de CI (mesma regra do is-in-ci usado pelo Ink, que em CI só desenha o último quadro) */
   ci: boolean;
+  /** bits de cor que o terminal declara: 24 (truecolor), 8 (256 cores) ou 4 (16 cores); 0 sem cor */
+  colorDepth: 0 | 4 | 8 | 24;
 }
 
 export interface LocalIpcEndpoint {

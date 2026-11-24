@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0071",
+  "phaseId": "PHASE-16",
+  "title": "Profundidade de cor: truecolor, 256 e 16 cores pelo terminal",
+  "state": "RUNNING",
+  "version": 4,
+  "reqs": [
+    "AER-REQ-243",
+    "AER-REQ-245"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

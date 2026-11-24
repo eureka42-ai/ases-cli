@@ -48,7 +48,17 @@ export function getTerminalCapabilities(id: PlatformId, env: PlatformDeps['env']
   // shortcut: heurística de Unicode por env; trocar por probe real de terminal na PHASE-04/16.
   const unicode = !dumb && (id === 'win32' ? Boolean(env.WT_SESSION) || env.TERM_PROGRAM === 'vscode' : /utf-?8/i.test(locale));
   const ci = env.CI !== '0' && env.CI !== 'false' && ('CI' in env || 'CONTINUOUS_INTEGRATION' in env || Object.keys(env).some((k) => k.startsWith('CI_')));
-  return { isTTY, color: isTTY && !dumb && !noColor, unicode, columns: stream.columns, rows: stream.rows, ci };
+  const color = isTTY && !dumb && !noColor;
+  return { isTTY, color, unicode, columns: stream.columns, rows: stream.rows, ci, colorDepth: color ? colorDepth(id, env) : 0 };
+}
+
+/** Profundidade declarada pelo ambiente (COLORTERM, TERM, terminal conhecido); na dúvida, a menor (16 cores). */
+export function colorDepth(id: PlatformId, env: PlatformDeps['env']): 4 | 8 | 24 {
+  if (env.FORCE_COLOR === '3' || /^(truecolor|24bit)$/i.test(env.COLORTERM ?? '')) return 24;
+  if (id === 'win32' && env.WT_SESSION) return 24; // Windows Terminal
+  if (env.TERM_PROGRAM === 'iTerm.app' || env.TERM_PROGRAM === 'vscode' || env.TERM_PROGRAM === 'WezTerm') return 24;
+  if (env.FORCE_COLOR === '2' || /256/.test(env.TERM ?? '') || env.TERM_PROGRAM === 'Apple_Terminal') return 8;
+  return 4;
 }
 
 export function normalizeProjectPath(projectPath: string): string {
