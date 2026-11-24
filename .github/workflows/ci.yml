@@ -1,5 +1,5 @@
 # Matriz §3.7 / AER-REQ-233, ajustada pela CHANGE-0001 (sem macOS Intel).
-# Estado por alvo: job support-matrix (resumo do run). arm64 de Windows/Linux = alvos CONDITIONAL.
+# Estado por alvo: job support-matrix (resumo do run). Todos os alvos são TARGET (arm64 aprovado em 24/11/2026).
 name: ci
 on:
   push:
@@ -28,8 +28,14 @@ jobs:
       - name: alvo (platform-arch-node)
         run: node -p "process.platform + '-' + process.arch + ' ' + process.version"
       - run: npm ci
+      # TAR-0070: harness ConPTY só no CI do Windows, fora do lockfile (dependência nativa aprovada pelo responsável)
+      - name: node-pty para o e2e da TUI no ConPTY
+        if: runner.os == 'Windows'
+        run: npm install --no-save --ignore-scripts=false node-pty@1.1.0
       - name: lint + typecheck + build + testes (unit, integração, E2E com processos reais, pty em macOS/Linux)
         run: npm run verify
+        env:
+          AER_REQUIRE_CONPTY: ${{ runner.os == 'Windows' && '1' || '0' }}
       - name: smoke dos bins compilados
         run: |
           node apps/ases-cli/bin/ases.js --version

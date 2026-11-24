@@ -2,7 +2,7 @@
 
 **Estado:** rascunho, **não publicado**. Ainda faltam três decisões do responsável:
 1. o número da versão (hoje `0.0.0`);
-2. publicar ou não no registro npm, e com qual conta/escopo (`@eureka42/aer`);
+2. publicar ou não no registro npm, e com qual conta/escopo (`@eureka42-ai/aer`);
 3. aceitar a cobertura atual do macOS (só local) ou esperar um run de CI com macOS.
 
 O tarball sai de `node scripts/pack.mjs` e é autocontido: instala sem rede.

@@ -16,6 +16,6 @@ describe('support matrix (TAR-0068, AER-REQ-233/239)', () => {
     expect(rows.map((r) => `${r.target}/${r.node}:${r.state}`)).toEqual(['darwin-arm64/22.x:PASS', 'darwin-arm64/24.x:NOT_RUN', 'win32-arm64/22.x:PASS']);
     const md = render(rows, { run: 1 });
     expect(md).toContain('| darwin-arm64 | NOT_RUN |');
-    expect(md).toContain('| win32-arm64 | PASS (CONDITIONAL: não anunciado como suportado) |');
+    expect(md).toContain('| win32-arm64 | PASS |');
   });
 });

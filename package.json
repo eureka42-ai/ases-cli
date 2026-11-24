@@ -1,6 +1,6 @@
 {
   "name": "ases-engineering-runtime",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Eureka42 · ASES Engineering Runtime (AER) — monorepo (PHASE-01, sem binários publicados ainda)",
   "type": "module",

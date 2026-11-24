@@ -10,8 +10,8 @@ const RUNNERS = {
   'macos-latest': { target: 'darwin-arm64', tier: 'TARGET' },
   'windows-latest': { target: 'win32-x64', tier: 'TARGET' },
   'ubuntu-latest': { target: 'linux-x64', tier: 'TARGET' },
-  'windows-11-arm': { target: 'win32-arm64', tier: 'CONDITIONAL' },
-  'ubuntu-24.04-arm': { target: 'linux-arm64', tier: 'CONDITIONAL' },
+  'windows-11-arm': { target: 'win32-arm64', tier: 'TARGET' }, // arm64: TARGET desde 24/11/2026 (AER-REQ-239)
+  'ubuntu-24.04-arm': { target: 'linux-arm64', tier: 'TARGET' },
 };
 
 export function stateOf(job) {

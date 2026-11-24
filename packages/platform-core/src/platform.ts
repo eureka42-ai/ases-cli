@@ -158,13 +158,13 @@ export function writePrivateFile(file: string, content: string): void {
   renameSync(tmp, file);
 }
 
-/** CHANGE-0001: macOS só em Apple Silicon. arm64 de Windows/Linux é condicional a testes reais (§3.7). */
+/** CHANGE-0001: macOS só em Apple Silicon. arm64 de Windows/Linux: TARGET desde 24/11/2026 (PASS no CI, aprovado pelo responsável, AER-REQ-239). */
 export const SUPPORTED_TARGETS = {
   'darwin-arm64': 'TARGET',
   'win32-x64': 'TARGET',
   'linux-x64': 'TARGET',
-  'win32-arm64': 'CONDITIONAL',
-  'linux-arm64': 'CONDITIONAL',
+  'win32-arm64': 'TARGET',
+  'linux-arm64': 'TARGET',
 } as const;
 export type TargetStatus = (typeof SUPPORTED_TARGETS)[keyof typeof SUPPORTED_TARGETS] | 'UNSUPPORTED';
 

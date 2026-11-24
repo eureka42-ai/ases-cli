@@ -56,7 +56,7 @@ try {
   run('ases', ['init', '--name', 'smoke']);
   const out = run('ases', ['--no-tui'], '/ases import\n/gate G0\n/exit\n');
   check(/G0: PASS/.test(out), 'fontes ASES distribuídas no pacote: /ases import + /gate G0 PASS');
-  npm('uninstall', '-g', '@eureka42/aer');
+  npm('uninstall', '-g', '@eureka42-ai/aer');
   check(!shim('ases') && !shim('ases-tar'), 'uninstall remove os dois comandos');
   check(existsSync(path.join(proj, '.ases', 'db', 'ases.sqlite')), 'uninstall não apaga dados do projeto');
 } finally {

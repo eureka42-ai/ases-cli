@@ -3,7 +3,7 @@
 Dois comandos no mesmo pacote: **`ases`** (console: motor local + TUI) e **`ases-tar`** (monitor read-only em outro terminal).
 Licença: CC BY-NC-ND 4.0 (ver `LICENSE`).
 
-> **Estado:** ALPHA. Testado em macOS Apple Silicon (local e CI), Windows x64/arm64 e Linux x64/arm64 (CI). macOS Intel está fora do escopo (CHANGE-0001). O pacote ainda **não** foi publicado no registro npm; instala-se a partir do `.tgz`.
+> **Versão 1.0.0.** Suportado: macOS Apple Silicon (verificado na máquina do responsável), Windows x64/arm64 e Linux x64/arm64 (CI, incluindo a TUI no ConPTY do Windows). macOS Intel está fora do escopo (CHANGE-0001). Matriz por alvo: `docs/MATRIZ_SUPORTE.md`.
 
 ## Requisitos
 - Node.js ≥ 22.18 (o AER usa `node:sqlite`).
@@ -12,10 +12,10 @@ Licença: CC BY-NC-ND 4.0 (ver `LICENSE`).
 
 ## Instalar
 ```sh
-node scripts/pack.mjs                        # no repositório: gera .pack/eureka42-aer-<versão>.tgz
-npm install -g ./.pack/eureka42-aer-<versão>.tgz
+npm install -g @eureka42-ai/aer
 ases --version && ases-tar --version
 ```
+Sem rede (o pacote é autocontido): no repositório, `node scripts/pack.mjs` gera `.pack/eureka42-ai-aer-<versão>.tgz`, e `npm install -g ./.pack/eureka42-ai-aer-<versão>.tgz` instala.
 Funciona igual em bash, zsh e PowerShell. No Windows, o npm cria `ases.cmd`/`ases-tar.cmd` no prefixo global.
 
 ## Motor residente (tarefas seguem com o terminal fechado)
@@ -28,15 +28,15 @@ ases daemon stop       # para o motor (cancela tarefas em execução, sem deixar
 **Sem supervisor do SO nesta versão:** reboot, logoff ou crash do motor não são cobertos. Depois de um desses, rode `ases` e `/resume`.
 
 ## Atualizar e voltar atrás (rollback)
-- **Atualizar:** `npm install -g ./eureka42-aer-<nova>.tgz`.
+- **Atualizar:** `npm install -g @eureka42-ai/aer@<nova>` (ou o `.tgz` da nova versão).
   - O banco do projeto (`.ases/db/ases.sqlite`) é migrado na primeira abertura, **com backup automático antes** (`.ases/db/ases.sqlite.bak-v<N>-…`).
-- **Voltar atrás:** reinstale o `.tgz` anterior.
+- **Voltar atrás:** `npm install -g @eureka42-ai/aer@<anterior>` (ou o `.tgz` anterior).
   - Se o banco já foi migrado para um esquema mais novo, a versão antiga recusa abrir (`DB_SCHEMA_TOO_NEW`), em vez de corromper o banco.
   - Para usar a versão antiga, restaure o backup: feche o `ases` e copie o `.bak-v<N>` por cima de `ases.sqlite`.
 
 ## Desinstalar
 ```sh
-npm uninstall -g @eureka42/aer
+npm uninstall -g @eureka42-ai/aer
 ```
 - Remove os dois comandos.
 - Os projetos (`.ases/` em cada repositório) e as chaves no cofre do sistema (`ases secret`) **não** são apagados. Para tirar uma chave: `ases secret delete <id>` antes de desinstalar.

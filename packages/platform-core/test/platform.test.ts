@@ -137,7 +137,7 @@ describe('supported targets (CHANGE-0001)', () => {
     expect(assertSupportedTarget('darwin', 'arm64')).toBe('darwin');
     expect(assertSupportedTarget('win32', 'x64')).toBe('win32');
     expect(assertSupportedTarget('linux', 'x64')).toBe('linux');
-    expect(targetStatus('linux', 'arm64')).toBe('CONDITIONAL');
+    expect(targetStatus('linux', 'arm64')).toBe('TARGET');
     expect(() => assertSupportedTarget('darwin', 'x64')).toThrow(/macOS Intel está fora do escopo/);
     expect(() => assertSupportedTarget('linux', 'ia32')).toThrow(PlatformError);
   });
