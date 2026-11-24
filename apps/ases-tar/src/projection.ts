@@ -16,7 +16,8 @@ export function applyEvent(snap: Snapshot, e: EventEnvelope): Snapshot {
       }
       break;
     case 'PhaseUpdated':
-      next.phases = snap.phases.map((x) => (x.id === e.phaseId ? { ...x, state: p.to as PhaseState, version: x.version + 1 } : x));
+      next.phases = snap.phases.map((x) => (x.id === e.phaseId ? { ...x, state: p.to as PhaseState, version: x.version + 1, ...(typeof p.sortOrder === 'number' ? { sortOrder: p.sortOrder } : {}) } : x))
+        .sort((a, b) => a.sortOrder - b.sortOrder);
       break;
     case 'TaskCreated':
       if (e.taskId && e.phaseId && !snap.tasks.some((t) => t.id === e.taskId)) {

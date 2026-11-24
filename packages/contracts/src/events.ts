@@ -27,7 +27,7 @@ export const CRITICAL_PAYLOADS = {
   PhaseCreated: z.strictObject({ title: z.string().min(1) }),
   TaskCreated: z.strictObject({ title: z.string().min(1), reqs: z.array(z.string()) }),
   TaskUpdated: z.strictObject({ from: z.enum(TASK_STATES), to: z.enum(TASK_STATES), reason: z.string().nullable() }),
-  PhaseUpdated: z.strictObject({ from: z.enum(PHASE_STATES), to: z.enum(PHASE_STATES), reason: z.string().nullable() }),
+  PhaseUpdated: z.strictObject({ from: z.enum(PHASE_STATES), to: z.enum(PHASE_STATES), reason: z.string().nullable(), sortOrder: z.number().int().min(1).optional() }),
   TaskDependencyAdded: z.strictObject({ dependsOn: taskId }),
   LegacyImported: z.strictObject({ source: z.string().min(1), events: z.number().int().min(0), phases: z.number().int().min(0), tasks: z.number().int().min(0), artifacts: z.number().int().min(0) }),
   TaskReserved: z.strictObject({ ownerId: z.string().min(1), fencingToken: z.number().int().min(1), expiresAt: z.iso.datetime(), explanation: z.string() }),

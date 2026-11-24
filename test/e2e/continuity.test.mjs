@@ -44,6 +44,17 @@ describe.runIf(process.platform !== 'win32')('PHASE-11 gate: switch a task betwe
     expect(out).toMatch(/TAR-0001: `node -e .*` → exit 0 · log \.ases\/evidence\/TAR-0001-test-01\.log/);
     expect(existsSync(path.join(p.dir, '.ases/evidence/TAR-0001-test-01.log'))).toBe(true);
 
+    // /diff só lê: estado de todas as worktrees (HEAD + status) igual antes e depois (AER-REQ-097)
+    const wtState = () => git('worktree', 'list', '--porcelain').split(/\r?\n/).filter((l) => l.startsWith('worktree ')).map((l) => {
+      const w = l.slice(9);
+      return `${w} ${spawnSync('git', ['-C', w, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).stdout} ${spawnSync('git', ['-C', w, 'status', '--porcelain'], { encoding: 'utf8' }).stdout}`;
+    }).join('\n');
+    const before = wtState();
+    out = session(['/diff TAR-0001']);
+    expect(out).toMatch(/TAR-0001 ATT-0001 \(ases\/TAR-0001\/ATT-0001 desde [0-9a-f]{12}\)/);
+    expect(out).toContain('SIMULATED/TAR-0001.md');
+    expect(wtState()).toBe(before);
+
     // handoff para outro provider: HANDOFF gravado e a próxima tentativa parte do checkpoint 1
     const tip1 = git('rev-parse', 'ases/TAR-0001/ATT-0001').trim();
     out = session(['/handoff TAR-0001 claude continuar a funcionalidade com outro agente']);

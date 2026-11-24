@@ -9,7 +9,7 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 
 const SIM_VERSION = '1.0.0';
-const SCENARIOS = ['ok', 'fail', 'hang', 'approval', 'auth-expired', 'garbage', 'escape', 'review', 'review-write'];
+const SCENARIOS = ['ok', 'fail', 'hang', 'approval', 'auth-expired', 'rate-limit', 'garbage', 'escape', 'review', 'review-write'];
 
 const { values } = parseArgs({ options: { version: { type: 'boolean' }, scenario: { type: 'string' }, task: { type: 'string' }, instructions: { type: 'string' } } });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -64,6 +64,9 @@ switch (scenario) {
     process.exit(1);
   case 'auth-expired':
     await emit({ type: 'error', code: 'AUTH_EXPIRED', userMessage: 'SIMULATED: sessão do provider expirada' });
+    process.exit(2);
+  case 'rate-limit':
+    await emit({ type: 'error', code: 'RATE_LIMITED', userMessage: 'SIMULATED: 429 limite de uso do provider' });
     process.exit(2);
   case 'garbage':
     await out('{"type":"message","text": isto não é JSON\n');

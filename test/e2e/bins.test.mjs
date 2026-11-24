@@ -48,7 +48,7 @@ describe('built bins (TAR-0011, AER-REQ-004, AER-REQ-245, AER-REQ-247)', () => {
     const r = runSync(BIN.ases, ['agents'], p.dir);
     expect(r.status).toBe(2);
     expect(r.stderr).toMatch(/ainda não implementado \(planejado: PHASE-07\)/);
-    expect(runSync(BIN.tar, ['--errors'], p.dir).status).toBe(2);
+    expect(runSync(BIN.tar, ['--history'], p.dir).status).toBe(2);
     expect(runSync(BIN.ases, ['--bogus'], p.dir).status).toBe(2);
   });
 

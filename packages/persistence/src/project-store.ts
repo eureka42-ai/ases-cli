@@ -400,6 +400,23 @@ export class ProjectStore {
     });
   }
 
+  /** Nova ordem de exibição/execução das fases; os IDs nunca mudam (AER-REQ-027). `order` deve listar todas as fases. */
+  reorderPhases(order: readonly string[]): void {
+    this.inWriteTx(() => {
+      const phases = this.listPhases();
+      const ids = new Set(phases.map((p) => p.id));
+      if (order.length !== ids.size || new Set(order).size !== order.length || order.some((id) => !ids.has(id))) {
+        throw new StoreError('INVALID_INPUT', `order must list every phase exactly once: ${[...ids].join(', ')}`);
+      }
+      order.forEach((id, i) => {
+        const p = phases.find((x) => x.id === id)!;
+        if (p.sortOrder === i + 1) return;
+        this.db.prepare('UPDATE phases SET sort_order = ?, version = version + 1, updated_at = ? WHERE project_id = ? AND id = ?').run(i + 1, this.now(), this.projectId, id);
+        this.appendEvent({ eventType: 'PhaseUpdated', phaseId: id, payload: { from: p.state, to: p.state, reason: `reordenada: posição ${p.sortOrder} -> ${i + 1}`, sortOrder: i + 1 } });
+      });
+    });
+  }
+
   /** Fase só conclui com todas as tarefas COMPLETED/CANCELLED (AER-REQ-024). */
   transitionPhase(phaseId: string, to: PhaseState, expectedVersion: number, reason: string | null = null): number {
     if (!PHASE_STATES.includes(to)) throw new StoreError('INVALID_INPUT', `invalid phase state: ${to}`);
@@ -626,6 +643,14 @@ export class ProjectStore {
       if (u.changes !== 1) throw new StoreError('NOT_FOUND', `running attempt ${taskId}/${attemptId} not found`);
       this.appendEvent({ eventType: 'AttemptExited', phaseId: this.getTaskRow(taskId).phaseId, taskId, attemptId, payload: r });
     });
+  }
+
+  /** Fim do cooldown do provider após o último RATE_LIMITED, se ainda vigente (AER-REQ-048). */
+  providerCooldownUntil(providerId: string, cooldownMs: number): string | undefined {
+    const r = this.db.prepare("SELECT MAX(ended_at) AS t FROM attempts WHERE project_id = ? AND provider_id = ? AND failure_code = 'RATE_LIMITED'").get(this.projectId, providerId) as Row;
+    if (!r.t) return undefined;
+    const until = new Date(Date.parse(String(r.t)) + cooldownMs).toISOString();
+    return until > this.now() ? until : undefined;
   }
 
   listAttempts(taskId: string): AttemptRow[] {

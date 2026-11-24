@@ -18,7 +18,12 @@ export interface WorkerDeps {
   timeoutMs: number;
   /** providers reais que o usuário autorizou NESTE run (AER-REQ-123); o simulador não precisa */
   consented?: ReadonlySet<string>;
+  /** pausa do provider após RATE_LIMITED (padrão 15 min) */
+  rateLimitCooldownMs?: number;
 }
+
+// shortcut: cooldown fixo; usar o resetsAt do provider quando algum adapter o reportar de forma verificada
+export const DEFAULT_RATE_LIMIT_COOLDOWN_MS = 15 * 60_000;
 
 export interface AttemptOutcome {
   taskId: string;
@@ -78,6 +83,13 @@ export async function runAttempt(d: WorkerDeps, r: { taskId: string; fencingToke
       move('BLOCKED', why);
       return out('BLOCKED', why, { providerId: provider.id });
     }
+  }
+  // rate limit recente: nem probe nem processo até o fim do cooldown, então não há laço de 429 (AER-REQ-048)
+  const until = read((s) => s.providerCooldownUntil(provider.id, d.rateLimitCooldownMs ?? DEFAULT_RATE_LIMIT_COOLDOWN_MS));
+  if (until) {
+    const why = `PROVIDER_COOLDOWN: ${provider.id} teve RATE_LIMITED; novas tentativas só após ${until}`;
+    move('BLOCKED', why);
+    return out('BLOCKED', why, { providerId: provider.id });
   }
   if (provider.requiresConsent && !d.consented?.has(provider.id)) {
     // sem aceite explícito nada roda, nem o probe: a conta (cota/cobrança) é do usuário (AER-REQ-123)

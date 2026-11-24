@@ -25,7 +25,11 @@ export interface AgentProcessOptions {
    * não sair sozinho em `graceMs` (padrão 3 s), encerra a árvore — isso conta como fim normal, não como cancelamento.
    */
   stdin?: (io: { write: (line: string) => void; end: () => void }) => void;
+  /** teto de bytes TOTAIS de stdout (padrão 64 MiB); ao passar, a árvore é encerrada com OUTPUT_LIMIT (AER-REQ-171) */
+  maxOutputBytes?: number;
 }
+
+export const DEFAULT_MAX_OUTPUT_BYTES = 64 * 1024 * 1024;
 
 const STDERR_TAIL = 2000;
 
@@ -71,12 +75,24 @@ export async function* runAgentProcess(platform: ProcessPlatform, o: AgentProces
     decoded.flatMap((l) => (l.ok ? o.map(l.value) : [{ type: 'error', code: 'PARSE_ERROR', userMessage: `${l.code}: ${l.detail}` } as AgentStreamEvent]));
   try {
     const decoder = new NdjsonDecoder();
-    for await (const chunk of p.child.stdout) yield* lines(decoder.push(chunk as Buffer));
-    yield* lines(decoder.end());
+    const max = o.maxOutputBytes ?? DEFAULT_MAX_OUTPUT_BYTES;
+    let total = 0;
+    let overflow = false;
+    for await (const chunk of p.child.stdout) {
+      total += (chunk as Buffer).length;
+      if (total > max) {
+        overflow = true;
+        kill();
+        break;
+      }
+      yield* lines(decoder.push(chunk as Buffer));
+    }
+    if (!overflow) yield* lines(decoder.end());
     const r = await p.exited;
+    if (overflow) yield { type: 'error', code: 'OUTPUT_LIMIT', userMessage: `agent wrote more than ${max} bytes to stdout and was terminated` };
     if (timedOut) yield { type: 'error', code: 'TIMEOUT', userMessage: `agent exceeded ${o.timeoutMs} ms and was terminated` };
     const stderrTail = redactText(stderr, STDERR_TAIL).text;
-    if (!cancelled && !timedOut) yield* o.finish?.({ exitCode: r.exitCode, stderrTail }) ?? [];
+    if (!cancelled && !timedOut && !overflow) yield* o.finish?.({ exitCode: r.exitCode, stderrTail }) ?? [];
     if (r.exitCode !== 0 && stderrTail.trim()) yield { type: 'status', status: 'STDERR_TAIL', detail: stderrTail.trim() };
     // reconciliação: mesmo após saída normal, nenhum neto pode sobrar no grupo
     const t = await platform.terminateProcessTree(p.pid, { graceMs: 200 });

@@ -103,3 +103,18 @@ describe('event store (TAR-0007)', () => {
     expect(store.listPhases().map((p) => p.id)).toEqual(['PHASE-01', 'PHASE-02']);
   });
 });
+
+describe('phase reorder (AER-REQ-027)', () => {
+  it('changes order without renumbering ids and rejects partial orders', () => {
+    const s = openStore(path.join(tempDir(), 'order.sqlite'));
+    const [a, b, c] = ['um', 'dois', 'três'].map((t) => s.createPhase(t));
+    const tar = s.createTask({ phaseId: b!, title: 'x' });
+    s.reorderPhases([c!, a!, b!]);
+    expect(s.listPhases().map((p) => [p.id, p.sortOrder, p.title])).toEqual([['PHASE-03', 1, 'três'], ['PHASE-01', 2, 'um'], ['PHASE-02', 3, 'dois']]);
+    expect(s.getTask(tar)?.phaseId).toBe('PHASE-02');
+    expect(() => s.reorderPhases([a!, b!])).toThrow(code('INVALID_INPUT'));
+    expect(() => s.reorderPhases([a!, a!, b!])).toThrow(code('INVALID_INPUT'));
+    expect(s.createPhase('quatro')).toBe('PHASE-04');
+    expect(s.listPhases().at(-1)).toMatchObject({ id: 'PHASE-04', sortOrder: 4 });
+  });
+});

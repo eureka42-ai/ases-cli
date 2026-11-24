@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState, type ReactElement } from 'react';
 import type { EventEnvelope } from '@aer/contracts';
 import type { Snapshot, TaskRow } from '@aer/persistence';
 import { BrandHeader, HelpOverlay, KeyHints, Pane, StateText, StatusBadge, UiContext, symbols, useTerminalSize, useUi, type Ui } from '@aer/tui-shared';
-import { formatEvent } from './format.ts';
+import { formatEvent, isError } from './format.ts';
 import type { LinkStatus, Monitor, MonitorHandlers } from './monitor.ts';
 import { applyEvent } from './projection.ts';
 
@@ -27,7 +27,7 @@ const KEYS: [string, string][] = [
   ['q  Ctrl+C', 'sai (o monitor é só leitura)'],
 ];
 
-export function TarApp({ monitor, projectName, filter }: { monitor: MonitorLike; projectName: string; filter: { task?: string | undefined; phase?: string | undefined } }): ReactElement {
+export function TarApp({ monitor, projectName, filter }: { monitor: MonitorLike; projectName: string; filter: { task?: string | undefined; phase?: string | undefined; errors?: boolean | undefined } }): ReactElement {
   const ui = useUi();
   const y = symbols(ui.unicode);
   const app = useApp();
@@ -59,7 +59,7 @@ export function TarApp({ monitor, projectName, filter }: { monitor: MonitorLike;
   const keep = (e: { taskId?: string | null; phaseId?: string | null; id?: string }) =>
     (!filter.task || (e.taskId ?? e.id) === filter.task) && (!filter.phase || e.phaseId === filter.phase);
   const tasks = useMemo(() => (snap?.tasks ?? []).filter((t) => keep({ id: t.id, phaseId: t.phaseId })), [snap, filter.task, filter.phase]);
-  const shownEvents = useMemo(() => events.filter((e) => keep(e)), [events, filter.task, filter.phase]);
+  const shownEvents = useMemo(() => events.filter((e) => keep(e) && (!filter.errors || isError(e))), [events, filter.task, filter.phase, filter.errors]);
   const selected = tasks[Math.min(sel, tasks.length - 1)];
 
   useInput((input, key) => {
@@ -104,7 +104,7 @@ export function TarApp({ monitor, projectName, filter }: { monitor: MonitorLike;
   const header = (
     <BrandHeader app="ASES-TAR" columns={columns}>
       <StatusBadge status={status.s} />
-      <Text wrap="truncate-end">{`  ${projectName}${y.sep}seq ${snap?.snapshotSeq ?? y.dash}${live ? '' : `${y.sep}${status.d}`}${filter.task ? `${y.sep}--task ${filter.task}` : ''}${filter.phase ? `${y.sep}--phase ${filter.phase}` : ''}`}</Text>
+      <Text wrap="truncate-end">{`  ${projectName}${y.sep}seq ${snap?.snapshotSeq ?? y.dash}${live ? '' : `${y.sep}${status.d}`}${filter.task ? `${y.sep}--task ${filter.task}` : ''}${filter.phase ? `${y.sep}--phase ${filter.phase}` : ''}${filter.errors ? `${y.sep}--errors` : ''}`}</Text>
     </BrandHeader>
   );
 
@@ -169,7 +169,7 @@ export function TarApp({ monitor, projectName, filter }: { monitor: MonitorLike;
 }
 
 /** Liga o Monitor real à TUI e espera o usuário sair. */
-export async function runTui(monitor: Monitor, ui: Ui, projectName: string, filter: { task?: string | undefined; phase?: string | undefined }, target: { h?: MonitorHandlers }): Promise<void> {
+export async function runTui(monitor: Monitor, ui: Ui, projectName: string, filter: { task?: string | undefined; phase?: string | undefined; errors?: boolean | undefined }, target: { h?: MonitorHandlers }): Promise<void> {
   const like: MonitorLike = {
     subscribe: (h) => {
       target.h = h;

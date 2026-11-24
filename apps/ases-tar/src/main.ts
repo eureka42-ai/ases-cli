@@ -3,7 +3,7 @@ import { VERSIONS, type EventEnvelope } from '@aer/contracts';
 import { LOGO_MODES, THEMES, pickLogoMode, renderBrand, type LogoMode, type ThemeName } from '@aer/branding';
 import type { Snapshot } from '@aer/persistence';
 import { findProjectRoot, loadPlatformAdapter, readManifest } from '@aer/project-store';
-import { formatEvent } from './format.ts';
+import { formatEvent, isError } from './format.ts';
 import { Monitor, type LinkStatus, type MonitorHandlers } from './monitor.ts';
 import { runTui } from './tui.tsx';
 
@@ -14,9 +14,9 @@ Uso:
   ases-tar --no-tui                força o modo texto linha a linha
   ases-tar --follow --format jsonl stream de eventos em JSONL no stdout (estado da conexão no stderr)
   ases-tar --json                  snapshot único em JSON e sai
-Filtros: --task TAR-XXXX  --phase PHASE-XX  --from-seq N
+Filtros: --task TAR-XXXX  --phase PHASE-XX  --from-seq N  --errors (só severidade error/critical)
 Opções: --no-color  --no-banner  --theme teal|blue|purple|gold|mono  --logo full|compact|minimal|ascii  --version  --help
-Ainda NÃO implementados: --errors, --history (Replay)
+Ainda NÃO implementado: --history (Replay)
 
 O ases-tar nunca altera estado: conecta com o token de monitor, que o engine recusa para qualquer método mutante.
 `;
@@ -41,11 +41,9 @@ async function main(argv: string[]): Promise<number> {
     process.stdout.write(HELP);
     return 0;
   }
-  for (const f of ['errors', 'history'] as const) {
-    if (values[f]) {
-      console.error(`ases-tar --${f}: ainda não implementado (planejado: PHASE-14 Replay)`);
-      return 2;
-    }
+  if (values.history) {
+    console.error('ases-tar --history: ainda não implementado (planejado: PHASE-14 Replay)');
+    return 2;
   }
   const format = values.format ?? 'text';
   if (format !== 'text' && format !== 'jsonl') throw new UsageError(`invalid --format ${format}`);
@@ -74,8 +72,8 @@ async function main(argv: string[]): Promise<number> {
   const jsonl = format === 'jsonl';
   const color = caps.color && !values['no-color'] && !jsonl;
   const theme = (values.theme ?? 'teal') as ThemeName;
-  const filter = { task: values.task, phase: values.phase };
-  const keep = (e: EventEnvelope) => (!filter.task || e.taskId === filter.task) && (!filter.phase || e.phaseId === filter.phase);
+  const filter = { task: values.task, phase: values.phase, errors: values.errors };
+  const keep = (e: EventEnvelope) => (!filter.task || e.taskId === filter.task) && (!filter.phase || e.phaseId === filter.phase) && (!values.errors || isError(e));
 
   const tui = !jsonl && !values['no-tui'] && caps.isTTY && process.stdin.isTTY === true && process.env.TERM !== 'dumb' && !caps.ci;
   if (tui) {

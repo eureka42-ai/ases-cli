@@ -66,6 +66,16 @@ describe('runAttempt (TAR-0030)', () => {
     expect(o.reason).not.toMatch(/RATE/);
   });
 
+  it('429 starts a provider cooldown: the next task on that provider is BLOCKED without a new process (AER-REQ-048)', async () => {
+    const { s, ids, d } = await setup(['simulator:rate-limit', 'simulator']);
+    expect(await runAttempt(d, reserve(s)[0]!, new AbortController().signal)).toMatchObject({ state: 'BLOCKED', reason: 'RATE_LIMITED' });
+    const o = await runAttempt(d, reserve(s)[0]!, new AbortController().signal);
+    expect(o).toMatchObject({ state: 'BLOCKED', providerId: 'simulator', attemptId: null });
+    expect(o.reason).toMatch(/^PROVIDER_COOLDOWN: simulator teve RATE_LIMITED; novas tentativas só após /);
+    expect(s.listAttempts(ids[1]!)).toEqual([]);
+    expect(s.providerCooldownUntil('simulator', 0)).toBeUndefined(); // cooldown vencido libera o provider
+  });
+
   it('garbage stream with exit 0 is never success; attempt UNKNOWN', async () => {
     const { s, ids, d } = await setup(['simulator:garbage']);
     expect(await runAttempt(d, reserve(s)[0]!, new AbortController().signal)).toMatchObject({ state: 'FAILED', reason: expect.stringMatching(/^PARSE_ERROR/) });

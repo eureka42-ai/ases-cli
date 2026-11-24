@@ -10,7 +10,7 @@ import { CONTINUITY_COMMANDS, CONTINUITY_HELP, handleContinuity } from './contin
 
 export const PLANNED_SLASH: Record<string, string> = {
   '/agent': 'PHASE-07', '/auto': 'sem fase alocada, AER-REQ-083', '/manual': 'sem fase alocada, AER-REQ-083', '/hybrid': 'sem fase alocada, AER-REQ-083', '/parallel': 'use /run --parallel N',
-  '/plan': 'sem fase alocada, §13.5', '/skills': 'use /ext', '/plugins': 'use /ext', '/mcp': 'use /ext', '/diff': 'PHASE-05',
+  '/plan': 'sem fase alocada, §13.5', '/skills': 'use /ext', '/plugins': 'use /ext', '/mcp': 'use /ext',
   '/checkpoint': 'PHASE-05', '/safe-mode': 'sem fase alocada', '/history': 'PHASE-04', '/dependencies': 'PHASE-06',
 };
 
@@ -21,6 +21,7 @@ export const SLASH_HELP = `Comandos:
   /task TAR-XXXX                  detalhe de uma tarefa
   /phase new <título>             cria fase
   /phase move PHASE-XX <ESTADO> [motivo]
+  /phase order PHASE-XX PHASE-YY …  reordena as fases (lista todas); os IDs não mudam
   /task new PHASE-XX <título> [--reqs AER-REQ-1,AER-REQ-2] [--provider simulator[:cenário]] [--resources r1,r2] [--ext EXT-1]
   /task move TAR-XXXX <ESTADO> [motivo]
   /dep add TAR-A TAR-B            TAR-A passa a depender de TAR-B (ciclo é recusado)
@@ -69,7 +70,11 @@ export function handleLine(engine: Engine, line: string, unicode = true): string
         if (!(PHASE_STATES as readonly string[]).includes(to)) return `estado inválido; use: ${PHASE_STATES.join(' ')}`;
         return `${id} ${arrow} ${to} (versão ${engine.transitionPhase(id, to as PhaseState, why.join(' ') || null)})`;
       }
-      return 'uso: /phase new <título> | /phase move PHASE-XX <ESTADO> [motivo]';
+      if (sub === 'order') {
+        engine.mutate((st) => st.reorderPhases(rest));
+        return `ordem: ${engine.store.listPhases().map((p) => p.id).join(' ')}`;
+      }
+      return 'uso: /phase new <título> | /phase move PHASE-XX <ESTADO> [motivo] | /phase order PHASE-XX PHASE-YY …';
     case '/task': {
       if (sub === 'new') {
         const [phaseId = '', ...words] = rest;

@@ -15,9 +15,10 @@ export const CONTINUITY_HELP = `Continuidade, métricas e revisão (PHASE-11):
                                   aprovação EXEC_TESTS do comando exato (/approval)
   /review TAR-XXXX <provider[:pref]> [--consent]  revisão independente, somente leitura, por outro provider
   /resume                         recupera tentativas interrompidas (lease vencido): checkpoint das sobras e volta a READY
-  /usage [TAR-XXXX]               consumo por provider com a fonte; nunca soma providers diferentes`;
+  /usage [TAR-XXXX]               consumo por provider com a fonte; nunca soma providers diferentes
+  /diff TAR-XXXX [ATT-XXXX]       diff da tentativa (padrão: a última com branch) contra a base; só leitura`;
 
-export const CONTINUITY_COMMANDS = new Set(['/handoff', '/test', '/review', '/resume', '/usage']);
+export const CONTINUITY_COMMANDS = new Set(['/handoff', '/test', '/review', '/resume', '/usage', '/diff']);
 
 /** Caminho para READY a partir de uma tarefa parada (máquina de estados §5.1). */
 const TO_READY: Partial<Record<TaskState, TaskState[]>> = { REVIEW: ['REWORK', 'READY'], REWORK: ['READY'], FAILED: ['READY'], BLOCKED: ['READY'] };
@@ -96,6 +97,15 @@ async function testRun(engine: Engine, taskId: string, argv: string[]): Promise<
   return `${taskId}: \`${argv.join(' ')}\` → exit ${exitCode}${r.timedOut ? ' (TIMEOUT)' : ''} · log ${rel}`;
 }
 
+/** Diff entre refs (base...branch): o git não toca a worktree nem o índice (AER-REQ-097). */
+async function diff(engine: Engine, taskId: string, attemptId?: string): Promise<string> {
+  const attempts = engine.store.listAttempts(taskId).filter((a) => a.branch && a.baseCommit);
+  const a = attemptId ? attempts.find((x) => x.id === attemptId) : attempts.at(-1);
+  if (!a) return `${taskId}: nenhuma tentativa${attemptId ? ` ${attemptId}` : ''} com branch`;
+  const out = await git(engine.projectRoot, ['diff', '--no-color', '--no-ext-diff', '--no-textconv', `${a.baseCommit!}...${a.branch!}`]);
+  return `${taskId} ${a.id} (${a.branch} desde ${a.baseCommit!.slice(0, 12)}):\n${out ? redactText(out, 64_000).text : '(sem alterações)'}`;
+}
+
 function usage(engine: Engine, taskId?: string): string {
   type Agg = { value: number; unit: string; sources: Set<string> };
   const by = new Map<string, Map<string, Agg>>();
@@ -151,6 +161,9 @@ export function handleContinuity(engine: Engine, cmd: string, sub: string | unde
       return resume(engine);
     case '/usage':
       return usage(engine, sub);
+    case '/diff':
+      if (!sub) return 'uso: /diff TAR-XXXX [ATT-XXXX]';
+      return diff(engine, sub, rest[0]);
     default:
       return `comando desconhecido: ${cmd}`;
   }

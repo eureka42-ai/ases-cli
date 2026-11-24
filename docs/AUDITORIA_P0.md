@@ -7,7 +7,7 @@
 - **PARCIAL:** parte coberta, lacuna declarada.
 - **NÃO IMPLEMENTADO:** exige implementar, ou uma exceção aprovada pelo responsável.
 
-## COBERTO (26)
+## COBERTO (31: 26 na auditoria + 5 implementados em 24/11/2026)
 | REQ | Evidência |
 |---|---|
 | 008 desinstalar sem excluir projetos | `scripts/pack-smoke.mjs`, CI nos 8 alvos: "uninstall não apaga dados do projeto" |
@@ -37,7 +37,7 @@
 | 238 doctor reporta suporte por SO | `test/e2e/bins.test.mjs`, `providers.test.mjs` (sem os CLIs no PATH), CI nos 3 SOs |
 | 250 imagem de marca preservada, sem fontes tipográficas | CI `shasum -c branding/MANIFESTO_IMAGENS_SHA256.txt`; `scripts/pack.mjs` recusa .ttf/.otf/.woff no pacote |
 
-## PARCIAL (10): proposta de exceção com a lacuna registrada
+## PARCIAL (8): EXCEÇÃO APROVADA pelo responsável em 24/11/2026, lacuna registrada para depois do MVP
 | REQ | O que existe | Lacuna |
 |---|---|---|
 | 025 bloqueio de fase explícito | Motivo e tarefas pendentes no `PHASE.md` | O `ases-tar` não mostra o motivo |
@@ -51,7 +51,7 @@
 | 230 caminhos Windows/POSIX | Espaços e Unicode em todos os e2e (`ç`, `ã`) nos 3 SOs | UNC, junctions e ACLs não testados |
 | 234 TUI sem navegador nos terminais | pty em macOS/Linux; modo linha sem TTY nos 3 SOs (CI) | ConPTY/Windows Terminal não testado |
 
-## NÃO IMPLEMENTADO (7): implementar ou aprovar exceção
+## NÃO IMPLEMENTADO (4): EXCEÇÃO APROVADA pelo responsável em 24/11/2026, fica para depois do MVP
 | REQ | Situação |
 |---|---|
 | 020 precedência de config (global/projeto/execução) | O `CONFIG.json` existe, mas o engine não lê camadas de config |

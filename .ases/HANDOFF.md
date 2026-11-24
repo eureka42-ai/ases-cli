@@ -2,7 +2,7 @@
 
 <!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
 - Último evento válido: seq 525 em 2026-11-24T01:19:14.827Z
-- Git: branch `ases/PHASE-12`, HEAD `4966b39`
+- Git: branch `ases/PHASE-12`, HEAD `24aedaa`
 - Concluídas: 58 de 63
 - Abertas: TAR-0059 (RUNNING), TAR-0060 (RUNNING), TAR-0061 (RUNNING), TAR-0062 (RUNNING), TAR-0063 (RUNNING)
 - Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
