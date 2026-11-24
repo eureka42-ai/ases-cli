@@ -195,8 +195,12 @@ export async function handleChat(engine: Engine, cmd: string, args: string[], ad
       return `nova conversa ${chat.newConversation()}`;
     case '/config':
       return config(engine, chat, a, b, rest);
-    case '/atualizar':
-      return 'use `ases update` fora da sessão (chega nesta versão)';
+    case '/atualizar': {
+      const { runUpdate } = await import('./update.ts');
+      const { realpathSync } = await import('node:fs');
+      const r = await runUpdate({ current: VERSIONS.app, check: a === '--check' || a === 'verificar', running: engine.runningTasks.length, binPath: realpathSync(process.argv[1] ?? '.') });
+      return r.message;
+    }
     default:
       return `comando desconhecido: ${cmd}`;
   }

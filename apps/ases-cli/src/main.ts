@@ -2,7 +2,7 @@ import readline from 'node:readline';
 import { parseArgs } from 'node:util';
 import { VERSIONS } from '@aer/contracts';
 import { LOGO_MODES, THEME_CHOICES, pickLogoMode, renderBrand, resolveBrandPrefs, resolveTheme, type LogoMode, type ThemeName } from '@aer/branding';
-import { copyFileSync, mkdirSync, readFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { ProjectStore, exportHistory, importLegacy, sqliteVersion } from '@aer/persistence';
 import { SUPPORTED_TARGETS, defaultDeps, syncedFolderHint, targetStatus } from '@aer/platform-core';
@@ -16,6 +16,7 @@ import { Engine } from './engine.ts';
 import { handleLine } from './commands.ts';
 import { runTui } from './tui.tsx';
 import { runWizard } from './wizard.tsx';
+import { runUpdate } from './update.ts';
 import { attachRepl, connectResident, daemonStatus, runDaemon, startDaemon, stopDaemon } from './daemon.ts';
 
 const HELP = `Eureka42 · ASES Engineering Runtime — ases ${VERSIONS.app}
@@ -27,6 +28,7 @@ Uso:
   ases migrate-interim       entrega ao engine um .ases/ criado pelo bootstrap interino (scripts/ases-dev.mjs)
   ases secret status | set <id> | has <id> | delete <id>   chave de API no cofre nativo (valor pelo stdin; nunca impresso)
   ases daemon start | stop | status   motor residente: tarefas seguem com o terminal fechado; o ases vira cliente dele
+  ases update [--check]      atualiza o AER para a versão mais nova do npm (--check só mostra; consulta o npm só quando pedido)
 
 Opções:
   --no-color   --no-banner   --no-tui   --no-animation (aceito; as TUIs não animam)   --theme auto|green|teal|blue|purple|gold|mono|contrast   --logo banner|full|compact|minimal|ascii
@@ -48,7 +50,7 @@ async function main(argv: string[]): Promise<number> {
     args: argv,
     allowPositionals: true,
     options: {
-      help: { type: 'boolean' }, version: { type: 'boolean' }, json: { type: 'boolean' }, name: { type: 'string' },
+      help: { type: 'boolean' }, version: { type: 'boolean' }, json: { type: 'boolean' }, name: { type: 'string' }, check: { type: 'boolean' },
       'no-color': { type: 'boolean' }, 'no-banner': { type: 'boolean' }, 'no-tui': { type: 'boolean' }, 'no-animation': { type: 'boolean' }, theme: { type: 'string' }, logo: { type: 'string' },
     },
   });
@@ -80,6 +82,12 @@ async function main(argv: string[]): Promise<number> {
   };
   const [cmd] = positionals;
 
+  if (cmd === 'update') {
+    const r = await runUpdate({ current: VERSIONS.app, check: values.check === true, running: 0, binPath: realpathSync(process.argv[1] ?? '') });
+    if (values.json) console.log(JSON.stringify(r));
+    else console.log(r.message);
+    return r.status === 'FAILED' ? 1 : r.status === 'REFUSED' ? 2 : 0;
+  }
   if (cmd === 'init') {
     const { created, manifest } = initProject(process.cwd(), adapter, values.name);
     if (values.json) console.log(JSON.stringify({ projectId: manifest.projectId, created }));

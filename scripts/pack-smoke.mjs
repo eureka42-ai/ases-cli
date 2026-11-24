@@ -3,10 +3,10 @@
 // usuário), roda `ases` e `ases-tar` pelos atalhos que o npm criou, faz um fluxo real (init, /ases import, /gate G0) e
 // desinstala, conferindo que os atalhos somem. `--offline`: o pacote é autocontido, nada vem da rede.
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { npmCli } from './npm-cli.mjs';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -53,6 +53,14 @@ try {
   check(tested > 0, `${tested} shell(s) testado(s)`);
   const doctor = JSON.parse(run('ases', ['doctor', '--json']));
   check(doctor.platform === process.platform && Array.isArray(doctor.providers), 'ases doctor --json');
+  // PHASE-18: `ases update --check` contra um registro FALSO local (sem rede; a instalação real não é tocada)
+  const reg = path.join(proj, 'registro-falso.json');
+  writeFileSync(reg, JSON.stringify({ 'dist-tags': { latest: '99.0.0' } }));
+  env.AER_REGISTRY = pathToFileURL(reg).href;
+  check(/disponível 99\.0\.0/.test(run('ases', ['update', '--check'])), 'ases update --check vê a versão nova no registro');
+  writeFileSync(reg, JSON.stringify({ 'dist-tags': { latest: run('ases', ['--version']).split(' ')[1] } }));
+  check(/já está na versão mais nova/.test(run('ases', ['update'])), 'ases update na versão atual não reinstala');
+  delete env.AER_REGISTRY;
   run('ases', ['init', '--name', 'smoke']);
   const out = run('ases', ['--no-tui'], '/ases import\n/gate G0\n/exit\n');
   check(/G0: PASS/.test(out), 'fontes ASES distribuídas no pacote: /ases import + /gate G0 PASS');
