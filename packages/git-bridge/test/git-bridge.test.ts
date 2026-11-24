@@ -1,7 +1,8 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import * as gb from '../src/index.ts';
 import { GitError, createWorktree, currentBranch, git, isClean, mergeBranch, removeWorktree, resolveInside } from '../src/index.ts';
 import { dirs, tempRepo } from './helpers.ts';
 
@@ -109,5 +110,55 @@ describe('concurrent worktrees (CI run 45460214446)', () => {
     expect(new Set(wts.map((w) => w.path)).size).toBe(8);
     await Promise.all(wts.map((w) => removeWorktree(root, w.path)));
     expect((await git(root, ['worktree', 'list'])).split('\n')).toHaveLength(1);
+  });
+});
+
+describe('restore points and undo (PHASE-18, TAR-0083)', () => {
+  const { createRestorePoint, markTurnEnd, restoreFromPoint } = gb as unknown as Record<string, (...a: any[]) => Promise<any>>;
+  const ref = 'refs/ases/restore/CNV-0001/1';
+  it('restore point does not touch index, HEAD or branch', async () => {
+    const root = await tempRepo();
+    writeFileSync(path.join(root, 'staged.txt'), 'staged\n');
+    await git(root, ['add', 'staged.txt']);
+    writeFileSync(path.join(root, 'app.txt'), 'linha 1\nmodificada\n');
+    const before = [await git(root, ['status', '--porcelain=v1']), await git(root, ['rev-parse', 'HEAD']), await currentBranch(root)];
+    const rp = await createRestorePoint(root, ref);
+    expect(rp.commit).toMatch(/^[0-9a-f]{40}$/);
+    expect(rp.files.sort()).toEqual(['app.txt', 'staged.txt']);
+    expect([await git(root, ['status', '--porcelain=v1']), await git(root, ['rev-parse', 'HEAD']), await currentBranch(root)]).toEqual(before);
+    expect(await git(root, ['rev-parse', ref])).toBe(rp.commit);
+  });
+  it('undo restores edits and deletes files created by the turn', async () => {
+    const root = await tempRepo();
+    writeFileSync(path.join(root, 'notes.txt'), 'do usuário\n'); // não rastreado, anterior ao turno
+    await createRestorePoint(root, ref);
+    writeFileSync(path.join(root, 'app.txt'), 'reescrito pela IA\n');
+    writeFileSync(path.join(root, 'novo.txt'), 'criado pela IA\n');
+    const { touched } = await markTurnEnd(root, ref);
+    expect(touched.sort()).toEqual(['app.txt', 'novo.txt']);
+    const r = await restoreFromPoint(root, ref, touched);
+    expect(r).toEqual({ restored: ['app.txt', 'novo.txt'] });
+    expect(readFileSync(path.join(root, 'app.txt'), 'utf8')).toBe('linha 1\n');
+    expect(existsSync(path.join(root, 'novo.txt'))).toBe(false);
+    expect(readFileSync(path.join(root, 'notes.txt'), 'utf8')).toBe('do usuário\n');
+  });
+  it('undo refuses when the user edited a file after the turn', async () => {
+    const root = await tempRepo();
+    await createRestorePoint(root, ref);
+    writeFileSync(path.join(root, 'app.txt'), 'pela IA\n');
+    const { touched } = await markTurnEnd(root, ref);
+    writeFileSync(path.join(root, 'app.txt'), 'o usuário mexeu depois\n');
+    expect(await restoreFromPoint(root, ref, touched)).toEqual({ refused: ['app.txt'] });
+    expect(readFileSync(path.join(root, 'app.txt'), 'utf8')).toBe('o usuário mexeu depois\n');
+  });
+  it('untracked files are captured; ignored files are not', async () => {
+    const root = await tempRepo();
+    writeFileSync(path.join(root, '.gitignore'), '.ases/worktrees/\nsegredo.env\n');
+    writeFileSync(path.join(root, 'segredo.env'), 'X=1\n');
+    writeFileSync(path.join(root, 'solto.txt'), 'solto\n');
+    const rp = await createRestorePoint(root, ref);
+    expect(rp.files).toContain('solto.txt');
+    expect(rp.files).not.toContain('segredo.env');
+    expect(await git(root, ['ls-tree', '-r', '--name-only', ref])).not.toContain('segredo.env');
   });
 });

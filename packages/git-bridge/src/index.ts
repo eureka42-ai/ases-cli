@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process';
-import { existsSync, lstatSync, readlinkSync, realpathSync } from 'node:fs';
+import { existsSync, lstatSync, mkdtempSync, readlinkSync, realpathSync, rmSync, unlinkSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -17,10 +18,10 @@ export class GitError extends Error {
 }
 
 /** git oficial, argumentos em vetor e sem shell (§7.6, AER-REQ-109); nunca pede credencial interativa. */
-export async function git(cwd: string, args: readonly string[]): Promise<string> {
+export async function git(cwd: string, args: readonly string[], env: Record<string, string> = {}): Promise<string> {
   try {
     const { stdout } = await run('git', [...args], {
-      cwd, env: { ...process.env, GIT_TERMINAL_PROMPT: '0', LC_ALL: 'C' }, maxBuffer: 16 * 1024 * 1024, windowsHide: true,
+      cwd, env: { ...process.env, GIT_TERMINAL_PROMPT: '0', LC_ALL: 'C', ...env }, maxBuffer: 16 * 1024 * 1024, windowsHide: true,
     });
     return stdout.trimEnd();
   } catch (err) {
@@ -153,4 +154,76 @@ export async function branchTip(root: string, branch: string): Promise<string | 
   } catch {
     return undefined;
   }
+}
+
+// ---- PHASE-18: ponto de restauração da principal (a IA edita direto no projeto; /desfazer volta) ----
+const SNAPSHOT_AUTHOR = { GIT_AUTHOR_NAME: 'AER restore point', GIT_AUTHOR_EMAIL: 'restore@aer.invalid', GIT_COMMITTER_NAME: 'AER restore point', GIT_COMMITTER_EMAIL: 'restore@aer.invalid' };
+
+/** Index temporário fora do projeto: o index real, o HEAD e o branch do usuário nunca são tocados. */
+async function withTempIndex<T>(fn: (env: Record<string, string>) => Promise<T>): Promise<T> {
+  const d = mkdtempSync(path.join(os.tmpdir(), 'aer-idx-'));
+  try {
+    return await fn({ GIT_INDEX_FILE: path.join(d, 'index') });
+  } finally {
+    rmSync(d, { recursive: true, force: true });
+  }
+}
+
+/** Commit com o estado atual da árvore de trabalho (rastreados + não rastreados não ignorados), gravado em `ref`. */
+async function snapshotTo(root: string, ref: string): Promise<string> {
+  return withTempIndex(async (env) => {
+    const hasHead = await git(root, ['rev-parse', '--verify', '-q', 'HEAD']).then(() => true, () => false);
+    await git(root, hasHead ? ['read-tree', 'HEAD'] : ['read-tree', '--empty'], env);
+    await git(root, ['add', '-A', '--', '.'], env);
+    const tree = await git(root, ['write-tree'], env);
+    const commit = await git(root, ['commit-tree', tree, ...(hasHead ? ['-p', 'HEAD'] : []), '-m', `AER restore point ${ref}`], { ...env, ...SNAPSHOT_AUTHOR });
+    await git(root, ['update-ref', ref, commit]);
+    return commit;
+  });
+}
+
+const changedBetween = async (root: string, a: string, b: string) => (await git(root, ['diff', '--name-only', '--no-renames', a, b])).split('\n').filter(Boolean);
+
+/** Antes de um turno da principal: guarda o estado atual em `ref`. `files` = o que já difere do HEAD. */
+export async function createRestorePoint(root: string, ref: string): Promise<{ commit: string; files: string[] }> {
+  return serialized(root, async () => {
+    const commit = await snapshotTo(root, ref);
+    const hasHead = await git(root, ['rev-parse', '--verify', '-q', 'HEAD']).then(() => true, () => false);
+    return { commit, files: hasHead ? await changedBetween(root, 'HEAD', commit) : (await git(root, ['ls-tree', '-r', '--name-only', commit])).split('\n').filter(Boolean) };
+  });
+}
+
+/** Depois do turno: guarda o resultado em `ref-after` e devolve os arquivos que o turno mudou. */
+export async function markTurnEnd(root: string, ref: string): Promise<{ touched: string[] }> {
+  return serialized(root, async () => {
+    await snapshotTo(root, `${ref}-after`);
+    return { touched: await changedBetween(root, ref, `${ref}-after`) };
+  });
+}
+
+/**
+ * /desfazer: volta os arquivos que o turno mudou ao estado de `ref`. Se o usuário mexeu em algum deles depois do turno,
+ * recusa e lista os arquivos (o trabalho humano nunca é sobrescrito).
+ */
+export async function restoreFromPoint(root: string, ref: string, touchedByTurn: string[]): Promise<{ restored: string[] } | { refused: string[] }> {
+  return serialized(root, async () => {
+    const now = `${ref}-now`;
+    await snapshotTo(root, now);
+    try {
+      const changedSince = new Set(await changedBetween(root, `${ref}-after`, now));
+      const refused = touchedByTurn.filter((f) => changedSince.has(f));
+      if (refused.length) return { refused };
+      const inPoint = new Set((await git(root, ['ls-tree', '-r', '--name-only', ref])).split('\n').filter(Boolean));
+      await withTempIndex(async (env) => {
+        await git(root, ['read-tree', ref], env);
+        for (const f of touchedByTurn) {
+          if (inPoint.has(f)) await git(root, ['checkout-index', '-f', '--', f], env);
+          else if (existsSync(path.join(root, f))) unlinkSync(path.join(root, f)); // criado pelo turno
+        }
+      });
+      return { restored: [...touchedByTurn] };
+    } finally {
+      await git(root, ['update-ref', '-d', now]).catch(() => undefined);
+    }
+  });
 }
