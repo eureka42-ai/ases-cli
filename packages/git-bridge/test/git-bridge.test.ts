@@ -2,8 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, 
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import * as gb from '../src/index.ts';
-import { GitError, createWorktree, currentBranch, git, isClean, mergeBranch, removeWorktree, resolveInside } from '../src/index.ts';
+import { GitError, createRestorePoint, createWorktree, currentBranch, markTurnEnd, restoreFromPoint, git, isClean, mergeBranch, removeWorktree, resolveInside } from '../src/index.ts';
 import { dirs, tempRepo } from './helpers.ts';
 
 async function commitIn(wt: string, file: string, content: string) {
@@ -114,7 +113,6 @@ describe('concurrent worktrees (CI run 45460214446)', () => {
 });
 
 describe('restore points and undo (PHASE-18, TAR-0083)', () => {
-  const { createRestorePoint, markTurnEnd, restoreFromPoint } = gb as unknown as Record<string, (...a: any[]) => Promise<any>>;
   const ref = 'refs/ases/restore/CNV-0001/1';
   it('restore point does not touch index, HEAD or branch', async () => {
     const root = await tempRepo();
