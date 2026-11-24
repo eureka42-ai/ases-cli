@@ -160,3 +160,20 @@ describe('restore points and undo (PHASE-18, TAR-0083)', () => {
     expect(await git(root, ['ls-tree', '-r', '--name-only', ref])).not.toContain('segredo.env');
   });
 });
+
+describe('merge with engine files pending (PHASE-18)', () => {
+  it('engine-owned .ases changes do not block a merge; user changes still do', async () => {
+    const root = await tempRepo();
+    const wt = await createWorktree(root, 'TAR-0001', 'ATT-0001');
+    writeFileSync(path.join(wt.path, 'feito.txt'), 'x\n');
+    await git(wt.path, ['add', '.']);
+    await git(wt.path, ['commit', '-q', '-m', 'tarefa']);
+    mkdirSync(path.join(root, '.ases'), { recursive: true });
+    writeFileSync(path.join(root, '.ases', 'HISTORY.jsonl'), '{}\n');
+    writeFileSync(path.join(root, 'app.txt'), 'mexido pelo usuário\n');
+    await expect(mergeBranch(root, wt.branch, 'main', 'm')).rejects.toThrow(/uncommitted/);
+    await git(root, ['checkout', '--', 'app.txt']);
+    expect(await mergeBranch(root, wt.branch, 'main', 'm')).toMatchObject({ status: 'MERGED' });
+    expect(existsSync(path.join(root, '.ases', 'HISTORY.jsonl'))).toBe(true);
+  });
+});

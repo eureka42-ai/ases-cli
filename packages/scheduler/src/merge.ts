@@ -1,4 +1,4 @@
-import { currentBranch, isClean, mergeBranch, GitError } from '@aer/git-bridge';
+import { currentBranch, isCleanForMerge, mergeBranch, GitError } from '@aer/git-bridge';
 import { StoreError, type ProjectStore } from '@aer/persistence';
 
 export type MergeOutcome =
@@ -20,7 +20,8 @@ export async function mergeTask(store: ProjectStore, root: string, taskId: strin
   if (!store.acquireLock(lock, o.ownerId, o.lockTtlMs ?? 120_000)) throw new StoreError('LOCKED', `another merge into ${o.target} is in progress`);
   try {
     if ((await currentBranch(root)) !== o.target) throw new GitError('WRONG_BRANCH', `main checkout is not on ${o.target}`);
-    if (!(await isClean(root))) throw new GitError('DIRTY_TREE', 'main checkout has uncommitted changes; refusing to merge (human work is preserved)');
+    // .ases/ é do engine (espelho e relatórios reescritos a cada evento) e nenhuma tarefa escreve nele: não conta como sujo
+    if (!(await isCleanForMerge(root))) throw new GitError('DIRTY_TREE', 'main checkout has uncommitted changes; refusing to merge (human work is preserved)');
     let v = store.transitionTask(taskId, 'MERGING', task.version, `merge ${attempt.branch} -> ${o.target}`);
     store.appendEvent({ eventType: 'TaskMergeStarted', phaseId: task.phaseId, taskId, attemptId: attempt.id, payload: { branch: attempt.branch, target: o.target } });
     const r = await mergeBranch(root, attempt.branch, o.target, `${taskId}: ${task.title} (${attempt.id})`);

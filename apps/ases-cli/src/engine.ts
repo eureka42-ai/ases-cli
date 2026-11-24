@@ -228,6 +228,29 @@ export class Engine {
     }
   }
 
+  /**
+   * Execução exclusiva fora do /run (PHASE-18: plano do chat). Mesmo guarda do /run (um por vez), o mesmo sinal de
+   * encerramento e o mesmo mapa de controllers, então /cancel e /parar alcançam as tarefas do plano.
+   */
+  async exclusive<T>(fn: (signal: AbortSignal, controllers: Map<string, AbortController>) => Promise<T>): Promise<T> {
+    if (this.current) throw Object.assign(new Error('outra execução está em andamento (/parar ou espere)'), { code: 'RUN_IN_PROGRESS' });
+    this.runAbort = new AbortController();
+    const p = fn(this.runAbort.signal, this.controllers);
+    this.current = p;
+    try {
+      return await p;
+    } finally {
+      this.current = undefined;
+      this.runAbort = undefined;
+    }
+  }
+
+  /** Aborta a execução exclusiva em curso (/parar): as tentativas são canceladas e reconciliadas. */
+  abortExclusive(): boolean {
+    this.runAbort?.abort();
+    return this.runAbort !== undefined;
+  }
+
   /** Cancela uma tarefa em execução; o worker reconcilia a árvore de processos antes de marcar CANCELLED. */
   cancelTask(taskId: string): boolean {
     const c = this.controllers.get(taskId);

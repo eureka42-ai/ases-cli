@@ -272,3 +272,14 @@ export function saveChatConfig(target: 'project' | 'global', root: string | unde
   renameSync(tmp, file);
   readChat(file); // valida o que foi gravado
 }
+
+/** Grava `ui.theme`/`ui.logo` no CONFIG do projeto ou no global (merge raso, atômico); vale na próxima abertura. */
+export function saveUiConfig(target: 'project' | 'global', root: string | undefined, patch: { theme?: string; logo?: string }, globalFile: string = globalConfigFile()): void {
+  if (target === 'project' && !root) throw new ProjectError('NOT_A_PROJECT', 'no project to save the ui config in');
+  const file = target === 'project' ? path.join(root!, ASES_DIR, 'CONFIG.json') : globalFile;
+  const current: Record<string, unknown> = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {};
+  mkdirSync(path.dirname(file), { recursive: true });
+  const tmp = `${file}.${process.pid}.tmp`;
+  writeFileSync(tmp, `${JSON.stringify({ ...current, ui: { ...((current.ui as Record<string, unknown> | undefined) ?? {}), ...patch } }, null, 2)}\n`);
+  renameSync(tmp, file);
+}

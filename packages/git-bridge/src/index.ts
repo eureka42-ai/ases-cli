@@ -45,6 +45,11 @@ export async function isClean(cwd: string): Promise<boolean> {
   return (await git(cwd, ['status', '--porcelain=v1', '--untracked-files=all'])) === '';
 }
 
+/** Limpo para merge: como `isClean`, mas ignora `.ases/` (espelho e relatórios do engine; nenhuma tarefa escreve nele). */
+export async function isCleanForMerge(cwd: string): Promise<boolean> {
+  return (await git(cwd, ['status', '--porcelain=v1', '--untracked-files=all', '--', '.', ':(exclude).ases'])) === '';
+}
+
 const TASK_RE = /^TAR-\d{4,}$/;
 const ATT_RE = /^(ATT|REV|TST)-\d{4,}$/; // REV: revisão read-only; TST: worktree de teste (PHASE-11)
 
@@ -123,7 +128,7 @@ export type MergeResult = { status: 'MERGED'; commit: string } | { status: 'CONF
  */
 export async function mergeBranch(root: string, branch: string, target: string, message: string): Promise<MergeResult> {
   if ((await currentBranch(root)) !== target) throw new GitError('WRONG_BRANCH', `main checkout is not on ${target}`);
-  if (!(await isClean(root))) throw new GitError('DIRTY_TREE', 'main checkout has uncommitted changes; refusing to merge (human work is preserved)');
+  if (!(await isCleanForMerge(root))) throw new GitError('DIRTY_TREE', 'main checkout has uncommitted changes; refusing to merge (human work is preserved)');
   try {
     await git(root, ['merge', '--no-ff', '--no-edit', '-m', message, branch]);
     return { status: 'MERGED', commit: await headCommit(root) };

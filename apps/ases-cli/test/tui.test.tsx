@@ -57,8 +57,7 @@ describe('ases TUI (TAR-0017)', () => {
     expect(txt(r)).toContain('comando desconhecido: /statu');
     await type(r, 'olá agente');
     await r.press(KEYS.enter);
-    expect(txt(r)).toContain('Chat com agentes ainda não implementado (PHASE-07)');
-    expect(txt(r)).toMatch(/provedor\./); // segunda metade, quebrada para a linha seguinte dentro do painel
+    expect(txt(r)).not.toContain('ainda não implementado'); // PHASE-18: texto livre vai para a IA principal
     await r.press(KEYS.tab);
     await r.press(KEYS.enter);
     expect(txt(r)).toMatch(/TAR-0001 — Uma/);

@@ -7,14 +7,14 @@ import type { Engine } from './engine.ts';
 import { METHODOLOGY_COMMANDS, METHODOLOGY_HELP, handleMethodology } from './methodology-commands.ts';
 import { SECURITY_COMMANDS, SECURITY_HELP, handleSecurity } from './security-commands.ts';
 import { CONTINUITY_COMMANDS, CONTINUITY_HELP, handleContinuity } from './continuity-commands.ts';
+import { CHAT_ALIASES, CHAT_COMMANDS, chatMessage, chatSession, handleChat, resolveTaskRef } from './chat-commands.ts';
 
 export const PLANNED_SLASH: Record<string, string> = {
-  '/agent': 'PHASE-07', '/auto': 'sem fase alocada, AER-REQ-083', '/manual': 'sem fase alocada, AER-REQ-083', '/hybrid': 'sem fase alocada, AER-REQ-083', '/parallel': 'use /run --parallel N',
-  '/plan': 'sem fase alocada, §13.5', '/skills': 'use /ext', '/plugins': 'use /ext', '/mcp': 'use /ext',
-  '/checkpoint': 'PHASE-05', '/safe-mode': 'sem fase alocada', '/history': 'PHASE-04', '/dependencies': 'PHASE-06',
+  '/parallel': 'use /run --parallel N ou /config limite <ia> <n>', '/skills': 'use /ext', '/plugins': 'use /ext', '/mcp': 'use /ext',
+  '/checkpoint': 'PHASE-05', '/safe-mode': 'sem fase alocada', '/dependencies': 'PHASE-06',
 };
 
-export const SLASH_HELP = `Comandos:
+export const SLASH_HELP = `Comandos técnicos (o chat e os comandos simples estão em /ajuda):
   /status                         estado do engine e contagem de tarefas
   /phases                         lista fases
   /tasks [PHASE-XX]               lista tarefas
@@ -43,14 +43,32 @@ ${CONTINUITY_HELP}`;
 export function handleLine(engine: Engine, line: string, unicode = true): string | Promise<string> | undefined {
   const arrow = unicode ? '→' : '->';
   if (!line) return undefined;
-  if (!line.startsWith('/')) return 'Chat com agentes ainda não implementado (PHASE-07). Nada foi enviado a nenhum provedor.';
-  const [cmd = '', sub, ...rest] = line.split(/\s+/);
+  // PHASE-18: texto livre vai para a IA principal
+  if (!line.startsWith('/')) return chatMessage(engine, line);
+  const parts = line.split(/\s+/);
+  let [cmd = '', sub, ...rest] = parts;
+  cmd = cmd.toLowerCase();
+  // aliases em inglês; /tasks continua técnico e /diff com ATT também (/tarefas e /ver são os do chat)
+  const technical = cmd === '/diff' && rest.length > 0;
+  if (!technical && CHAT_ALIASES[cmd]) cmd = CHAT_ALIASES[cmd]!;
   const s = engine.store;
+  if (cmd === '/sair' || cmd === '/exit') return 'EXIT';
+  if (cmd === '/ver') return sub ? handleContinuity(engine, '/diff', resolveTaskRef(sub), rest) : 'uso: /ver <n> (ex.: /ver 12)';
+  if (cmd === '/cancel' && !sub) {
+    return chatSession(engine).pendingPlan().then((p) => {
+      if (!p) return 'nenhum plano pendente (para cancelar uma tarefa: /cancel TAR-XXXX)';
+      engine.mutate((st) => st.decidePlan(p.id, 'cancelled', 'user'));
+      return `plano ${p.id} descartado; nada foi executado`;
+    });
+  }
+  if (cmd === '/manual' || cmd === '/hybrid') {
+    return chatSession(engine).conversation().then((c) => {
+      engine.mutate((st) => st.setConversationMode(c.id, cmd === '/manual' ? 'manual' : 'hybrid'));
+      return cmd === '/manual' ? 'modo manual: cada plano pergunta antes' : 'modo híbrido: planos pequenos e já autorizados rodam direto; os outros perguntam';
+    });
+  }
+  if (CHAT_COMMANDS.has(cmd)) return handleChat(engine, cmd, [sub, ...rest].filter((x): x is string => Boolean(x)), () => SLASH_HELP);
   switch (cmd) {
-    case '/help':
-      return SLASH_HELP;
-    case '/exit':
-      return 'EXIT';
     case '/doctor':
       return 'Use `ases doctor` fora da sessão.';
     case '/status': {

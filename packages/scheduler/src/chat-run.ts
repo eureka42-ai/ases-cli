@@ -34,7 +34,7 @@ const reviewerSpec = (id: string) => (id.startsWith('simulator') ? `${id}:review
 
 export async function executePlan(d: WorkerDeps, o: {
   planId: string; ready: string[]; main: string; limits: Record<string, number>; crossReview: boolean; testCommand?: string[]; testsApproved: boolean;
-  platform: ProcessPlatform; signal: AbortSignal; onProgress?: (p: PlanProgress) => void;
+  platform: ProcessPlatform; signal: AbortSignal; onProgress?: (p: PlanProgress) => void; controllers?: Map<string, AbortController>;
 }): Promise<PlanResult> {
   const read = d.read ?? d.mutate;
   const plan = read((s) => s.getPlan(o.planId));
@@ -90,7 +90,7 @@ export async function executePlan(d: WorkerDeps, o: {
 
   release();
   while (!o.signal.aborted) {
-    await runQueue(d, { ownerId: `plan:${o.planId}`, maxParallel, maxPerProvider: limits, phaseId, signal: o.signal, onOutcome: (x) => progress(x.taskId) });
+    await runQueue(d, { ownerId: `plan:${o.planId}`, maxParallel, maxPerProvider: limits, phaseId, signal: o.signal, ...(o.controllers ? { controllers: o.controllers } : {}), onOutcome: (x) => progress(x.taskId) });
     let changed = false;
     for (const x of state) {
       if (x.done || !x.released) continue;
