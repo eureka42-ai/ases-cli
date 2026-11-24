@@ -4,8 +4,8 @@
   "taskId": "TAR-0085",
   "phaseId": "PHASE-18",
   "title": "Execução do plano: paralelo, testes, refação, troca automática e revisão cruzada",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-187"
   ],

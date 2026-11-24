@@ -4,8 +4,8 @@
   "taskId": "TAR-0086",
   "phaseId": "PHASE-18",
   "title": "Comandos simples em português com aliases",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-082",
     "AER-REQ-083"

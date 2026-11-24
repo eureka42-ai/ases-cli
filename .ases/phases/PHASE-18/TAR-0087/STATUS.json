@@ -4,8 +4,8 @@
   "taskId": "TAR-0087",
   "phaseId": "PHASE-18",
   "title": "TUI de chat, menu /, plano, autorização e assistente",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-234"
   ],

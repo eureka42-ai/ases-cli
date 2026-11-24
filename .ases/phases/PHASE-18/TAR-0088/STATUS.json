@@ -4,8 +4,8 @@
   "taskId": "TAR-0088",
   "phaseId": "PHASE-18",
   "title": "ases update e /atualizar",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-174"
   ],

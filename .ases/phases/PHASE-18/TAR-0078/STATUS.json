@@ -4,8 +4,8 @@
   "taskId": "TAR-0078",
   "phaseId": "PHASE-18",
   "title": "Banner EUREKA42 verde, tema green, /sobre e eureka42.org",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-240",
     "AER-REQ-247"

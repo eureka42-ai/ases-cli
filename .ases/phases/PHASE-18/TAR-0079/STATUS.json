@@ -4,8 +4,8 @@
   "taskId": "TAR-0079",
   "phaseId": "PHASE-18",
   "title": "Config chat por camadas (principal, modo, limites, revisão, teste, autorizações)",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-083"
   ],

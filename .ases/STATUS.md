@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 773 (PhaseUpdated, 2026-11-24T23:12:05.774Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 811 (PhaseUpdated, 2026-11-24T23:30:02.986Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -22,7 +22,7 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | PHASE-13 | Brain, Swarm, Arena e recursos avançados (pós-MVP) | PLANNED |
 | PHASE-14 | Time Machine, Digital Twin e Learning Engine | PLANNED |
 | PHASE-17 | Manutenção 1.0.x | COMPLETED |
-| PHASE-18 | Chat com IA principal e orquestração em paralelo (1.1.0) | RUNNING |
+| PHASE-18 | Chat com IA principal e orquestração em paralelo (1.1.0) | COMPLETED |
 
 ## Tarefas
 | Tarefa | Fase | Título | Estado | Último teste | Evidência |
@@ -104,17 +104,17 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0075 | PHASE-16 | Gate de release cross-platform: matriz, pacote por plataforma e notas de versão | COMPLETED | — | docs/RELEASE_NOTES_RASCUNHO.md<br>docs/RELEASE_NOTES_1.0.0.md<br>docs/MATRIZ_SUPORTE.md<br>.ases/evidence/PHASE-16-verify.md |
 | TAR-0076 | PHASE-17 | Windows: providers instalados por npm (shim .cmd) executados sem shell | COMPLETED | — | .ases/evidence/PHASE-17-verify.md |
 | TAR-0077 | PHASE-17 | Worktrees em paralelo: git worktree add/remove serializados por repositório | COMPLETED | — | .ases/evidence/PHASE-17-verify.md |
-| TAR-0078 | PHASE-18 | Banner EUREKA42 verde, tema green, /sobre e eureka42.org | REVIEW | — | .ases/evidence/PHASE-18-verify.md |
-| TAR-0079 | PHASE-18 | Config chat por camadas (principal, modo, limites, revisão, teste, autorizações) | REVIEW | — | .ases/evidence/PHASE-18-verify.md |
-| TAR-0080 | PHASE-18 | Eventos, migração 5 e store da conversa | REVIEW | — | .ases/evidence/PHASE-18-verify.md |
-| TAR-0081 | PHASE-18 | Simulador de chat e múltiplos simuladores | REVIEW | — | .ases/evidence/PHASE-18-verify.md |
-| TAR-0082 | PHASE-18 | Parser aer-plan e atribuição explicada de IAs | REVIEW | — | .ases/evidence/PHASE-18-verify.md |
-| TAR-0083 | PHASE-18 | Ponto de restauração e /desfazer | REVIEW | — | .ases/evidence/PHASE-18-verify.md |
-| TAR-0084 | PHASE-18 | Turno de chat da principal com fila | REVIEW | — | .ases/evidence/PHASE-18-verify.md |
-| TAR-0085 | PHASE-18 | Execução do plano: paralelo, testes, refação, troca automática e revisão cruzada | REVIEW | — | .ases/evidence/PHASE-18-verify.md |
-| TAR-0086 | PHASE-18 | Comandos simples em português com aliases | REVIEW | — | .ases/evidence/PHASE-18-verify.md |
-| TAR-0087 | PHASE-18 | TUI de chat, menu /, plano, autorização e assistente | REVIEW | — | .ases/evidence/PHASE-18-verify.md |
-| TAR-0088 | PHASE-18 | ases update e /atualizar | REVIEW | — | .ases/evidence/PHASE-18-verify.md |
-| TAR-0089 | PHASE-18 | Bins, documentação, e2e do chat e release 1.1.0 | REVIEW | — | .ases/evidence/PHASE-18-verify.md |
+| TAR-0078 | PHASE-18 | Banner EUREKA42 verde, tema green, /sobre e eureka42.org | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
+| TAR-0079 | PHASE-18 | Config chat por camadas (principal, modo, limites, revisão, teste, autorizações) | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
+| TAR-0080 | PHASE-18 | Eventos, migração 5 e store da conversa | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
+| TAR-0081 | PHASE-18 | Simulador de chat e múltiplos simuladores | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
+| TAR-0082 | PHASE-18 | Parser aer-plan e atribuição explicada de IAs | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
+| TAR-0083 | PHASE-18 | Ponto de restauração e /desfazer | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
+| TAR-0084 | PHASE-18 | Turno de chat da principal com fila | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
+| TAR-0085 | PHASE-18 | Execução do plano: paralelo, testes, refação, troca automática e revisão cruzada | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
+| TAR-0086 | PHASE-18 | Comandos simples em português com aliases | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
+| TAR-0087 | PHASE-18 | TUI de chat, menu /, plano, autorização e assistente | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
+| TAR-0088 | PHASE-18 | ases update e /atualizar | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
+| TAR-0089 | PHASE-18 | Bins, documentação, e2e do chat e release 1.1.0 | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

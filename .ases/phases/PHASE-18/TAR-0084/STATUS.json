@@ -4,8 +4,8 @@
   "taskId": "TAR-0084",
   "phaseId": "PHASE-18",
   "title": "Turno de chat da principal com fila",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-123"
   ],

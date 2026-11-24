@@ -36,7 +36,7 @@
 7c2. **PHASE-17 (manutenção 1.0.x): COMPLETED** (24/11/2026). `@eureka42-ai/aer@1.0.1` publicado, tag `v1.0.1`.
    - Shim `.cmd` do npm no Windows (TAR-0076) e worktrees em paralelo (TAR-0077). Evidência: `.ases/evidence/PHASE-17-verify.md`.
    - **Pendente do responsável:** o `ases doctor` no Windows real com os providers instalados.
-7e. **PHASE-18 (1.1.0, chat com IA principal e orquestração em paralelo): em REVIEW** (branch `ases/PHASE-18`; `.ases/evidence/PHASE-18-verify.md`).
+7e. **PHASE-18 (1.1.0, chat com IA principal e orquestração em paralelo): COMPLETED** (24/11/2026, aprovada pelo responsável e integrada em `main`, tag `v1.1.0`; `.ases/evidence/PHASE-18-verify.md`).
    - TAR-0078 a 0089 estão em REVIEW, e as correções da revisão final foram feitas.
    - **Aguarda o responsável:**
      - aprovar o merge;

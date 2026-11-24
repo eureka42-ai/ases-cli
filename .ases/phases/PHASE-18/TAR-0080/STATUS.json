@@ -4,8 +4,8 @@
   "taskId": "TAR-0080",
   "phaseId": "PHASE-18",
   "title": "Eventos, migração 5 e store da conversa",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-065"
   ],

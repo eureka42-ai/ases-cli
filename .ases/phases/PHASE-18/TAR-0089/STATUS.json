@@ -4,8 +4,8 @@
   "taskId": "TAR-0089",
   "phaseId": "PHASE-18",
   "title": "Bins, documentação, e2e do chat e release 1.1.0",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-225"
   ],
