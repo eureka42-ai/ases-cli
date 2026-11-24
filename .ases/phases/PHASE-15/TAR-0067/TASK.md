@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0067 |
 | phase_id | PHASE-15 |
-| estado | PLANNED (v1) |
+| estado | RUNNING (v4) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |

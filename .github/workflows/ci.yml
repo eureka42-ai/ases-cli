@@ -1,5 +1,5 @@
 # Matriz §3.7 / AER-REQ-233, ajustada pela CHANGE-0001 (sem macOS Intel).
-# Estado: NOT_RUN até o primeiro push para um remoto com Actions. arm64 de Windows/Linux = alvos CONDITIONAL.
+# Estado por alvo: job support-matrix (resumo do run). arm64 de Windows/Linux = alvos CONDITIONAL.
 name: ci
 on:
   push:
@@ -44,3 +44,18 @@ jobs:
         run: |
           shasum -a 256 -c MANIFESTO_FONTES_SHA256.txt
           shasum -a 256 -c branding/MANIFESTO_IMAGENS_SHA256.txt
+  # AER-REQ-233: matriz publicada no resumo do run, com PASS/FAIL/NOT_RUN por alvo (cancelado = NOT_RUN)
+  support-matrix:
+    needs: verify
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: matriz de suporte a partir dos jobs reais
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: node scripts/support-matrix.mjs "$GITHUB_RUN_ID"

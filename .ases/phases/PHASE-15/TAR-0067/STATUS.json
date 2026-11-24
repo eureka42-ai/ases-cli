@@ -4,8 +4,8 @@
   "taskId": "TAR-0067",
   "phaseId": "PHASE-15",
   "title": "Caminhos Windows: UNC, junction, letra de unidade, acentos e espaços",
-  "state": "PLANNED",
-  "version": 1,
+  "state": "RUNNING",
+  "version": 4,
   "reqs": [
     "AER-REQ-230"
   ],
