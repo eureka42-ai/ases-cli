@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 561 (PhaseUpdated, 2026-11-24T13:48:47.849Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 577 (TaskUpdated, 2026-11-24T13:51:43.610Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -17,6 +17,10 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | PHASE-10 | Segurança e registry de extensões | COMPLETED |
 | PHASE-11 | Continuidade, métricas e review | COMPLETED |
 | PHASE-12 | Daemon local, portabilidade final e release multiplataforma | COMPLETED |
+| PHASE-15 | Portabilidade Windows e Linux verificada | PLANNED |
+| PHASE-16 | Eureka42 Branding, UX portátil e release estável | PLANNED |
+| PHASE-13 | Brain, Swarm, Arena e recursos avançados (pós-MVP) | PLANNED |
+| PHASE-14 | Time Machine, Digital Twin e Learning Engine | PLANNED |
 
 ## Tarefas
 | Tarefa | Fase | Título | Estado | Último teste | Evidência |
@@ -85,5 +89,10 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0062 | PHASE-12 | Matriz CI de OS e arquiteturas com smoke do pacote instalado (bash, zsh, PowerShell) | COMPLETED | — | .ases/evidence/PHASE-12-verify.md |
 | TAR-0063 | PHASE-12 | Hardening E2E, docs por SO e auditoria do DoD (P0 sem exceção aberta) | COMPLETED | — | docs/AUDITORIA_P0.md<br>.ases/evidence/PHASE-12-verify.md |
 | TAR-0064 | PHASE-12 | Fecha 5 P0 da auditoria (095, 097, 027, 171, 048) e registra as exceções aprovadas | COMPLETED | — | docs/AUDITORIA_P0.md<br>.ases/evidence/PHASE-12-verify.md |
+| TAR-0065 | PHASE-15 | SecretStore Windows (Credential Manager, segredo só por stdin, falha fechado) | RUNNING | — | — |
+| TAR-0066 | PHASE-15 | ACL do runtime dir e do Named Pipe no Windows verificadas (icacls) | PLANNED | — | — |
+| TAR-0067 | PHASE-15 | Caminhos Windows: UNC, junction, letra de unidade, acentos e espaços | PLANNED | — | — |
+| TAR-0068 | PHASE-15 | Matriz de suporte publicada por SO/arquitetura com PASS/FAIL/NOT_RUN e doctor | PLANNED | — | — |
+| TAR-0069 | PHASE-15 | TUI em ConPTY/Windows Terminal ou registro NOT_RUN honesto | PLANNED | — | — |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

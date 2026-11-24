@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0068",
+  "phaseId": "PHASE-15",
+  "title": "Matriz de suporte publicada por SO/arquitetura com PASS/FAIL/NOT_RUN e doctor",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-225",
+    "AER-REQ-233",
+    "AER-REQ-238",
+    "AER-REQ-239"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

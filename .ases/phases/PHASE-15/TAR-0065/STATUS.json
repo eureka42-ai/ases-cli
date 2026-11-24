@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0065",
+  "phaseId": "PHASE-15",
+  "title": "SecretStore Windows (Credential Manager, segredo só por stdin, falha fechado)",
+  "state": "RUNNING",
+  "version": 4,
+  "reqs": [
+    "AER-REQ-122",
+    "AER-REQ-229"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}
