@@ -28,7 +28,7 @@ Uso:
   ases daemon start | stop | status   motor residente: tarefas seguem com o terminal fechado; o ases vira cliente dele
 
 Opções:
-  --no-color   --no-banner   --no-tui   --no-animation (aceito; as TUIs não animam)   --theme auto|teal|blue|purple|gold|mono|contrast   --logo full|compact|minimal|ascii
+  --no-color   --no-banner   --no-tui   --no-animation (aceito; as TUIs não animam)   --theme auto|green|teal|blue|purple|gold|mono|contrast   --logo banner|full|compact|minimal|ascii
   tema e logo: --theme/--logo > .ases/CONFIG.json (ui.theme, ui.logo) > config global do usuário > auto
   --json       saída estritamente JSON (sem banner/ANSI)   --version   --help
 

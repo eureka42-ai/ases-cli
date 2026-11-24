@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { LOGO_MODES, THEMES, fgCode, pickLogoMode, renderBrand, resolveBrandPrefs, resolveTheme, stripAnsi, type ThemeName } from '../src/index.ts';
+import { LOGO_MODES, SITE, THEMES, aboutText, fgCode, pickLogoMode, renderBanner, renderBrand, resolveBrandPrefs, resolveTheme, stripAnsi, type ThemeName } from '../src/index.ts';
 
 describe('Eureka42 brand (AER-REQ-240..248)', () => {
   it('tokens match branding/BRAND_TOKENS.json (single source, AER-REQ-248)', () => {
@@ -39,7 +39,7 @@ describe('Eureka42 brand (AER-REQ-240..248)', () => {
 
   it('falls back to ASCII without Unicode even if a mode was requested (AER-REQ-241)', () => {
     expect(pickLogoMode({ columns: 120, unicode: false }, 'full')).toBe('ascii');
-    expect(pickLogoMode({ columns: 120, unicode: true })).toBe('full');
+    expect(pickLogoMode({ columns: 120, unicode: true })).toBe('banner');
     expect(pickLogoMode({ columns: 40, unicode: true })).toBe('minimal');
     expect(pickLogoMode({ columns: 0, unicode: true })).toBe('compact');
     expect(pickLogoMode({ columns: undefined, unicode: true })).toBe('compact');
@@ -76,12 +76,46 @@ describe('color depth, contrast and preferences (PHASE-16, TAR-0071..0073)', () 
   });
 
   it('auto picks by color depth; precedence CLI > project > global > default, invalid value names its source (AER-REQ-249)', () => {
-    expect([24, 8, 4, 0].map((d) => resolveTheme('auto', d as 0 | 4 | 8 | 24))).toEqual(['teal', 'teal', 'contrast', 'mono']);
+    expect([24, 8, 4, 0].map((d) => resolveTheme('auto', d as 0 | 4 | 8 | 24))).toEqual(['green', 'green', 'contrast', 'mono']);
     expect(resolveTheme('gold', 4)).toBe('gold');
     const p = resolveBrandPrefs([{ source: 'cli' }, { source: 'project', theme: 'purple' }, { source: 'global', theme: 'gold', logo: 'minimal' }]);
     expect(p).toEqual({ theme: 'purple', logo: 'minimal', themeSource: 'project', logoSource: 'global' });
     expect(resolveBrandPrefs([{ source: 'cli', theme: 'blue' }, { source: 'project', theme: 'purple' }]).theme).toBe('blue');
     expect(resolveBrandPrefs([{ source: 'cli' }])).toEqual({ theme: 'auto', logo: undefined, themeSource: 'default', logoSource: 'default' });
     expect(() => resolveBrandPrefs([{ source: '.ases/CONFIG.json', theme: 'pink' }])).toThrow(/invalid theme "pink" in \.ases\/CONFIG\.json/);
+  });
+});
+
+describe('PHASE-18: green banner, about, site (TAR-0078)', () => {
+  it('banner: 6 block rows + status line, green, ≤ 72 cols', () => {
+    const b = renderBanner({ color: true, colorDepth: 24, unicode: true, main: 'claude', ready: 5 }).split('\n');
+    expect(b).toHaveLength(7);
+    expect(Math.max(...b.slice(0, 6).map((l) => [...stripAnsi(l)].length))).toBeLessThanOrEqual(72); // a linha de status é cortada pela TUI
+    expect(b[0]).toContain('\u001b[38;2;34;197;94m');
+    expect(stripAnsi(b[6]!)).toBe('⌘  ASES Engineering Runtime · eureka42.org · principal: claude · 5 IAs prontas');
+  });
+  it('banner without unicode uses only ASCII', () => {
+    expect(renderBanner({ color: false, unicode: false })).toMatch(/^[\x20-\x7e\n]+$/);
+  });
+  it('banner respects depth and NO_COLOR', () => {
+    expect(renderBanner({ color: true, colorDepth: 4, unicode: true })).not.toMatch(/38;2;/);
+    expect(renderBanner({ color: false, unicode: true })).not.toMatch(/\u001b\[/);
+  });
+  it('pickLogoMode chooses banner at ≥72 cols', () => {
+    expect(pickLogoMode({ columns: 72, unicode: true })).toBe('banner');
+    expect(pickLogoMode({ columns: 71, unicode: true })).toBe('compact');
+  });
+  it('green contrast is measured (≥3:1 on black)', () => {
+    expect(THEMES.green.accent).toBe('#22C55E');
+    expect(ratio('#22C55E', '#000000')).toBeGreaterThan(9);
+    expect(ratio('#22C55E', '#FFFFFF')).toBeLessThan(2.5);
+  });
+  it('auto resolves to green at 24/8 bits', () => {
+    expect(resolveTheme('auto', 24)).toBe('green');
+    expect(resolveTheme('auto', 8)).toBe('green');
+  });
+  it('about text is the literal approved by the owner', () => {
+    expect(SITE).toBe('eureka42.org');
+    expect(aboutText('1.1.0')).toBe('⌘ Eureka42 · ASES Engineering Runtime (AER) 1.1.0\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\neureka42.org · Licença CC BY-NC-ND 4.0');
   });
 });

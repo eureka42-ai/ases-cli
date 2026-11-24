@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { Box, Text, render, useStdout, type Instance } from 'ink';
 import { createContext, useContext, useEffect, useState, type ReactElement, type ReactNode } from 'react';
-import { GLYPH_FALLBACK, THEMES, pickLogoMode, renderBrand, type AppName, type LogoMode, type ThemeName } from '@aer/branding';
+import { GLYPH_FALLBACK, THEMES, pickLogoMode, renderBanner, renderBrand, type AppName, type LogoMode, type ThemeName } from '@aer/branding';
 import type { TaskState } from '@aer/contracts';
 
 /** Capacidades de saída decididas uma vez por processo (NO_COLOR, TERM=dumb, Unicode) e compartilhadas pelas duas TUIs. */
@@ -41,11 +41,22 @@ export function useTerminalSize(): { columns: number; rows: number } {
   return size;
 }
 
-export function BrandHeader({ app, columns, children }: { app: AppName; columns: number; children?: ReactNode }): ReactElement {
+export function BrandHeader({ app, columns, children, banner }: { app: AppName; columns: number; children?: ReactNode; banner?: { main?: string; ready?: number } }): ReactElement {
   const ui = useUi();
-  // na TUI o cabeçalho nunca usa o modo full (3 linhas): compact ou menor
   const picked = pickLogoMode({ columns, unicode: ui.unicode }, ui.logo);
-  const mode: LogoMode = picked === 'full' ? 'compact' : picked;
+  // banner grande só onde foi pedido (o `ases`); sem Unicode, a versão ASCII, com a mesma largura mínima
+  const wantsBanner = banner && columns >= 72 && (picked === 'banner' || (!ui.unicode && (!ui.logo || ui.logo === 'banner')));
+  if (wantsBanner) {
+    const text = renderBanner({ color: ui.color, unicode: ui.unicode, theme: ui.theme, ...(ui.colorDepth !== undefined ? { colorDepth: ui.colorDepth } : {}), ...(banner.main ? { main: banner.main } : {}), ...(banner.ready !== undefined ? { ready: banner.ready } : {}) });
+    return (
+      <Box flexDirection="column" width={columns} overflow="hidden">
+        {text.split('\n').map((l, i) => <Text key={i} wrap="truncate-end">{l}</Text>)}
+        {children ? <Box>{children}</Box> : null}
+      </Box>
+    );
+  }
+  // na TUI o cabeçalho nunca usa os modos de várias linhas sem pedido: compact ou menor
+  const mode: LogoMode = picked === 'full' || picked === 'banner' ? 'compact' : picked;
   // ASCII completo tem 25+ colunas: em terminal estreito fica só "[E42] APP" para o estado caber na mesma linha
   const brand = mode === 'ascii' && columns < 60 ? `${GLYPH_FALLBACK} ${app}` : renderBrand({ app, mode, theme: ui.theme, color: ui.color, ...(ui.colorDepth !== undefined ? { colorDepth: ui.colorDepth } : {}) });
   return (

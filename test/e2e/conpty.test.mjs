@@ -83,7 +83,7 @@ describe.runIf(pty)('TUIs in a real Windows ConPTY (TAR-0070)', () => {
     const t = conpty(BIN.ases, [], p.dir, { WT_SESSION: 'aer-e2e' }); // como o Windows Terminal se anuncia
     procs.push(t);
     await t.waitFor((s) => s.includes('ASES CLI') && s.includes('ases>'), 30_000);
-    expect(t.raw()).toMatch(/\u001b\[38;2;0;150;136m/); // teal truecolor no Windows Terminal
+    expect(t.raw()).toMatch(/\u001b\[38;2;34;197;94m/); // verde truecolor no Windows Terminal
     expect(t.text()).toContain('⌘'); // logo Unicode, não o fallback E42
     await t.openHelp();
     await t.keys('\u001b');

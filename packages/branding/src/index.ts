@@ -1,5 +1,6 @@
 // Marca textual Eureka42 (docs/BRANDING_EUREKA42.md, MD mestre §11.7). Cores PROPOSTAS, não oficiais (BRAND_TOKENS.json).
 export const THEMES = {
+  green: { accent: '#22C55E', accent2: '#16A34A' },
   teal: { accent: '#009688', accent2: '#0B817A' },
   blue: { accent: '#184BC8', accent2: '#1040A4' },
   purple: { accent: '#8239B6', accent2: '#60259B' },
@@ -14,7 +15,7 @@ export const THEME_CHOICES = [...(Object.keys(THEMES) as ThemeName[]), 'auto'] a
 
 export function resolveTheme(choice: ThemeChoice, colorDepth: 0 | 4 | 8 | 24): ThemeName {
   if (choice !== 'auto') return choice;
-  return colorDepth >= 8 ? 'teal' : colorDepth === 4 ? 'contrast' : 'mono';
+  return colorDepth >= 8 ? 'green' : colorDepth === 4 ? 'contrast' : 'mono';
 }
 
 export interface BrandPrefsLayer {
@@ -41,7 +42,7 @@ export function resolveBrandPrefs(layers: readonly BrandPrefsLayer[]): { theme: 
   const l = pick<LogoMode>('logo', LOGO_MODES);
   return { theme: t.value ?? 'auto', logo: l.value, themeSource: t.source, logoSource: l.source };
 }
-export const LOGO_MODES = ['full', 'compact', 'minimal', 'ascii'] as const;
+export const LOGO_MODES = ['banner', 'full', 'compact', 'minimal', 'ascii'] as const;
 export type LogoMode = (typeof LOGO_MODES)[number];
 export type AppName = 'ASES CLI' | 'ASES-TAR';
 
@@ -91,8 +92,8 @@ function paint(text: string, hex: string | null, enabled: boolean, bold = false,
 export function pickLogoMode(caps: { columns: number | undefined; unicode: boolean }, requested?: LogoMode): LogoMode {
   if (!caps.unicode) return 'ascii';
   if (requested) return requested;
-  const cols = caps.columns || 80; // 0 = pty que não informa largura → desconhecido
-  return cols >= 100 ? 'full' : cols >= 50 ? 'compact' : 'minimal';
+  if (!caps.columns) return 'compact'; // 0/undefined = pty que não informa largura → desconhecido, sem banner
+  return caps.columns >= 72 ? 'banner' : caps.columns >= 50 ? 'compact' : 'minimal';
 }
 
 export function renderBrand(o: BrandOptions): string {
@@ -104,6 +105,8 @@ export function renderBrand(o: BrandOptions): string {
   const n42 = paint('42', t.accent, c, true, d, hc);
   const status = o.status ? `  [${o.status}]` : '';
   switch (o.mode) {
+    case 'banner':
+      return renderBanner({ color: o.color === true, unicode: true, ...(o.colorDepth !== undefined ? { colorDepth: o.colorDepth } : {}), ...(o.theme ? { theme: o.theme } : {}) });
     case 'full':
       return [
         `     ${g}   ${paint('E U R E K A', null, c, true)}  ${n42}`,
@@ -117,6 +120,36 @@ export function renderBrand(o: BrandOptions): string {
     case 'ascii':
       return `${GLYPH_FALLBACK} Eureka42 | ${o.app}${status}`;
   }
+}
+
+export const SITE = 'eureka42.org';
+
+/** Texto do /sobre, literal aprovado pelo responsável (24/11/2026). */
+export function aboutText(version: string): string {
+  return `⌘ Eureka42 · ASES Engineering Runtime (AER) ${version}\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\n${SITE} · Licença CC BY-NC-ND 4.0`;
+}
+
+// EUREKA 42 em blocos (ANSI Shadow), desenho aprovado pelo responsável em 24/11/2026
+const BANNER = [
+  ' ███████╗██╗   ██╗██████╗ ███████╗██╗  ██╗ █████╗     ██╗  ██╗██████╗',
+  ' ██╔════╝██║   ██║██╔══██╗██╔════╝██║ ██╔╝██╔══██╗    ██║  ██║╚════██╗',
+  ' █████╗  ██║   ██║██████╔╝█████╗  █████╔╝ ███████║    ███████║ █████╔╝',
+  ' ██╔══╝  ██║   ██║██╔══██╗██╔══╝  ██╔═██╗ ██╔══██║    ╚════██║██╔═══╝',
+  ' ███████╗╚██████╔╝██║  ██║███████╗██║  ██╗██║  ██║         ██║███████╗',
+  ' ╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝         ╚═╝╚══════╝',
+];
+
+/** Banner grande do `ases`: 6 linhas em blocos + linha de status (site, principal, IAs prontas). */
+export function renderBanner(o: { color: boolean; colorDepth?: 0 | 4 | 8 | 24; unicode: boolean; theme?: ThemeName; main?: string; ready?: number; version?: string }): string {
+  const t = THEMES[o.theme ?? 'green'];
+  const d = o.colorDepth ?? 24;
+  const c = o.color && d !== 0;
+  const hc = o.theme === 'contrast';
+  const rows = o.unicode ? BANNER : BANNER.map((l) => l.replace(/█/g, '#').replace(/[╗║╔╝╚═]/g, '='));
+  const sep = o.unicode ? ' · ' : ' - ';
+  const status = [`${o.unicode ? GLYPH : GLYPH_FALLBACK}  ASES Engineering Runtime${o.version ? ` ${o.version}` : ''}`, SITE,
+    ...(o.main ? [`principal: ${o.main}`] : []), ...(o.ready !== undefined ? [`${o.ready} IAs prontas`] : [])].join(sep);
+  return [...rows.map((l) => paint(l, t.accent, c, true, d === 0 ? 24 : d, hc)), status].join('\n');
 }
 
 /** Remove sequências ANSI (testes e verificação de saída limpa). */

@@ -72,3 +72,26 @@ describe('tui-shared (TAR-0016)', () => {
     expect(wrapLines(['ç⌘ãé'], 2)).toEqual(['ç⌘', 'ãé']);
   });
 });
+
+describe('BrandHeader banner (PHASE-18, TAR-0078)', () => {
+  const header = (ui: Ui, cols: number) => <UiContext.Provider value={ui}><BrandHeader app="ASES CLI" columns={cols} banner={{ main: 'claude', ready: 5 }} /></UiContext.Provider>;
+  it('shows the block banner at ≥72 columns and the compact logo below', async () => {
+    const wide = await renderForTest(header(PLAIN, 80), 80, 12);
+    expect(wide.lastFrame()).toContain('███████╗██╗   ██╗');
+    expect(wide.lastFrame()).toContain('eureka42.org');
+    wide.unmount();
+    const narrow = await renderForTest(header(PLAIN, 60), 60, 12);
+    expect(narrow.lastFrame()).not.toContain('███');
+    expect(narrow.lastFrame()).toContain('⌘ Eureka42 | ASES CLI');
+    narrow.unmount();
+  });
+  it('ASCII terminals get the ASCII banner; ases-tar (no banner prop) stays compact', async () => {
+    const a = await renderForTest(header(ASCII, 80), 80, 12);
+    expect(a.lastFrame()).toContain('#######');
+    expect(a.lastFrame()).not.toMatch(/[█╗⌘]/);
+    a.unmount();
+    const tar = await renderForTest(withUi(PLAIN), 100, 10);
+    expect(tar.lastFrame()).not.toContain('███');
+    tar.unmount();
+  });
+});

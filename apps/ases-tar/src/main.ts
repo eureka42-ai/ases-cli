@@ -15,7 +15,7 @@ Uso:
   ases-tar --follow --format jsonl stream de eventos em JSONL no stdout (estado da conexão no stderr)
   ases-tar --json                  snapshot único em JSON e sai
 Filtros: --task TAR-XXXX  --phase PHASE-XX  --from-seq N  --errors (só severidade error/critical)
-Opções: --no-color  --no-banner  --no-animation (aceito; as TUIs não animam)  --theme auto|teal|blue|purple|gold|mono|contrast  --logo full|compact|minimal|ascii  --version  --help
+Opções: --no-color  --no-banner  --no-animation (aceito; as TUIs não animam)  --theme auto|green|teal|blue|purple|gold|mono|contrast  --logo banner|full|compact|minimal|ascii  --version  --help
 Tema e logo: --theme/--logo > .ases/CONFIG.json (ui.theme, ui.logo) > config global do usuário > auto
 Ainda NÃO implementado: --history (Replay)
 

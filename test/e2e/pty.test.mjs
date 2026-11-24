@@ -73,7 +73,7 @@ describe.runIf(hasScript)('TUIs in a real pseudo-terminal (TAR-0020)', () => {
     const t = pty(BIN.ases, [], p.dir);
     procs.push(t);
     await t.waitFor((s) => s.includes('ASES CLI') && s.includes('ases>'));
-    expect(t.raw()).toMatch(/\u001b\[38;2;0;150;136m/); // teal truecolor no TTY
+    expect(t.raw()).toMatch(/\u001b\[38;2;34;197;94m/); // verde truecolor no TTY (padrão desde a 1.1.0)
     await t.keys('/phase new Pela TUI\r');
     await t.waitFor((s) => s.includes('criada PHASE-01'));
     await t.keys('\u0003');
