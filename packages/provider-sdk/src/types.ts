@@ -2,7 +2,8 @@
 export const PROVIDER_CONTRACT_VERSION = 1;
 
 export const PROVIDER_IDS = ['claude', 'codex', 'kimi', 'google', 'opencode', 'simulator'] as const;
-export type ProviderId = (typeof PROVIDER_IDS)[number];
+/** `simulator-N`: simuladores extras para testar a distribuição entre IAs (PHASE-18; AER_SIMULATORS) */
+export type ProviderId = (typeof PROVIDER_IDS)[number] | `simulator-${number}`;
 
 export type Capability =
   | 'headless' | 'structured_stream' | 'session_resume' | 'file_edit'

@@ -22,6 +22,12 @@ const int = (v: unknown, name: string): number => {
   return v as number;
 };
 
+/** `AER_SIMULATORS=N` (1..4, só para testes): registra `simulator-2..N` além do `simulator`. Fora do intervalo = 1. */
+export function simulatorCount(env: Readonly<Record<string, string | undefined>> = process.env): number {
+  const n = Number(env.AER_SIMULATORS ?? 1);
+  return Number.isInteger(n) && n >= 1 && n <= 4 ? n : 1;
+}
+
 /**
  * AER Local Engine da primeira fatia vertical (§3.4): roda dentro do processo `ases`, é o único escritor do
  * projeto (o endpoint IPC funciona como lock) e publica cada evento confirmado para os monitores.
@@ -41,7 +47,7 @@ export class Engine {
   private runAbort: AbortController | undefined;
   private current: Promise<unknown> | undefined;
 
-  private constructor(root: string, adapter: PlatformAdapter, store: ProjectStore, server: IpcServer, name: string) {
+  private constructor(root: string, adapter: PlatformAdapter, store: ProjectStore, server: IpcServer, name: string, simulators = 1) {
     this.root = root;
     this.adapter = adapter;
     this.store = store;
@@ -52,9 +58,11 @@ export class Engine {
       simulator: new SimulatorProvider(adapter), claude: new ClaudeCodeProvider(adapter), codex: new CodexProvider(adapter),
       kimi: createKimiProvider(adapter), opencode: createOpenCodeProvider(adapter), google: createAntigravityProvider(adapter),
     };
+    // simuladores extras (só testes): exercitam a distribuição entre IAs sem conta nenhuma
+    for (let i = 2; i <= simulators; i++) this.providers[`simulator-${i}`] = new SimulatorProvider(adapter, { id: `simulator-${i}` });
   }
 
-  static async start(root: string, adapter: PlatformAdapter): Promise<Engine> {
+  static async start(root: string, adapter: PlatformAdapter, o: { simulators?: number } = {}): Promise<Engine> {
     if (historyState(root) === 'DB_MISSING') {
       throw new ProjectError('DB_MISSING', '.ases/HISTORY.jsonl has engine history but .ases/db/ases.sqlite is missing (fresh clone or another worktree). Refusing to start: a new database would overwrite the versioned history. Copy the database from the machine that owns it; restore from the mirror arrives with Project Passport (PHASE-11).');
     }
@@ -79,7 +87,7 @@ export class Engine {
     await server.listen(); // falha com ENGINE_ALREADY_RUNNING antes de abrir o banco como escritor
     try {
       store = ProjectStore.open(paths(root).db, { id: manifest.projectId, name: manifest.name }, { actor: 'ases' });
-      const engine = new Engine(root, adapter, store, server, manifest.name);
+      const engine = new Engine(root, adapter, store, server, manifest.name, o.simulators ?? simulatorCount());
       Object.assign(handlers, engine.handlers());
       engineRef = engine;
       writeSession(adapter, manifest.projectId, {

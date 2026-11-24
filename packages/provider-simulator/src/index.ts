@@ -7,7 +7,7 @@ import {
   type AgentProvider, type AgentRunRequest, type AgentStreamEvent, type Capability, type ProviderProbeResult, type ProviderUsageObservation,
 } from '@aer/provider-sdk';
 
-export const SIMULATOR_SCENARIOS = ['ok', 'fail', 'hang', 'approval', 'auth-expired', 'rate-limit', 'garbage', 'escape', 'review', 'review-write'] as const;
+export const SIMULATOR_SCENARIOS = ['ok', 'fail', 'hang', 'approval', 'auth-expired', 'rate-limit', 'garbage', 'escape', 'review', 'review-write', 'chat'] as const;
 export type SimulatorScenario = (typeof SIMULATOR_SCENARIOS)[number];
 /** AER-REQ-103: o adapter só invoca a versão do agente que ele conhece. */
 export const SUPPORTED_SIMULATOR_VERSIONS = ['1.0.0'] as const;
@@ -20,6 +20,8 @@ export interface SimulatorOptions {
   probeTimeoutMs?: number;
   /** espera entre SIGTERM e SIGKILL ao cancelar */
   graceMs?: number;
+  /** id do provider: `simulator` (padrão) ou `simulator-N` (simuladores extras, PHASE-18) */
+  id?: `simulator-${number}` | 'simulator';
 }
 
 const SUPPORTED: Capability[] = ['headless', 'structured_stream', 'file_edit', 'interrupt', 'parallel_sessions'];
@@ -30,7 +32,7 @@ const ALL: Capability[] = ['headless', 'structured_stream', 'session_resume', 'f
  * Cenário escolhido por `modelPreference` (as "modelos" do simulador são cenários de teste).
  */
 export class SimulatorProvider implements AgentProvider {
-  readonly id = 'simulator' as const;
+  readonly id: 'simulator' | `simulator-${number}`;
   readonly contractVersion = PROVIDER_CONTRACT_VERSION;
   readonly requiresConsent = false;
   private readonly running = new Map<string, number>();
@@ -42,6 +44,7 @@ export class SimulatorProvider implements AgentProvider {
   constructor(platform: Platform, o: SimulatorOptions = {}) {
     this.platform = platform;
     this.o = o;
+    this.id = o.id ?? 'simulator';
     this.script = o.script ?? DEFAULT_SCRIPT;
     this.node = o.node ?? process.execPath;
   }

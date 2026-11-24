@@ -9,7 +9,7 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 
 const SIM_VERSION = '1.0.0';
-const SCENARIOS = ['ok', 'fail', 'hang', 'approval', 'auth-expired', 'rate-limit', 'garbage', 'escape', 'review', 'review-write'];
+const SCENARIOS = ['ok', 'fail', 'hang', 'approval', 'auth-expired', 'rate-limit', 'garbage', 'escape', 'review', 'review-write', 'chat'];
 
 const { values } = parseArgs({ options: { version: { type: 'boolean' }, scenario: { type: 'string' }, task: { type: 'string' }, instructions: { type: 'string' } } });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -37,9 +37,31 @@ const digest = createHash('sha256').update(readFileSync(values.instructions)).di
 const forever = () => new Promise(() => setInterval(() => undefined, 1 << 30));
 
 await emit({ type: 'status', status: 'STARTED', detail: `SIMULATED ${scenario} ${taskId}` });
-await emit({ type: 'message', text: `SIMULATED: lendo instruções (sha256 ${digest.slice(0, 12)})`, visibleToUser: true });
+// no chat a única mensagem visível é a resposta (ela vira o texto da principal)
+if (scenario !== 'chat') await emit({ type: 'message', text: `SIMULATED: lendo instruções (sha256 ${digest.slice(0, 12)})`, visibleToUser: true });
 
 switch (scenario) {
+  case 'chat': {
+    // PHASE-18: principal simulada. Responde à última "## Mensagem do usuário" das instruções
+    const text = readFileSync(values.instructions, 'utf8');
+    const i = text.lastIndexOf('## Mensagem do usuário\n');
+    const msg = (i < 0 ? '' : text.slice(i + '## Mensagem do usuário\n'.length)).trim();
+    if (/^RESUMO/.test(msg)) {
+      await emit({ type: 'message', text: `SIMULATED: resumo — ${msg.split('\n').filter((l) => l.startsWith('- TAR-')).length} tarefas`, visibleToUser: true });
+    } else if (/\bedite\b/i.test(msg)) {
+      const rel = 'SIMULATED/CHAT.md';
+      mkdirSync('SIMULATED', { recursive: true });
+      writeFileSync(path.join('SIMULATED', 'CHAT.md'), `# editado pela principal SIMULADA\n\n${msg.slice(0, 200)}\n`);
+      await emit({ type: 'file_change', relativePath: rel, kind: 'modify' });
+      await emit({ type: 'message', text: `SIMULATED: editei ${rel}`, visibleToUser: true });
+    } else if (/\b(tarefas|divida)\b/i.test(msg)) {
+      const plan = { tasks: [1, 2, 3].map((n) => ({ title: `Parte ${n}`, instructions: `SIMULATED: faça a parte ${n} de: ${msg.slice(0, 120)}`, kind: 'code', ...(n === 3 ? { dependsOn: [1] } : {}) })) };
+      await emit({ type: 'message', text: `SIMULATED: proposta abaixo\n\n\`\`\`aer-plan\n${JSON.stringify(plan, null, 2)}\n\`\`\``, visibleToUser: true });
+    } else {
+      await emit({ type: 'message', text: `SIMULATED: entendi — ${msg.slice(0, 60)}`, visibleToUser: true });
+    }
+    process.exit(0);
+  }
   case 'ok': {
     const rel = `SIMULATED/${taskId}.md`;
     await emit({ type: 'tool_call', name: 'write_file', safeArguments: { path: rel } });

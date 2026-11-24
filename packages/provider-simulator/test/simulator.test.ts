@@ -89,3 +89,46 @@ describe('SimulatorProvider runs (deterministic)', () => {
     expect((await run(new SimulatorProvider(adapter), '; rm -rf /'))[0]).toMatchObject({ type: 'error', code: 'INVALID_INPUT' });
   });
 });
+
+describe('chat scenario and multiple simulators (PHASE-18, TAR-0081)', () => {
+  async function chat(message: string, cwd: string): Promise<AgentStreamEvent[]> {
+    const instructionsFile = path.join(cwd, 'CHAT.instructions.md');
+    writeFileSync(instructionsFile, `# papel da principal\n\n## Mensagem do usuário\nantiga\n\n## Mensagem do usuário\n${message}\n`);
+    const out: AgentStreamEvent[] = [];
+    for await (const e of new SimulatorProvider(adapter).start({
+      taskId: 'TAR-0000', attemptId: 'CHT-0001', workingDirectory: cwd, instructionsFile, allowedPaths: ['.'], deniedPaths: [], mode: 'WORKTREE_WRITE',
+      approvedToolPolicyId: 'test', timeoutMs: 10_000, signal: new AbortController().signal, modelPreference: 'chat',
+    })) out.push(e);
+    return out;
+  }
+  const texts = (ev: AgentStreamEvent[]) => ev.filter((e): e is Extract<AgentStreamEvent, { type: 'message' }> => e.type === 'message' && e.visibleToUser).map((e) => e.text);
+
+  it('chat scenario answers plainly, every message starts with SIMULATED:', async () => {
+    const ev = await chat('olá, tudo bem?', mkdtempSync(path.join(dir, 'c1-')));
+    expect(texts(ev)).toEqual(['SIMULATED: entendi — olá, tudo bem?']);
+    expect(ev.at(-1)).toMatchObject({ type: 'exit', exitCode: 0 });
+  });
+  it('chat scenario proposes an aer-plan when asked to split work', async () => {
+    const t = texts(await chat('divida em tarefas o cadastro', mkdtempSync(path.join(dir, 'c2-')))).join('\n');
+    const block = /```aer-plan\n([\s\S]*?)\n```/.exec(t);
+    expect(t.startsWith('SIMULATED: proposta abaixo')).toBe(true);
+    const plan = JSON.parse(block![1]!);
+    expect(plan.tasks.map((x: { title: string }) => x.title)).toEqual(['Parte 1', 'Parte 2', 'Parte 3']);
+    expect(plan.tasks[2].dependsOn).toEqual([1]);
+  });
+  it('chat scenario edits when asked', async () => {
+    const cwd = mkdtempSync(path.join(dir, 'c3-'));
+    const ev = await chat('edite o readme', cwd);
+    expect(ev.some((e) => e.type === 'file_change' && e.relativePath === 'SIMULATED/CHAT.md')).toBe(true);
+    expect(existsSync(path.join(cwd, 'SIMULATED', 'CHAT.md'))).toBe(true);
+    expect(texts(ev)).toEqual(['SIMULATED: editei SIMULATED/CHAT.md']);
+  });
+  it('chat scenario summarizes a RESUMO message', async () => {
+    expect(texts(await chat('RESUMO DO PLANO PLN-0001\n- TAR-0001 a\n- TAR-0002 b', mkdtempSync(path.join(dir, 'c4-'))))).toEqual(['SIMULATED: resumo — 2 tarefas']);
+  });
+  it('extra simulator ids are distinct providers', async () => {
+    const p = await new SimulatorProvider(adapter, { id: 'simulator-2' }).probe();
+    expect(p).toMatchObject({ providerId: 'simulator-2', simulated: true, availability: 'READY' });
+    expect(new SimulatorProvider(adapter, { id: 'simulator-2' }).id).toBe('simulator-2');
+  });
+});
