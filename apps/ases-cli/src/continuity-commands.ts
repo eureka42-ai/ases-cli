@@ -1,10 +1,7 @@
-import { createHash } from 'node:crypto';
-import { mkdirSync, writeFileSync } from 'node:fs';
-import path from 'node:path';
-import { createWorktree, git, isClean, removeWorktree } from '@aer/git-bridge';
+import { git } from '@aer/git-bridge';
 import type { TaskState } from '@aer/contracts';
-import { redactText, runShort } from '@aer/provider-sdk';
-import { agentAuthor, checkpointLeftovers, nextAttemptBase, parseProviderSpec, recoverInterrupted, runReview, writeHandoff } from '@aer/scheduler';
+import { redactText } from '@aer/provider-sdk';
+import { agentAuthor, handoffTask, nextAttemptBase, parseProviderSpec, recoverInterrupted, runReview, runTestInWorktree } from '@aer/scheduler';
 import { evaluate, operationHash } from '@aer/security';
 import type { Engine } from './engine.ts';
 
@@ -23,34 +20,16 @@ export const CONTINUITY_COMMANDS = new Set(['/handoff', '/test', '/review', '/re
 /** Caminho para READY a partir de uma tarefa parada (máquina de estados §5.1). */
 const TO_READY: Partial<Record<TaskState, TaskState[]>> = { REVIEW: ['REWORK', 'READY'], REWORK: ['READY'], FAILED: ['READY'], BLOCKED: ['READY'] };
 
-function toReady(engine: Engine, taskId: string, reason: string): void {
-  const t = engine.store.getTask(taskId)!;
-  const path_ = TO_READY[t.state];
-  if (!path_) throw Object.assign(new Error(`${taskId} está ${t.state}; handoff só de REVIEW, REWORK, FAILED ou BLOCKED`), { code: 'INVALID_TRANSITION' });
-  for (const to of path_) engine.mutate((s) => s.transitionTask(taskId, to, s.getTask(taskId)!.version, reason));
-}
-
 async function handoff(engine: Engine, taskId: string, to: string, reason: string): Promise<string> {
-  const s = engine.store;
-  const task = s.getTask(taskId);
+  const task = engine.store.getTask(taskId);
   if (!task) return `tarefa ${taskId} não encontrada`;
   const spec = parseProviderSpec(to);
   if (!spec || !(spec.providerId in engine.providers)) return `provider desconhecido: ${to}`;
   if (!reason.trim()) return 'informe o motivo do handoff';
   if (!TO_READY[task.state]) return `${taskId} está ${task.state}; handoff só de REVIEW, REWORK, FAILED ou BLOCKED`;
-  const last = s.listAttempts(taskId).at(-1);
-  // sobras não commitadas da tentativa anterior viram checkpoint de recuperação (marcado como não verificado)
-  const recoveryCommit = last ? await checkpointLeftovers(last, agentAuthor(last.providerId)) : undefined;
-  if (recoveryCommit && last) engine.mutate((st) => st.appendEvent({ eventType: 'GitCheckpointCreated', phaseId: task.phaseId, taskId, attemptId: last.id, payload: { branch: last.branch, commit: recoveryCommit, baseCommit: last.baseCommit, recovery: true } }));
-  engine.mutate((st) => st.setTaskProvider(taskId, to));
-  const h = await writeHandoff(engine.projectRoot, s, taskId, { from: task.provider, to, reason, recoveryCommit });
-  engine.mutate((st) => {
-    st.recordArtifact(taskId, { kind: 'REPORT', relativePath: h.path, sha256: h.sha256, note: `handoff ${task.provider ?? '—'} → ${to}` });
-    st.appendEvent({ eventType: 'HandoffCreated', phaseId: task.phaseId, taskId, payload: { from: task.provider, to, reason, document: h.path, sha256: h.sha256 } });
-  });
-  toReady(engine, taskId, `handoff para ${to}: ${reason}`);
-  const { base } = await nextAttemptBase(engine.projectRoot, s.listAttempts(taskId));
-  return `${taskId}: ${task.provider ?? '—'} → ${to} · ${h.path} · próxima tentativa parte de ${base === 'HEAD' ? 'HEAD' : base.slice(0, 12)}${recoveryCommit ? ` (inclui checkpoint de recuperação ${recoveryCommit.slice(0, 12)})` : ''} · tarefa READY`;
+  const h = await handoffTask(engine.workerDeps(), taskId, to, reason);
+  const { base } = await nextAttemptBase(engine.projectRoot, engine.store.listAttempts(taskId));
+  return `${taskId}: ${task.provider ?? '—'} → ${to} · ${h.path} · próxima tentativa parte de ${base === 'HEAD' ? 'HEAD' : base.slice(0, 12)}${h.recoveryCommit ? ` (inclui checkpoint de recuperação ${h.recoveryCommit.slice(0, 12)})` : ''} · tarefa READY`;
 }
 
 async function resume(engine: Engine): Promise<string> {
@@ -71,30 +50,8 @@ async function testRun(engine: Engine, taskId: string, argv: string[]): Promise<
     return `${a.id} ${a.state}: conceda com /approval grant ${a.id} <seu nome> e rode /test de novo`;
   }
   engine.mutate((st) => st.consumeApproval(d.approvalId!));
-  const attempts = s.listAttempts(taskId);
-  const { base, from } = await nextAttemptBase(engine.projectRoot, attempts);
-  const n = s.listTestRuns(taskId).length + 1;
-  const wt = await createWorktree(engine.projectRoot, taskId, `TST-${String(n).padStart(4, '0')}`, base);
-  const startedAt = new Date().toISOString();
-  const r = await runShort(engine.platform, argv[0]!, argv.slice(1), { cwd: wt.path, timeoutMs: 10 * 60_000 });
-  const endedAt = new Date().toISOString();
-  if (!(await isClean(wt.path))) {
-    await git(wt.path, ['checkout', '--', '.']).catch(() => undefined);
-    await git(wt.path, ['clean', '-fdq']).catch(() => undefined);
-  }
-  await removeWorktree(engine.projectRoot, wt.path).catch(() => undefined);
-  await git(engine.projectRoot, ['branch', '-D', wt.branch]).catch(() => undefined);
-  const exitCode = r.exitCode ?? (r.timedOut ? 124 : 127);
-  const log = redactText(`$ ${argv.join(' ')}\n# commit ${base === 'HEAD' ? 'HEAD' : base.slice(0, 12)}${from ? ` (${from})` : ''} · ${startedAt} → ${endedAt} · exit ${exitCode}${r.timedOut ? ' (TIMEOUT)' : ''}\n\n${r.stdout}\n${r.stderr}`, 64_000).text;
-  const rel = `.ases/evidence/${taskId}-test-${String(n).padStart(2, '0')}.log`;
-  mkdirSync(path.join(engine.projectRoot, '.ases', 'evidence'), { recursive: true });
-  writeFileSync(path.join(engine.projectRoot, rel), log);
-  engine.mutate((st) => {
-    // contagens não são inventadas: o exit code é a verdade; total/passed/failed ficam 0 quando o runner não é interpretado
-    st.recordTestRun(taskId, { command: argv.join(' '), exitCode, total: 0, passed: 0, failed: exitCode === 0 ? 0 : 1, skipped: 0, environment: `${process.platform}-${process.arch} node ${process.version}`, startedAt, endedAt, ...(from ? { attemptId: from } : {}) });
-    st.recordArtifact(taskId, { kind: 'LOG', relativePath: rel, sha256: createHash('sha256').update(log).digest('hex'), note: `test run ${n}: exit ${exitCode}` });
-  });
-  return `${taskId}: \`${argv.join(' ')}\` → exit ${exitCode}${r.timedOut ? ' (TIMEOUT)' : ''} · log ${rel}`;
+  const r = await runTestInWorktree(engine.workerDeps(), engine.platform, taskId, argv);
+  return `${taskId}: \`${argv.join(' ')}\` → exit ${r.exitCode}${r.timedOut ? ' (TIMEOUT)' : ''} · log ${r.log}`;
 }
 
 /** Diff entre refs (base...branch): o git não toca a worktree nem o índice (AER-REQ-097). */
