@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { chmodSync, existsSync, lstatSync, mkdirSync, realpathSync, renameSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
@@ -95,15 +95,48 @@ export function createBaseAdapter(id: PlatformId, secretBackend: string, deps: P
 
 /**
  * Cria (se preciso) um diretório só do usuário atual (AER-REQ-014/202).
- * POSIX: 0700, dono = uid atual, nunca symlink. Windows: herda a ACL do perfil.
+ * POSIX: 0700, dono = uid atual, nunca symlink. Windows: nunca junction/symlink, e a DACL só pode dar acesso ao usuário,
+ * ao SYSTEM e aos Administradores (verificado por SID, independente do idioma); senão é restringida com icacls.
  */
 export function ensurePrivateDir(id: PlatformId, dir: string): void {
   mkdirSync(dir, { recursive: true, mode: 0o700 });
-  if (id === 'win32') return; // shortcut: DACL não é verificada no Windows; validar com icacls/API na PHASE-15
   const st = lstatSync(dir);
   if (st.isSymbolicLink() || !st.isDirectory()) throw new PlatformError('INSECURE_PATH', `not a real directory: ${dir}`);
+  if (id === 'win32') return ensureWindowsPrivateDir(dir);
   if (typeof process.getuid === 'function' && st.uid !== process.getuid()) throw new PlatformError('INSECURE_PATH', `directory not owned by current user: ${dir}`);
   if ((st.mode & 0o077) !== 0) chmodSync(dir, 0o700);
+}
+
+const WIN_TRUSTED = new Set(['S-1-5-18', 'S-1-5-32-544']); // SYSTEM, Administradores
+const winChecked = new Set<string>();
+
+/** SIDs com acesso (Allow) ao diretório e o SID do usuário atual, lidos pelo PowerShell do sistema. */
+export function windowsDirAcl(dir: string): { me: string; allowed: string[] } {
+  const ps = `${process.env.SystemRoot ?? 'C:\\Windows'}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe`;
+  const p64 = Buffer.from(dir, 'utf8').toString('base64');
+  const script = `$p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${p64}')); 'ME ' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value; foreach ($r in (Get-Acl -LiteralPath $p).Access) { if ($r.AccessControlType -eq 'Allow') { try { 'ACE ' + $r.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value } catch { 'ACE ' + $r.IdentityReference.Value } } }`;
+  const r = spawnSync(ps, ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', '-'], { input: `${script}\n`, encoding: 'utf8', timeout: 30_000, windowsHide: true });
+  const me = /^ME (S-[\d-]+)\s*$/m.exec(r.stdout ?? '')?.[1];
+  if (r.status !== 0 || !me) throw new PlatformError('INSECURE_PATH', `cannot read the ACL of ${dir} (exit ${r.status})`);
+  return { me, allowed: [...(r.stdout ?? '').matchAll(/^ACE (\S+)\s*$/gm)].map((m) => m[1]!) };
+}
+
+function ensureWindowsPrivateDir(dir: string): void {
+  if (winChecked.has(dir)) return;
+  const foreign = () => {
+    const a = windowsDirAcl(dir);
+    return { me: a.me, others: [...new Set(a.allowed.filter((s) => s !== a.me && !WIN_TRUSTED.has(s)))] };
+  };
+  let f = foreign();
+  if (f.others.length) {
+    const icacls = `${process.env.SystemRoot ?? 'C:\\Windows'}\\System32\\icacls.exe`;
+    const grants = [f.me, ...WIN_TRUSTED].flatMap((sid) => ['/grant:r', `*${sid}:(OI)(CI)F`]);
+    spawnSync(icacls, [dir, '/inheritance:r', ...grants, '/q'], { encoding: 'utf8', timeout: 30_000, windowsHide: true });
+    for (const sid of f.others) spawnSync(icacls, [dir, '/remove:g', `*${sid}`, '/q'], { encoding: 'utf8', timeout: 30_000, windowsHide: true });
+    f = foreign();
+    if (f.others.length) throw new PlatformError('INSECURE_PATH', `directory still grants access to ${f.others.join(', ')}: ${dir}`);
+  }
+  winChecked.add(dir);
 }
 
 /** Escrita atômica de arquivo privado (0600 em POSIX), p.ex. o token de sessão do engine. */

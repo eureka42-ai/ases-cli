@@ -1,9 +1,10 @@
+import { spawnSync } from 'node:child_process';
 import { chmodSync, mkdtempSync, mkdirSync, readFileSync, rmSync, statSync, symlinkSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import {
-  NotImplementedError, PlatformError, assertSupportedTarget, createBaseAdapter, createLocalIpcEndpoint, detectPlatform, ensurePrivateDir, syncedFolderHint, targetStatus, writePrivateFile,
+  NotImplementedError, PlatformError, assertSupportedTarget, createBaseAdapter, createLocalIpcEndpoint, detectPlatform, ensurePrivateDir, syncedFolderHint, targetStatus, windowsDirAcl, writePrivateFile,
   getRuntimeDir, getTerminalCapabilities, normalizeProjectPath, type PlatformDeps,
 } from '../src/index.ts';
 
@@ -160,4 +161,24 @@ describe('synced folder hint (SQLite safety)', () => {
     expect(syncedFolderHint('linux', linux, '/home/u/Dropbox/proj')).toBe('Dropbox');
     expect(syncedFolderHint('linux', linux, '/home/u/code/proj')).toBeUndefined();
   });
+});
+
+describe.runIf(process.platform === 'win32')('Windows private dir DACL (TAR-0066, AER-REQ-227, real icacls)', () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'aer acl ç '));
+  afterAll(() => rmSync(root, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 }), 30_000);
+  const icacls = `${process.env.SystemRoot ?? 'C:\\Windows'}\\System32\\icacls.exe`;
+
+  it('a dir readable by Everyone is restricted to user/SYSTEM/Administrators; a junction is refused', () => {
+    const dir = path.join(root, 'runtime');
+    mkdirSync(dir);
+    expect(spawnSync(icacls, [dir, '/grant', '*S-1-1-0:(OI)(CI)R', '/q']).status).toBe(0);
+    expect(windowsDirAcl(dir).allowed).toContain('S-1-1-0');
+    ensurePrivateDir('win32', dir);
+    const a = windowsDirAcl(dir);
+    expect(a.allowed).not.toContain('S-1-1-0');
+    expect(a.allowed.every((s) => [a.me, 'S-1-5-18', 'S-1-5-32-544'].includes(s))).toBe(true);
+    const link = path.join(root, 'junction');
+    symlinkSync(dir, link, 'junction');
+    expect(() => ensurePrivateDir('win32', link)).toThrow(/not a real directory/);
+  }, 60_000);
 });

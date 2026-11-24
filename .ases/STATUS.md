@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 577 (TaskUpdated, 2026-11-24T13:51:43.610Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 580 (TaskUpdated, 2026-11-24T13:53:19.031Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -90,7 +90,7 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0063 | PHASE-12 | Hardening E2E, docs por SO e auditoria do DoD (P0 sem exceção aberta) | COMPLETED | — | docs/AUDITORIA_P0.md<br>.ases/evidence/PHASE-12-verify.md |
 | TAR-0064 | PHASE-12 | Fecha 5 P0 da auditoria (095, 097, 027, 171, 048) e registra as exceções aprovadas | COMPLETED | — | docs/AUDITORIA_P0.md<br>.ases/evidence/PHASE-12-verify.md |
 | TAR-0065 | PHASE-15 | SecretStore Windows (Credential Manager, segredo só por stdin, falha fechado) | RUNNING | — | — |
-| TAR-0066 | PHASE-15 | ACL do runtime dir e do Named Pipe no Windows verificadas (icacls) | PLANNED | — | — |
+| TAR-0066 | PHASE-15 | ACL do runtime dir e do Named Pipe no Windows verificadas (icacls) | RUNNING | — | — |
 | TAR-0067 | PHASE-15 | Caminhos Windows: UNC, junction, letra de unidade, acentos e espaços | PLANNED | — | — |
 | TAR-0068 | PHASE-15 | Matriz de suporte publicada por SO/arquitetura com PASS/FAIL/NOT_RUN e doctor | PLANNED | — | — |
 | TAR-0069 | PHASE-15 | TUI em ConPTY/Windows Terminal ou registro NOT_RUN honesto | PLANNED | — | — |
