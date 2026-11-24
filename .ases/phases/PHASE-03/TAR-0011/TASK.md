@@ -1,27 +1,38 @@
+<!-- GERADO pelo engine do AER a partir do banco; não editar -->
 # TAR-0011 — CLI shell ases/ases-tar + build + marca mínima
 
 | Campo | Valor |
 |---|---|
 | task_id | TAR-0011 |
 | phase_id | PHASE-03 |
-| priority | 95 |
-| risk | MODERATE |
-| owner_type | PENDING |
-| provider | humano + Claude Code (sessão de desenvolvimento) |
-| dependencies | nenhuma |
-| related_reqs | AER-REQ-004, AER-REQ-011, AER-REQ-240, AER-REQ-241, AER-REQ-245, AER-REQ-247 |
-| review_policy | revisão humana antes do merge |
+| estado | COMPLETED (v1) |
+| prioridade / risco | 50 / MODERATE |
+| provider | — |
+| dependências | — |
+| extensões | — |
+| recursos | — |
 
-**Escopo:** apps/ases-cli e apps/ases-tar (util.parseArgs), build tsc -b, ases init não destrutivo, --version/--help, cabeçalho ⌘ Eureka42 com NO_COLOR/ASCII
+## Objetivo / escopo
+CLI shell ases/ases-tar + build + marca mínima
 
-## Critérios de aceite
-- [ ] bins executam a partir do build JS
-- [ ] init duas vezes preserva arquivos
-- [ ] --json/pipe sem ANSI nem banner
+## Requisitos e critérios de aceite
+- AER-REQ-004
+- AER-REQ-011
+- AER-REQ-240
+- AER-REQ-241
+- AER-REQ-245
+- AER-REQ-247
 
-## Testes
-- [ ] test/e2e/bins.test.mjs
-- [ ] packages/branding/test/*.test.ts
+## Tentativas
+- nenhuma
 
-## Regras de handoff
-Estado vivo em `STATUS.json` desta pasta e em `.ases/STATUS.md`. Não marcar COMPLETED sem evidência.
+## Testes executados
+- nenhum (validação NÃO concluída)
+
+## Evidências, revisões e handoffs
+- EVIDENCE .ases/evidence/PHASE-03-verify.md (sha256 edc1d8123fb5…) — importado do .ases/ interino
+- EVIDENCE test/e2e/bins.test.mjs (sha256 22fc497b565b…) — importado do .ases/ interino
+- EVIDENCE packages/branding/test/branding.test.ts (sha256 a8d36281a9bd…) — importado do .ases/ interino
+
+## Critério de saída
+COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

@@ -5,7 +5,7 @@ import { checkBoundaries } from '../scripts/check-boundaries.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
-describe('architecture boundaries (AER-REQ-006, AER-REQ-226, AER-REQ-109)', () => {
+describe('architecture boundaries (AER-REQ-006, AER-REQ-226, AER-REQ-109, AER-REQ-009)', () => {
   it('flags every forbidden import and shell usage in the fixture', () => {
     const rules = checkBoundaries(path.join(here, 'fixtures/boundaries')).map((v) => `${path.basename(path.dirname(path.dirname(v.file)))}:${v.rule}`).sort();
     expect(rules).toEqual([
@@ -16,6 +16,8 @@ describe('architecture boundaries (AER-REQ-006, AER-REQ-226, AER-REQ-109)', () =
       'platform-linux:platform-cross-import',
       'provider-claude:no-child-process-exec',
       'provider-claude:ui-lib-outside-tui',
+      'scheduler:no-network-server',
+      'scheduler:no-network-server',
     ]);
   });
 

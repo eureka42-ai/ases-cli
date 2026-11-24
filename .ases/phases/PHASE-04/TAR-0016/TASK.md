@@ -1,26 +1,36 @@
+<!-- GERADO pelo engine do AER a partir do banco; não editar -->
 # TAR-0016 — tui-shared: tema, marca, badges, painéis, ajuda
 
 | Campo | Valor |
 |---|---|
 | task_id | TAR-0016 |
 | phase_id | PHASE-04 |
-| priority | 90 |
-| risk | MODERATE |
-| owner_type | PENDING |
-| provider | humano + Claude Code (sessão de desenvolvimento) |
-| dependencies | nenhuma |
-| related_reqs | AER-REQ-240, AER-REQ-243, AER-REQ-248, AER-REQ-100 |
-| review_policy | revisão humana antes do merge |
+| estado | COMPLETED (v1) |
+| prioridade / risco | 50 / MODERATE |
+| provider | — |
+| dependências | — |
+| extensões | — |
+| recursos | — |
 
-**Escopo:** packages/tui-shared com Ink: contexto de UI (cor/Unicode/tema), cabeçalho de marca, badges de estado distinguíveis sem cor, painéis com borda ASCII de fallback, overlay de atalhos, hook de tamanho de terminal, renderização de teste com largura fixa
+## Objetivo / escopo
+tui-shared: tema, marca, badges, painéis, ajuda
 
-## Critérios de aceite
-- [ ] estados distinguíveis sem cor
-- [ ] bordas ASCII sem Unicode
-- [ ] mesmos tokens nos dois apps
+## Requisitos e critérios de aceite
+- AER-REQ-100
+- AER-REQ-240
+- AER-REQ-243
+- AER-REQ-248
 
-## Testes
-- [ ] packages/tui-shared/test/*.test.tsx
+## Tentativas
+- nenhuma
 
-## Regras de handoff
-Estado vivo em `STATUS.json` desta pasta e em `.ases/STATUS.md`. Não marcar COMPLETED sem evidência.
+## Testes executados
+- nenhum (validação NÃO concluída)
+
+## Evidências, revisões e handoffs
+- EVIDENCE .ases/evidence/PHASE-04-verify.md (sha256 b38a1fcb746a…) — importado do .ases/ interino
+- EVIDENCE packages/tui-shared/test/tui-shared.test.tsx (sha256 524107cf0532…) — importado do .ases/ interino
+- EVIDENCE docs/ADRs/ADR-0011.md (sha256 21f8de46e4aa…) — importado do .ases/ interino
+
+## Critério de saída
+COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

@@ -1,26 +1,37 @@
+<!-- GERADO pelo engine do AER a partir do banco; não editar -->
 # TAR-0015 — E2E com dois processos reais
 
 | Campo | Valor |
 |---|---|
 | task_id | TAR-0015 |
 | phase_id | PHASE-03 |
-| priority | 85 |
-| risk | HIGH |
-| owner_type | PENDING |
-| provider | humano + Claude Code (sessão de desenvolvimento) |
-| dependencies | TAR-0013, TAR-0014 |
-| related_reqs | AER-REQ-090, AER-REQ-091, AER-REQ-093, AER-REQ-094, AER-REQ-099, AER-REQ-191 |
-| review_policy | revisão humana antes do merge |
+| estado | COMPLETED (v1) |
+| prioridade / risco | 50 / MODERATE |
+| provider | — |
+| dependências | TAR-0013, TAR-0014 |
+| extensões | — |
+| recursos | — |
 
-**Escopo:** spawn de ases e ases-tar reais; evento criado no ases visto no ases-tar; derrubar e reabrir o ases; filtros --task/--phase
+## Objetivo / escopo
+E2E com dois processos reais
 
-## Critérios de aceite
-- [ ] PIDs distintos
-- [ ] evento visto em ordem de seq
-- [ ] RECONNECTING e retomada sem duplicata
+## Requisitos e critérios de aceite
+- AER-REQ-090
+- AER-REQ-091
+- AER-REQ-093
+- AER-REQ-094
+- AER-REQ-099
+- AER-REQ-191
 
-## Testes
-- [ ] test/e2e/two-processes.test.mjs
+## Tentativas
+- nenhuma
 
-## Regras de handoff
-Estado vivo em `STATUS.json` desta pasta e em `.ases/STATUS.md`. Não marcar COMPLETED sem evidência.
+## Testes executados
+- nenhum (validação NÃO concluída)
+
+## Evidências, revisões e handoffs
+- EVIDENCE .ases/evidence/PHASE-03-verify.md (sha256 edc1d8123fb5…) — importado do .ases/ interino
+- EVIDENCE test/e2e/two-processes.test.mjs (sha256 49452796a317…) — importado do .ases/ interino
+
+## Critério de saída
+COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

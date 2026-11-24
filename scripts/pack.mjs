@@ -62,6 +62,10 @@ writeFileSync(path.join(out, 'package.json'), `${JSON.stringify({
   dependencies: { ...external, ...Object.fromEntries(bundled.map((n) => [n, '0.0.0'])) }, bundleDependencies: [...bundled, ...Object.keys(external)].sort(),
   files: ['bin', 'fontes', 'LICENSE', 'README.md'],
 }, null, 2)}\n`);
+// AER-REQ-250: o pacote não leva fontes tipográficas (nem proprietárias nem quaisquer) nem as imagens de estudo de marca
+const walkAll = (d) => readdirSync(d).flatMap((n) => (statSync(path.join(d, n)).isDirectory() ? walkAll(path.join(d, n)) : [path.join(d, n)]));
+const fonts = walkAll(out).filter((f) => /\.(ttf|otf|woff2?|eot)$/i.test(f));
+if (fonts.length) throw new Error(`arquivos de fonte tipográfica no pacote: ${fonts.map((f) => path.relative(out, f)).join(', ')}`);
 // shortcut: o lockfile do pacote não é gerado; as 3 dependências externas são fixadas por versão exata
 for (const [k, v] of Object.entries(external)) if (!/^\d+\.\d+\.\d+$/.test(v)) throw new Error(`${k}@${v}: versão não exata`);
 const tgz = execFileSync(process.execPath, [npmCli(), 'pack', '--silent', '--pack-destination', path.join(repo, '.pack')], { cwd: out, encoding: 'utf8' }).trim().split('\n').at(-1);

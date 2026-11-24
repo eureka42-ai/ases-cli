@@ -86,6 +86,14 @@ describe('PHASE-09 gate: interview → approved requirements → 2 phases and 3 
     expect(matrix).toHaveLength(1 + 303);
     expect(matrix.find((l) => l.startsWith('"REQ-301"'))).toMatch(/"PASS","responsável","evidencia\.md#[0-9a-f]{12}".*"TAR-0001"/);
     expect(matrix.find((l) => l.startsWith('"REQ-001"'))).toMatch(/exceção aprovada por responsável/);
+    // TASK.md/PHASE.md gerados (AER-REQ-023/025/028/032): requisitos com aceite, DAG e motivo de bloqueio
+    const taskMd = readFileSync(path.join(p.dir, '.ases/phases/PHASE-01/TAR-0001/TASK.md'), 'utf8');
+    expect(taskMd).toMatch(/- REQ-301 — Agendar consulta · aceite: Dado um horário livre/);
+    expect(taskMd).toMatch(/\| phase_id \| PHASE-01 \|/);
+    session(['/phase move PHASE-02 READY', '/phase move PHASE-02 RUNNING', '/phase move PHASE-02 BLOCKED aguardando o provedor de e-mail']);
+    const phaseMd = readFileSync(path.join(p.dir, '.ases/phases/PHASE-02/PHASE.md'), 'utf8');
+    expect(phaseMd).toMatch(/\*\*Requisitos da fase\*\* \(união das tarefas\): REQ-303/);
+    expect(phaseMd).toMatch(/\*\*Motivo do bloqueio:\*\* aguardando o provedor de e-mail \(seq \d+\) · tarefas pendentes: TAR-0003 \(PLANNED\)/);
     const decisions = readFileSync(path.join(p.dir, '.ases/DECISIONS.md'), 'utf8');
     expect(decisions).toMatch(/\| DEC-0002 \| A\.2 .* \| SUPERSEDED \|/);
     expect(decisions).toMatch(/\| CHANGE-0001 \| clínica reduziu a antecedência \| REQ-302 \| responsável \|/);

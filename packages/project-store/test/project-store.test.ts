@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
-import { findProjectRoot, historyState, initProject, isInterimProject, loadPlatformAdapter, paths, readSession } from '../src/index.ts';
+import { findProjectRoot, historyState, initProject, isInterimProject, loadPlatformAdapter, paths, readManifest, readSession } from '../src/index.ts';
 
 const tmp = mkdtempSync(path.join(os.tmpdir(), 'aer proj ã '));
 afterAll(() => rmSync(tmp, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
@@ -36,6 +36,16 @@ describe('ases init (TAR-0011, AER-REQ-011, AER-REQ-017)', () => {
     const before = hashes(root);
     expect(initProject(root, adapter).created).toEqual([]);
     expect(hashes(root)).toEqual(before);
+  });
+
+  it('project id survives renaming/moving the folder (AER-REQ-019)', () => {
+    const a = path.join(tmp, 'antes ç');
+    mkdirSync(a, { recursive: true });
+    const id = initProject(a, adapter).manifest.projectId;
+    const b = path.join(tmp, 'depois renomeado ç');
+    renameSync(a, b);
+    expect(readManifest(b).projectId).toBe(id);
+    expect(initProject(b, adapter)).toMatchObject({ created: [], manifest: { projectId: id } });
   });
 
   it('finds the root from a subdirectory (AER-REQ-012)', () => {

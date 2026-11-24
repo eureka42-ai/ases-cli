@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 522 (TaskUpdated, 2026-11-24T01:09:46.614Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 525 (TaskUpdated, 2026-11-24T01:19:14.827Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -83,6 +83,6 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0060 | PHASE-12 | Lifecycle do motor residente: start/stop/status, TUI sai sem perder tarefas | RUNNING | — | — |
 | TAR-0061 | PHASE-12 | Pacote npm único com os dois bins, instalação, atualização e uninstall limpos | RUNNING | — | — |
 | TAR-0062 | PHASE-12 | Matriz CI de OS e arquiteturas com smoke do pacote instalado (bash, zsh, PowerShell) | RUNNING | — | — |
-| TAR-0063 | PHASE-12 | Hardening E2E, docs por SO e auditoria do DoD (P0 sem exceção aberta) | PLANNED | — | — |
+| TAR-0063 | PHASE-12 | Hardening E2E, docs por SO e auditoria do DoD (P0 sem exceção aberta) | RUNNING | — | docs/AUDITORIA_P0.md |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

@@ -1,26 +1,34 @@
+<!-- GERADO pelo engine do AER a partir do banco; não editar -->
 # TAR-0001 — Auditar ambiente local
 
 | Campo | Valor |
 |---|---|
 | task_id | TAR-0001 |
 | phase_id | PHASE-01 |
-| priority | 100 |
-| risk | LOW |
-| owner_type | PENDING |
-| provider | humano + Claude Code (sessão de desenvolvimento) |
-| dependencies | nenhuma |
-| related_reqs | AER-REQ-001, AER-REQ-002, AER-REQ-003, AER-REQ-204 |
-| review_policy | revisão humana antes do merge |
+| estado | COMPLETED (v1) |
+| prioridade / risco | 50 / MODERATE |
+| provider | — |
+| dependências | — |
+| extensões | — |
+| recursos | — |
 
-**Escopo:** Detectar SO, arquitetura, Node, gerenciadores, Git e CLIs de provedores sem alterar o ambiente
+## Objetivo / escopo
+Auditar ambiente local
 
-## Critérios de aceite
-- [ ] Sistema e arquitetura detectados
-- [ ] Ferramentas com versões registradas
-- [ ] Ausências marcadas sem instalação automática
+## Requisitos e critérios de aceite
+- AER-REQ-001
+- AER-REQ-002
+- AER-REQ-003
+- AER-REQ-204
 
-## Testes
-- [ ] T-AER-001: evidência .ases/evidence/TAR-0001-environment.md
+## Tentativas
+- nenhuma
 
-## Regras de handoff
-Estado vivo em `STATUS.json` desta pasta e em `.ases/STATUS.md`. Não marcar COMPLETED sem evidência.
+## Testes executados
+- nenhum (validação NÃO concluída)
+
+## Evidências, revisões e handoffs
+- EVIDENCE .ases/evidence/TAR-0001-environment.md (sha256 a18d7604b204…) — importado do .ases/ interino
+
+## Critério de saída
+COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

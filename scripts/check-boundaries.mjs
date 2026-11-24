@@ -44,8 +44,11 @@ export function checkBoundaries(root) {
         if (pkg.startsWith('platform-') && pkg !== 'platform-core' && OS_SPECIFIC.includes(target) && target !== `@aer/${pkg}`) add('platform-cross-import', spec);
         if (!UI_ALLOWED.includes(pkg) && UI_LIBS.includes(target)) add('ui-lib-outside-tui', spec);
         if (spec === 'node:sqlite' && pkg !== 'persistence') add('sqlite-outside-persistence', spec); // ADR-0002
+        // AER-REQ-009: nenhum servidor HTTP/TCP; o único listener é o IPC local (UDS/Named Pipe) em packages/ipc
+        if (['node:http', 'node:https', 'node:http2', 'http', 'https', 'http2', 'node:dgram', 'dgram'].includes(spec)) add('no-network-server', spec);
       }
       if (SHELL_TRUE_RE.test(text)) add('no-shell-true', 'shell: true');
+      if (/\.listen\(\s*\d/.test(text) || (/\.listen\(/.test(text) && pkg !== 'ipc' && /net\.createServer/.test(text))) add('no-network-server', 'listen on a port');
       if (EXEC_IMPORT_RE.test(text)) add('no-child-process-exec', 'exec/execSync import');
     }
   }

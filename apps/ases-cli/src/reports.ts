@@ -105,6 +105,88 @@ ${changes.map((c) => `| ${c.id} | ${c.reason.replaceAll('|', '/')} | ${c.targets
 `);
   }
 
+  // TASK.md e PHASE.md derivados do banco (AER-REQ-023/025/028/030/032); nunca editados à mão
+  const reqInfo = (id: string) => {
+    const r = store.getRequirement(id);
+    return r ? `${id} — ${r.title}${r.acceptance ? ` · aceite: ${r.acceptance}` : ''} (${r.status})` : id;
+  };
+  const header = '<!-- GERADO pelo engine do AER a partir do banco; não editar -->';
+  for (const t of tasks) {
+    const attempts = store.listAttempts(t.id);
+    const runs = store.listTestRuns(t.id);
+    const arts = evidence.get(t.id) ?? [];
+    writeIfChanged(path.join(A, 'phases', t.phaseId, t.id, 'TASK.md'), `${header}
+# ${t.id} — ${t.title}
+
+| Campo | Valor |
+|---|---|
+| task_id | ${t.id} |
+| phase_id | ${t.phaseId} |
+| estado | ${t.state} (v${t.version}) |
+| prioridade / risco | ${t.priority} / ${t.risk} |
+| provider | ${t.provider ?? '—'} |
+| dependências | ${t.dependsOn.join(', ') || '—'} |
+| extensões | ${t.extensions.join(', ') || '—'} |
+| recursos | ${t.resources.join(', ') || '—'} |
+
+## Objetivo / escopo
+${t.description || t.title}
+
+## Requisitos e critérios de aceite
+${t.reqs.length ? t.reqs.map((r) => `- ${reqInfo(r)}`).join('\n') : '- **nenhum requisito ligado**'}
+
+## Tentativas
+${attempts.length ? attempts.map((a) => `- ${a.id} · ${a.providerId} · ${a.state}${a.exitCode !== null ? ` · exit ${a.exitCode}` : ''}${a.failureCode ? ` · ${a.failureCode}` : ''} · \`${a.branch ?? '—'}\``).join('\n') : '- nenhuma'}
+
+## Testes executados
+${runs.length ? runs.map((r) => `- ${r.startedAt} \`${r.command}\` → exit ${r.exitCode}`).join('\n') : '- nenhum (validação NÃO concluída)'}
+
+## Evidências, revisões e handoffs
+${arts.length ? arts.map((a) => `- ${a.kind} ${a.relativePath} (sha256 ${a.sha256.slice(0, 12)}…)${a.note ? ` — ${a.note}` : ''}`).join('\n') : '- nenhuma'}
+
+## Critério de saída
+COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).
+`);
+  }
+  let phaseEvents: ReturnType<ProjectStore['eventsSince']> | undefined;
+  const phaseReason = (phaseId: string) => {
+    phaseEvents ??= (() => {
+      const all: ReturnType<ProjectStore['eventsSince']> = [];
+      for (let after = 0, page; (page = store.eventsSince(after, 1000)).length; after = page.at(-1)!.seq) all.push(...page.filter((e) => e.eventType === 'PhaseUpdated'));
+      return all;
+    })();
+    const last = phaseEvents.filter((e) => e.phaseId === phaseId).at(-1);
+    return last ? `${String(last.payload.reason ?? '—')} (seq ${last.seq})` : '—';
+  };
+  for (const ph of phases) {
+    const pt = tasks.filter((t) => t.phaseId === ph.id);
+    const reqs = [...new Set(pt.flatMap((t) => t.reqs))].sort();
+    const open = pt.filter((t) => !['COMPLETED', 'CANCELLED'].includes(t.state));
+    writeIfChanged(path.join(A, 'phases', ph.id, 'PHASE.md'), `${header}
+# ${ph.id} — ${ph.title}
+
+- **Estado:** ${ph.state} (v${ph.version})${ph.state === 'BLOCKED' ? `\n- **Motivo do bloqueio:** ${phaseReason(ph.id)} · tarefas pendentes: ${open.map((t) => `${t.id} (${t.state})`).join(', ') || '—'}` : ''}
+- **Requisitos da fase** (união das tarefas): ${reqs.join(', ') || '—'}
+
+## Tarefas e dependências (DAG)
+| Tarefa | Estado | Provider | Depende de | Requisitos |
+|---|---|---|---|---|
+${pt.map((t) => `| ${t.id} — ${t.title.replaceAll('|', '/')} | ${t.state} | ${t.provider ?? '—'} | ${t.dependsOn.join(', ') || '—'} | ${t.reqs.join(', ') || '—'} |`).join('\n')}
+
+## Critérios
+- **Entrada:** tarefas com requisitos ligados e dependências sem ciclo.
+- **Encerramento:** todas as tarefas COMPLETED ou CANCELLED (o engine recusa concluir a fase com tarefa aberta).
+${ph.state === 'COMPLETED' ? `
+## Relatório de conclusão
+${pt.map((t) => {
+      const runs = store.listTestRuns(t.id);
+      const arts = evidence.get(t.id) ?? [];
+      return `- **${t.id}** ${t.state}: ${runs.length ? `${runs.length} test run(s), último exit ${runs.at(-1)!.exitCode}` : 'sem test run'}; ${arts.length} evidência(s)${t.state === 'CANCELLED' ? ' · **exceção: cancelada**' : ''}`;
+    }).join('\n')}
+- Motivo registrado na conclusão: ${phaseReason(ph.id)}
+` : ''}`);
+  }
+
   for (const t of tasks) {
     writeIfChanged(path.join(A, 'phases', t.phaseId, t.id, 'STATUS.json'), `${JSON.stringify({
       schemaVersion: 2, generatedBy: 'aer-engine', taskId: t.id, phaseId: t.phaseId, title: t.title, state: t.state, version: t.version,

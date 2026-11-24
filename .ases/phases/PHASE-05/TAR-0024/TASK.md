@@ -1,26 +1,34 @@
+<!-- GERADO pelo engine do AER a partir do banco; não editar -->
 # TAR-0024 — Fila de merge serializada
 
 | Campo | Valor |
 |---|---|
 | task_id | TAR-0024 |
 | phase_id | PHASE-05 |
-| priority | 85 |
-| risk | HIGH |
-| owner_type | PENDING |
-| provider | humano + Claude Code (sessão de desenvolvimento) |
-| dependencies | TAR-0023 |
-| related_reqs | AER-REQ-055, AER-REQ-056, AER-REQ-057, AER-REQ-059 |
-| review_policy | revisão humana antes do merge |
+| estado | COMPLETED (v1) |
+| prioridade / risco | 50 / MODERATE |
+| provider | — |
+| dependências | TAR-0023 |
+| extensões | — |
+| recursos | — |
 
-**Escopo:** merge só com checkout limpo e no branch alvo; um merge por vez (lock no banco); conflito → abort seguro + CONFLICT; nunca reset --hard/clean/force
+## Objetivo / escopo
+Fila de merge serializada
 
-## Critérios de aceite
-- [ ] alterações humanas não commitadas preservadas byte a byte
-- [ ] conflito termina em CONFLICT sem merge
-- [ ] dois merges não simultâneos
+## Requisitos e critérios de aceite
+- AER-REQ-055
+- AER-REQ-056
+- AER-REQ-057
+- AER-REQ-059
 
-## Testes
-- [ ] packages/git-bridge/test/merge.test.ts
+## Tentativas
+- nenhuma
 
-## Regras de handoff
-Estado vivo em `STATUS.json` desta pasta e em `.ases/STATUS.md`. Não marcar COMPLETED sem evidência.
+## Testes executados
+- nenhum (validação NÃO concluída)
+
+## Evidências, revisões e handoffs
+- EVIDENCE .ases/evidence/PHASE-05-verify.md (sha256 852ed26b0d10…) — importado do .ases/ interino
+
+## Critério de saída
+COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

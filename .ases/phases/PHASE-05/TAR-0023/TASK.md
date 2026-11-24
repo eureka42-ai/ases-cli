@@ -1,26 +1,35 @@
+<!-- GERADO pelo engine do AER a partir do banco; não editar -->
 # TAR-0023 — Git worktree por tarefa/attempt
 
 | Campo | Valor |
 |---|---|
 | task_id | TAR-0023 |
 | phase_id | PHASE-05 |
-| priority | 85 |
-| risk | HIGH |
-| owner_type | PENDING |
-| provider | humano + Claude Code (sessão de desenvolvimento) |
-| dependencies | TAR-0022 |
-| related_reqs | AER-REQ-051, AER-REQ-052, AER-REQ-053, AER-REQ-060, AER-REQ-164 |
-| review_policy | revisão humana antes do merge |
+| estado | COMPLETED (v1) |
+| prioridade / risco | 50 / MODERATE |
+| provider | — |
+| dependências | TAR-0022 |
+| extensões | — |
+| recursos | — |
 
-**Escopo:** packages/git-bridge via git CLI sem shell: worktree + branch ases/TAR-XXXX/ATT-XXXX, base commit registrado, validação de caminho contra ../ e symlink
+## Objetivo / escopo
+Git worktree por tarefa/attempt
 
-## Critérios de aceite
-- [ ] duas tarefas em worktrees distintas
-- [ ] branch e base no attempt
-- [ ] escape por ../ ou symlink bloqueado
+## Requisitos e critérios de aceite
+- AER-REQ-051
+- AER-REQ-052
+- AER-REQ-053
+- AER-REQ-060
+- AER-REQ-164
 
-## Testes
-- [ ] packages/git-bridge/test/*.test.ts
+## Tentativas
+- nenhuma
 
-## Regras de handoff
-Estado vivo em `STATUS.json` desta pasta e em `.ases/STATUS.md`. Não marcar COMPLETED sem evidência.
+## Testes executados
+- nenhum (validação NÃO concluída)
+
+## Evidências, revisões e handoffs
+- EVIDENCE .ases/evidence/PHASE-05-verify.md (sha256 852ed26b0d10…) — importado do .ases/ interino
+
+## Critério de saída
+COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

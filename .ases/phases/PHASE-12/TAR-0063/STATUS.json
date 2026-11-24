@@ -4,13 +4,18 @@
   "taskId": "TAR-0063",
   "phaseId": "PHASE-12",
   "title": "Hardening E2E, docs por SO e auditoria do DoD (P0 sem exceção aberta)",
-  "state": "PLANNED",
-  "version": 1,
+  "state": "RUNNING",
+  "version": 4,
   "reqs": [
     "AER-REQ-190",
     "AER-REQ-191"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": "docs/AUDITORIA_P0.md",
+      "sha256": "073074a7d0ceace5227267fa4688c9f30e1d24f01a683e5edf334e4e6c879066"
+    }
+  ],
   "lastTest": null
 }

@@ -1,26 +1,35 @@
+<!-- GERADO pelo engine do AER a partir do banco; não editar -->
 # TAR-0006 — Schema SQLite e migrações
 
 | Campo | Valor |
 |---|---|
 | task_id | TAR-0006 |
 | phase_id | PHASE-02 |
-| priority | 90 |
-| risk | MODERATE |
-| owner_type | PENDING |
-| provider | humano + Claude Code (sessão de desenvolvimento) |
-| dependencies | nenhuma |
-| related_reqs | AER-REQ-010, AER-REQ-018, AER-REQ-236 |
-| review_policy | revisão humana antes do merge |
+| estado | COMPLETED (v1) |
+| prioridade / risco | 50 / MODERATE |
+| provider | — |
+| dependências | — |
+| extensões | — |
+| recursos | — |
 
-**Escopo:** ADR-0002 (driver); packages/persistence: migração 1 (phases antes de tasks), FKs, WAL, busy_timeout, backup antes de migrar
+## Objetivo / escopo
+Schema SQLite e migrações
 
-## Critérios de aceite
-- [ ] Migração aplica em banco vazio e é idempotente ao reabrir
-- [ ] Backup verificado antes de migrar banco existente
-- [ ] FKs ON e CHECKs de estado ativos
+## Requisitos e critérios de aceite
+- AER-REQ-010
+- AER-REQ-018
+- AER-REQ-236
 
-## Testes
-- [ ] packages/persistence/test/migrations.test.ts
+## Tentativas
+- nenhuma
 
-## Regras de handoff
-Estado vivo em `STATUS.json` desta pasta e em `.ases/STATUS.md`. Não marcar COMPLETED sem evidência.
+## Testes executados
+- nenhum (validação NÃO concluída)
+
+## Evidências, revisões e handoffs
+- EVIDENCE .ases/evidence/PHASE-02-verify.md (sha256 9078cb150986…) — importado do .ases/ interino
+- EVIDENCE docs/ADRs/ADR-0002.md (sha256 1f0edd105874…) — importado do .ases/ interino
+- EVIDENCE packages/persistence/test/migrations.test.ts (sha256 c8069c12fade…) — importado do .ases/ interino
+
+## Critério de saída
+COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

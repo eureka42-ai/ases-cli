@@ -1,26 +1,36 @@
+<!-- GERADO pelo engine do AER a partir do banco; não editar -->
 # TAR-0018 — ases-tar: overview + eventos ao vivo
 
 | Campo | Valor |
 |---|---|
 | task_id | TAR-0018 |
 | phase_id | PHASE-04 |
-| priority | 80 |
-| risk | MODERATE |
-| owner_type | PENDING |
-| provider | humano + Claude Code (sessão de desenvolvimento) |
-| dependencies | TAR-0016 |
-| related_reqs | AER-REQ-092, AER-REQ-096, AER-REQ-099, AER-REQ-203 |
-| review_policy | revisão humana antes do merge |
+| estado | COMPLETED (v1) |
+| prioridade / risco | 50 / MODERATE |
+| provider | — |
+| dependências | TAR-0016 |
+| extensões | — |
+| recursos | — |
 
-**Escopo:** TUI Ink do ases-tar: projeção local por eventos, painel fases/tarefas, timeline por seq, badge LIVE/RECONNECTING/OFFLINE, r relê sem reiniciar execução
+## Objetivo / escopo
+ases-tar: overview + eventos ao vivo
 
-## Critérios de aceite
-- [ ] projeção igual ao snapshot após eventos
-- [ ] badge muda ao perder o engine
-- [ ] sem polling: atualiza por evento
+## Requisitos e critérios de aceite
+- AER-REQ-092
+- AER-REQ-096
+- AER-REQ-099
+- AER-REQ-203
 
-## Testes
-- [ ] apps/ases-tar/test/*.test.tsx
+## Tentativas
+- nenhuma
 
-## Regras de handoff
-Estado vivo em `STATUS.json` desta pasta e em `.ases/STATUS.md`. Não marcar COMPLETED sem evidência.
+## Testes executados
+- nenhum (validação NÃO concluída)
+
+## Evidências, revisões e handoffs
+- EVIDENCE .ases/evidence/PHASE-04-verify.md (sha256 b38a1fcb746a…) — importado do .ases/ interino
+- EVIDENCE apps/ases-tar/test/tui.test.tsx (sha256 03a60e4453f0…) — importado do .ases/ interino
+- EVIDENCE apps/ases-tar/test/projection.test.ts (sha256 5b4f4cee9b74…) — importado do .ases/ interino
+
+## Critério de saída
+COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

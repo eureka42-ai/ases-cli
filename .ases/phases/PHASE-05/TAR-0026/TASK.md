@@ -1,27 +1,35 @@
+<!-- GERADO pelo engine do AER a partir do banco; não editar -->
 # TAR-0026 — Evidências no banco e corte do .ases/ interino
 
 | Campo | Valor |
 |---|---|
 | task_id | TAR-0026 |
 | phase_id | PHASE-05 |
-| priority | 80 |
-| risk | HIGH |
-| owner_type | PENDING |
-| provider | humano + Claude Code (sessão de desenvolvimento) |
-| dependencies | TAR-0022 |
-| related_reqs | AER-REQ-158, AER-REQ-186, AER-REQ-189, AER-REQ-036, AER-REQ-181 |
-| review_policy | revisão humana antes do merge |
+| estado | COMPLETED (v1) |
+| prioridade / risco | 50 / MODERATE |
+| provider | — |
+| dependências | TAR-0022 |
+| extensões | — |
+| recursos | — |
 
-**Escopo:** tabelas artifacts/test_runs; COMPLETED exige evidência; importação do HISTORY.jsonl interino; STATUS/TRACEABILITY/HANDOFF gerados pelo engine; aposentar scripts/ases-dev.mjs como escritor
+## Objetivo / escopo
+Evidências no banco e corte do .ases/ interino
 
-## Critérios de aceite
-- [ ] COMPLETED sem evidência negado
-- [ ] histórico interino importado com eventId e seq preservados
-- [ ] ases abre este repositório
+## Requisitos e critérios de aceite
+- AER-REQ-036
+- AER-REQ-158
+- AER-REQ-181
+- AER-REQ-186
+- AER-REQ-189
 
-## Testes
-- [ ] packages/persistence/test/legacy.test.ts
-- [ ] test/e2e/cutover.test.mjs
+## Tentativas
+- nenhuma
 
-## Regras de handoff
-Estado vivo em `STATUS.json` desta pasta e em `.ases/STATUS.md`. Não marcar COMPLETED sem evidência.
+## Testes executados
+- nenhum (validação NÃO concluída)
+
+## Evidências, revisões e handoffs
+- EVIDENCE .ases/evidence/PHASE-05-verify.md (sha256 852ed26b0d10…) — importado do .ases/ interino
+
+## Critério de saída
+COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

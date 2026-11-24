@@ -1,27 +1,38 @@
+<!-- GERADO pelo engine do AER a partir do banco; não editar -->
 # TAR-0017 — ases: home + sessão TUI
 
 | Campo | Valor |
 |---|---|
 | task_id | TAR-0017 |
 | phase_id | PHASE-04 |
-| priority | 80 |
-| risk | MODERATE |
-| owner_type | PENDING |
-| provider | humano + Claude Code (sessão de desenvolvimento) |
-| dependencies | TAR-0016 |
-| related_reqs | AER-REQ-081, AER-REQ-084, AER-REQ-085, AER-REQ-087, AER-REQ-088, AER-REQ-090 |
-| review_policy | revisão humana antes do merge |
+| estado | COMPLETED (v1) |
+| prioridade / risco | 50 / MODERATE |
+| provider | — |
+| dependências | TAR-0016 |
+| extensões | — |
+| recursos | — |
 
-**Escopo:** TUI Ink do ases: cabeçalho com projeto/engine, log da sessão, painel de fases/tarefas, prompt com histórico, Tab/?/Esc/Ctrl+L, Ctrl+C duplo; fallback modo linha fora de TTY
+## Objetivo / escopo
+ases: home + sessão TUI
 
-## Critérios de aceite
-- [ ] prompt único com histórico
-- [ ] Ctrl+C informa destino do engine
-- [ ] fora de TTY cai no modo linha
+## Requisitos e critérios de aceite
+- AER-REQ-081
+- AER-REQ-084
+- AER-REQ-085
+- AER-REQ-087
+- AER-REQ-088
+- AER-REQ-090
 
-## Testes
-- [ ] apps/ases-cli/test/*.test.tsx
-- [ ] test/e2e/pty.test.mjs
+## Tentativas
+- nenhuma
 
-## Regras de handoff
-Estado vivo em `STATUS.json` desta pasta e em `.ases/STATUS.md`. Não marcar COMPLETED sem evidência.
+## Testes executados
+- nenhum (validação NÃO concluída)
+
+## Evidências, revisões e handoffs
+- EVIDENCE .ases/evidence/PHASE-04-verify.md (sha256 b38a1fcb746a…) — importado do .ases/ interino
+- EVIDENCE apps/ases-cli/test/tui.test.tsx (sha256 ec1615525cf8…) — importado do .ases/ interino
+- EVIDENCE test/e2e/pty.test.mjs (sha256 14930dec4877…) — importado do .ases/ interino
+
+## Critério de saída
+COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).
