@@ -136,16 +136,19 @@ describe('ases chat TUI (PHASE-18, TAR-0087)', () => {
 
   it('message typed during a running turn shows "na fila"', async () => {
     const { e } = await project({ main: 'simulator', crossReview: false });
+    // principal que não termina: o 1º turno com certeza ainda roda quando a 2ª mensagem chega (determinístico)
+    const { chatSession } = await import('../src/chat-commands.ts');
+    const c = await chatSession(e).conversation();
+    e.mutate((s) => s.setMainProvider(c.id, 'simulator:hang'));
     const r = await renderForTest(<UiContext.Provider value={ui()}><AsesApp engine={e} onExit={() => {}} /></UiContext.Provider>, 120, 30);
     await type(r, 'primeira');
     await r.press(KEYS.enter);
     await type(r, 'segunda');
     await r.press(KEYS.enter);
     expect(txt(r)).toContain('na fila: segunda');
-    await until(r, (s) => s.includes('entendi — segunda'));
     r.unmount();
-    await e.stop();
-  });
+    await e.stop(); // o stop interrompe o turno pendurado
+  }, 60_000);
 
   it('wizard lists IAs, saves main/mode/limit/test to the chosen config', async () => {
     const { root, e } = await project(null);
