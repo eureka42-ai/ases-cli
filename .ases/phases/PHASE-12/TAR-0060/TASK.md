@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0060 |
 | phase_id | PHASE-12 |
-| estado | RUNNING (v4) |
+| estado | REVIEW (v6) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |
@@ -25,7 +25,7 @@ Lifecycle do motor residente: start/stop/status, TUI sai sem perder tarefas
 - nenhum (validação NÃO concluída)
 
 ## Evidências, revisões e handoffs
-- nenhuma
+- EVIDENCE .ases/evidence/PHASE-12-verify.md (sha256 f364867799e2…) — verificação da PHASE-12
 
 ## Critério de saída
 COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

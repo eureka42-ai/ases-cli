@@ -1,4 +1,4 @@
-# Próximos passos (atualizado 23/11/2026, PHASE-07 em andamento)
+# Próximos passos (atualizado 24/11/2026, PHASE-12 em REVIEW)
 
 **Local do projeto:** `~/Projetos/eureka42/ases-cli` (clone de `eureka42-ai/ases-cli`, privado). A cópia antiga em `~/Desktop/ASES CLI` está numa pasta sincronizada pelo iCloud e **não deve mais ser usada**: o iCloud criou cópias de conflito de arquivos do `.ases/`, e o banco SQLite corre risco lá. Abra o Claude Code na pasta nova.
 
@@ -19,16 +19,13 @@
 
 5. **PHASE-10: COMPLETED** (23/11/2026). Aprovada pelo responsável e integrada em `main` (`26295d4`). Segurança e extensões (ADR-0015).
 6. **PHASE-11: COMPLETED** (23/11/2026). Aprovada pelo responsável e integrada em `main` (`26295d4`). Continuidade, test runs, revisão, resume e usage (ADR-0016).
-7. **PHASE-12: em andamento** (branch `ases/PHASE-12`).
-   - **Feito:** TAR-0061/0062 (em andamento).
-     - Pacote npm único e autocontido (`scripts/pack.mjs`, `docs/INSTALL.md`).
-     - Smoke instala/roda/desinstala offline num prefixo temporário (`scripts/pack-smoke.mjs`).
-     - Comandos pelo PATH: CI Windows (pwsh, PowerShell, cmd), Linux (bash, pwsh); local macOS (bash, zsh). Run 45262002469: Linux/Windows 6/6.
-   - **Falta:**
-     - TAR-0059/0060: ADR e lifecycle do motor residente (start/stop/status; a TUI sai sem perder tarefas; IPC `control` já existe).
-     - TAR-0063: hardening e auditoria do DoD (§21).
-       - **43 requisitos P0 sem tarefa rastreada.** Para cada um: ligar a teste/evidência existente, implementar, ou registrar exceção com aprovação do responsável.
-       - Revisão de segurança, licenças (terceiros embutidos no pacote) e conformidade de autenticação.
+7. **PHASE-12: em REVIEW, aguardando aprovação do responsável** (branch `ases/PHASE-12`; `.ases/evidence/PHASE-12-verify.md`, ADR-0017).
+   - TAR-0059..0064 em REVIEW:
+     - pacote npm autocontido com `THIRD_PARTY_LICENSES.md`;
+     - smoke offline nos 8 alvos;
+     - motor residente (`ases daemon`);
+     - auditoria dos P0: 31 cobertos; 12 com exceção aprovada em 24/11/2026 (`docs/AUDITORIA_P0.md`).
+   - Depois da aprovação: fast-forward de `main`. O MVP (PHASE-01..12) fica concluído.
 8. **Decisões do responsável (23/11/2026):**
    - **Licença:** CC BY-NC-ND 4.0, Open Access (`LICENSE`; `package.json` com `CC-BY-NC-ND-4.0`). AER-REQ-210 atendido.
    - **Termos dos providers:** o responsável declarou que todos os vendors autorizaram a orquestração. A declaração está registrada; os documentos de autorização não estão no repositório.

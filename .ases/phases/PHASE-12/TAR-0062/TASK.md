@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0062 |
 | phase_id | PHASE-12 |
-| estado | RUNNING (v4) |
+| estado | REVIEW (v6) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |
@@ -26,7 +26,7 @@ Matriz CI de OS e arquiteturas com smoke do pacote instalado (bash, zsh, PowerSh
 - nenhum (validação NÃO concluída)
 
 ## Evidências, revisões e handoffs
-- nenhuma
+- EVIDENCE .ases/evidence/PHASE-12-verify.md (sha256 f364867799e2…) — verificação da PHASE-12
 
 ## Critério de saída
 COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

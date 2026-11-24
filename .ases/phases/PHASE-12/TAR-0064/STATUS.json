@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0064",
+  "phaseId": "PHASE-12",
+  "title": "Fecha 5 P0 da auditoria (095, 097, 027, 171, 048) e registra as exceções aprovadas",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-027",
+    "AER-REQ-048",
+    "AER-REQ-095",
+    "AER-REQ-097",
+    "AER-REQ-171"
+  ],
+  "dependsOn": [],
+  "evidence": [
+    {
+      "path": "docs/AUDITORIA_P0.md",
+      "sha256": "e9a0d00f34abfe8af00ba75de3cf8802163ec5c5d074c1b795b7fcdd43f672cd"
+    },
+    {
+      "path": ".ases/evidence/PHASE-12-verify.md",
+      "sha256": "f364867799e28533e87f2ddf2d751c08f72391cd7e559472eff243b8c84ff2b3"
+    }
+  ],
+  "lastTest": null
+}

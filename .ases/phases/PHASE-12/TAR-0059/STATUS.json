@@ -4,13 +4,18 @@
   "taskId": "TAR-0059",
   "phaseId": "PHASE-12",
   "title": "ADR do motor residente e supervisores (launchd, systemd, Windows)",
-  "state": "RUNNING",
-  "version": 4,
+  "state": "REVIEW",
+  "version": 6,
   "reqs": [
     "AER-REQ-231",
     "AER-REQ-232"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-12-verify.md",
+      "sha256": "f364867799e28533e87f2ddf2d751c08f72391cd7e559472eff243b8c84ff2b3"
+    }
+  ],
   "lastTest": null
 }

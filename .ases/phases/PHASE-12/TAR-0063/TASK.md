@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0063 |
 | phase_id | PHASE-12 |
-| estado | RUNNING (v4) |
+| estado | REVIEW (v6) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |
@@ -27,6 +27,7 @@ Hardening E2E, docs por SO e auditoria do DoD (P0 sem exceção aberta)
 
 ## Evidências, revisões e handoffs
 - EVIDENCE docs/AUDITORIA_P0.md (sha256 073074a7d0ce…) — auditoria dos 43 P0: 26 cobertos, 10 parciais, 7 não implementados
+- EVIDENCE .ases/evidence/PHASE-12-verify.md (sha256 f364867799e2…) — verificação da PHASE-12
 
 ## Critério de saída
 COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).
