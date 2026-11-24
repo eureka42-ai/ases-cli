@@ -4,8 +4,8 @@
   "taskId": "TAR-0062",
   "phaseId": "PHASE-12",
   "title": "Matriz CI de OS e arquiteturas com smoke do pacote instalado (bash, zsh, PowerShell)",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-190",
     "AER-REQ-233"

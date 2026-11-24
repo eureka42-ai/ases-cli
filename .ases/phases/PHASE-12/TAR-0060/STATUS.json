@@ -4,8 +4,8 @@
   "taskId": "TAR-0060",
   "phaseId": "PHASE-12",
   "title": "Lifecycle do motor residente: start/stop/status, TUI sai sem perder tarefas",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-231"
   ],

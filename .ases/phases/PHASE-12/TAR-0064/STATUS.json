@@ -4,8 +4,8 @@
   "taskId": "TAR-0064",
   "phaseId": "PHASE-12",
   "title": "Fecha 5 P0 da auditoria (095, 097, 027, 171, 048) e registra as exceções aprovadas",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-027",
     "AER-REQ-048",

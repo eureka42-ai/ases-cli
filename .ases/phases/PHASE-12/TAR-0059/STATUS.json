@@ -4,8 +4,8 @@
   "taskId": "TAR-0059",
   "phaseId": "PHASE-12",
   "title": "ADR do motor residente e supervisores (launchd, systemd, Windows)",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-231",
     "AER-REQ-232"

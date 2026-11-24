@@ -4,8 +4,8 @@
   "taskId": "TAR-0061",
   "phaseId": "PHASE-12",
   "title": "Pacote npm único com os dois bins, instalação, atualização e uninstall limpos",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-004",
     "AER-REQ-210"
