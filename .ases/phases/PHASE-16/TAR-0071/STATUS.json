@@ -4,13 +4,18 @@
   "taskId": "TAR-0071",
   "phaseId": "PHASE-16",
   "title": "Profundidade de cor: truecolor, 256 e 16 cores pelo terminal",
-  "state": "RUNNING",
-  "version": 4,
+  "state": "REVIEW",
+  "version": 6,
   "reqs": [
     "AER-REQ-243",
     "AER-REQ-245"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-16-verify.md",
+      "sha256": "b5391c58f8a55fe2a1c51775a4ef8659aa72815e16aae7cf38c5fffbadffcbd3"
+    }
+  ],
   "lastTest": null
 }

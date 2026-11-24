@@ -27,7 +27,7 @@ Gate de release cross-platform: matriz, pacote por plataforma e notas de versão
 - nenhum (validação NÃO concluída)
 
 ## Evidências, revisões e handoffs
-- nenhuma
+- EVIDENCE docs/RELEASE_NOTES_RASCUNHO.md (sha256 e8f708177c88…) — rascunho; aguarda decisões do responsável
 
 ## Critério de saída
 COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

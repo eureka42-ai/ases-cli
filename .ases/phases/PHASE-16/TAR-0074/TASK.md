@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0074 |
 | phase_id | PHASE-16 |
-| estado | RUNNING (v4) |
+| estado | REVIEW (v6) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |
@@ -27,7 +27,7 @@ Sem animação nas TUIs (verificação automática) e larguras 40/50/80/120 nas 
 - nenhum (validação NÃO concluída)
 
 ## Evidências, revisões e handoffs
-- nenhuma
+- EVIDENCE .ases/evidence/PHASE-16-verify.md (sha256 b5391c58f8a5…) — CI Windows/Linux 6/6 run 45420199279
 
 ## Critério de saída
 COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

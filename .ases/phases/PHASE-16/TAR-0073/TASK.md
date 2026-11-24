@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0073 |
 | phase_id | PHASE-16 |
-| estado | RUNNING (v4) |
+| estado | REVIEW (v6) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |
@@ -26,7 +26,7 @@ Precedência de tema e logo: CLI > projeto > global > padrão
 - nenhum (validação NÃO concluída)
 
 ## Evidências, revisões e handoffs
-- nenhuma
+- EVIDENCE .ases/evidence/PHASE-16-verify.md (sha256 b5391c58f8a5…) — CI Windows/Linux 6/6 run 45420199279
 
 ## Critério de saída
 COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 637 (TaskUpdated, 2026-11-24T14:59:03.989Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 645 (TaskUpdated, 2026-11-24T15:05:37.123Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -95,10 +95,10 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0068 | PHASE-15 | Matriz de suporte publicada por SO/arquitetura com PASS/FAIL/NOT_RUN e doctor | COMPLETED | — | .ases/evidence/PHASE-15-verify.md |
 | TAR-0069 | PHASE-15 | TUI em ConPTY/Windows Terminal ou registro NOT_RUN honesto | CANCELLED | — | docs/SUPORTE_TERMINAIS_WINDOWS.md |
 | TAR-0070 | PHASE-16 | TUI em ConPTY/Windows Terminal: roteiro manual do responsável ou harness automático (vem da TAR-0069) | PLANNED | — | — |
-| TAR-0071 | PHASE-16 | Profundidade de cor: truecolor, 256 e 16 cores pelo terminal | RUNNING | — | — |
-| TAR-0072 | PHASE-16 | Tema de alto contraste e tema auto, com razão de contraste medida | RUNNING | — | — |
-| TAR-0073 | PHASE-16 | Precedência de tema e logo: CLI > projeto > global > padrão | RUNNING | — | — |
-| TAR-0074 | PHASE-16 | Sem animação nas TUIs (verificação automática) e larguras 40/50/80/120 nas duas TUIs | RUNNING | — | — |
-| TAR-0075 | PHASE-16 | Gate de release cross-platform: matriz, pacote por plataforma e notas de versão | PLANNED | — | — |
+| TAR-0071 | PHASE-16 | Profundidade de cor: truecolor, 256 e 16 cores pelo terminal | REVIEW | — | .ases/evidence/PHASE-16-verify.md |
+| TAR-0072 | PHASE-16 | Tema de alto contraste e tema auto, com razão de contraste medida | REVIEW | — | .ases/evidence/PHASE-16-verify.md |
+| TAR-0073 | PHASE-16 | Precedência de tema e logo: CLI > projeto > global > padrão | REVIEW | — | .ases/evidence/PHASE-16-verify.md |
+| TAR-0074 | PHASE-16 | Sem animação nas TUIs (verificação automática) e larguras 40/50/80/120 nas duas TUIs | REVIEW | — | .ases/evidence/PHASE-16-verify.md |
+| TAR-0075 | PHASE-16 | Gate de release cross-platform: matriz, pacote por plataforma e notas de versão | PLANNED | — | docs/RELEASE_NOTES_RASCUNHO.md |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

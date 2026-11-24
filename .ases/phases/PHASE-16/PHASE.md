@@ -8,10 +8,10 @@
 | Tarefa | Estado | Provider | Depende de | Requisitos |
 |---|---|---|---|---|
 | TAR-0070 — TUI em ConPTY/Windows Terminal: roteiro manual do responsável ou harness automático (vem da TAR-0069) | PLANNED | — | — | AER-REQ-234 |
-| TAR-0071 — Profundidade de cor: truecolor, 256 e 16 cores pelo terminal | RUNNING | — | — | AER-REQ-243, AER-REQ-245 |
-| TAR-0072 — Tema de alto contraste e tema auto, com razão de contraste medida | RUNNING | — | — | AER-REQ-243 |
-| TAR-0073 — Precedência de tema e logo: CLI > projeto > global > padrão | RUNNING | — | — | AER-REQ-248, AER-REQ-249 |
-| TAR-0074 — Sem animação nas TUIs (verificação automática) e larguras 40/50/80/120 nas duas TUIs | RUNNING | — | — | AER-REQ-244, AER-REQ-246, AER-REQ-247 |
+| TAR-0071 — Profundidade de cor: truecolor, 256 e 16 cores pelo terminal | REVIEW | — | — | AER-REQ-243, AER-REQ-245 |
+| TAR-0072 — Tema de alto contraste e tema auto, com razão de contraste medida | REVIEW | — | — | AER-REQ-243 |
+| TAR-0073 — Precedência de tema e logo: CLI > projeto > global > padrão | REVIEW | — | — | AER-REQ-248, AER-REQ-249 |
+| TAR-0074 — Sem animação nas TUIs (verificação automática) e larguras 40/50/80/120 nas duas TUIs | REVIEW | — | — | AER-REQ-244, AER-REQ-246, AER-REQ-247 |
 | TAR-0075 — Gate de release cross-platform: matriz, pacote por plataforma e notas de versão | PLANNED | — | — | AER-REQ-225, AER-REQ-232, AER-REQ-240 |
 
 ## Critérios

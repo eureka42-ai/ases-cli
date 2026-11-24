@@ -4,13 +4,18 @@
   "taskId": "TAR-0073",
   "phaseId": "PHASE-16",
   "title": "Precedência de tema e logo: CLI > projeto > global > padrão",
-  "state": "RUNNING",
-  "version": 4,
+  "state": "REVIEW",
+  "version": 6,
   "reqs": [
     "AER-REQ-248",
     "AER-REQ-249"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-16-verify.md",
+      "sha256": "b5391c58f8a55fe2a1c51775a4ef8659aa72815e16aae7cf38c5fffbadffcbd3"
+    }
+  ],
   "lastTest": null
 }

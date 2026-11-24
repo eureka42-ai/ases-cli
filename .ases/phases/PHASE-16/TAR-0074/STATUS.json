@@ -4,14 +4,19 @@
   "taskId": "TAR-0074",
   "phaseId": "PHASE-16",
   "title": "Sem animação nas TUIs (verificação automática) e larguras 40/50/80/120 nas duas TUIs",
-  "state": "RUNNING",
-  "version": 4,
+  "state": "REVIEW",
+  "version": 6,
   "reqs": [
     "AER-REQ-244",
     "AER-REQ-246",
     "AER-REQ-247"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-16-verify.md",
+      "sha256": "b5391c58f8a55fe2a1c51775a4ef8659aa72815e16aae7cf38c5fffbadffcbd3"
+    }
+  ],
   "lastTest": null
 }

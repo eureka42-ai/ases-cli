@@ -12,6 +12,11 @@
     "AER-REQ-240"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": "docs/RELEASE_NOTES_RASCUNHO.md",
+      "sha256": "e8f708177c88dc690728d8071fdb8a59009c3389bf89153bf3bf434225160dcb"
+    }
+  ],
   "lastTest": null
 }
