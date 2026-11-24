@@ -1,4 +1,4 @@
-# Próximos passos (atualizado 24/11/2026: AER 1.0.0 publicado no npm; PHASE-16 concluída)
+# Próximos passos (atualizado 24/11/2026: AER 1.0.1 publicado no npm; PHASE-17 concluída)
 
 **Local do projeto:** `~/Projetos/eureka42/ases-cli` (clone de `eureka42-ai/ases-cli`, privado). A cópia antiga em `~/Desktop/ASES CLI` está numa pasta sincronizada pelo iCloud e **não deve mais ser usada**: o iCloud criou cópias de conflito de arquivos do `.ases/`, e o banco SQLite corre risco lá. Abra o Claude Code na pasta nova.
 
@@ -33,6 +33,9 @@
    - **Pendente do responsável:**
      - confirmar a instalação pelo npm numa máquina Windows real e o roteiro manual de `docs/SUPORTE_TERMINAIS_WINDOWS.md` (conhost e PowerShell 5.1);
      - **publicações futuras:** pelo app Terminal, porque o 2FA é por Touch ID e só funciona num terminal interativo. Para automatizar, considerar trusted publishing (OIDC) pelo GitHub Actions.
+7c2. **PHASE-17 (manutenção 1.0.x): COMPLETED** (24/11/2026). `@eureka42-ai/aer@1.0.1` publicado, tag `v1.0.1`.
+   - Shim `.cmd` do npm no Windows (TAR-0076) e worktrees em paralelo (TAR-0077). Evidência: `.ases/evidence/PHASE-17-verify.md`.
+   - **Pendente do responsável:** o `ases doctor` no Windows real com os providers instalados.
 7d. **Próximas: PHASE-13 e PHASE-14** (pós-MVP, ordem do plano mestre).
 8. **Decisões do responsável (23/11/2026):**
    - **Licença:** CC BY-NC-ND 4.0, Open Access (`LICENSE`; `package.json` com `CC-BY-NC-ND-4.0`). AER-REQ-210 atendido.

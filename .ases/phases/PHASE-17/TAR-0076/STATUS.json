@@ -4,13 +4,18 @@
   "taskId": "TAR-0076",
   "phaseId": "PHASE-17",
   "title": "Windows: providers instalados por npm (shim .cmd) executados sem shell",
-  "state": "PLANNED",
-  "version": 1,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-109",
     "AER-REQ-229"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-17-verify.md",
+      "sha256": "b3bb3cc81468442cf6e8331989e977122586c39fca14009782fb65442c9ac002"
+    }
+  ],
   "lastTest": null
 }

@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0077 |
 | phase_id | PHASE-17 |
-| estado | PLANNED (v1) |
+| estado | COMPLETED (v9) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |
@@ -26,7 +26,7 @@ Worktrees em paralelo: git worktree add/remove serializados por repositório
 - nenhum (validação NÃO concluída)
 
 ## Evidências, revisões e handoffs
-- nenhuma
+- EVIDENCE .ases/evidence/PHASE-17-verify.md (sha256 b3bb3cc81468…)
 
 ## Critério de saída
 COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).
