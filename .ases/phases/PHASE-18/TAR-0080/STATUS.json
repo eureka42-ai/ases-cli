@@ -4,12 +4,17 @@
   "taskId": "TAR-0080",
   "phaseId": "PHASE-18",
   "title": "Eventos, migração 5 e store da conversa",
-  "state": "PLANNED",
-  "version": 1,
+  "state": "REVIEW",
+  "version": 6,
   "reqs": [
     "AER-REQ-065"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-18-verify.md",
+      "sha256": "f55acb0fe198a1aa06ef7235f618a00aa0d2983464a1c84576b32f05470a5db3"
+    }
+  ],
   "lastTest": null
 }

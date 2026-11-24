@@ -36,6 +36,15 @@
 7c2. **PHASE-17 (manutenção 1.0.x): COMPLETED** (24/11/2026). `@eureka42-ai/aer@1.0.1` publicado, tag `v1.0.1`.
    - Shim `.cmd` do npm no Windows (TAR-0076) e worktrees em paralelo (TAR-0077). Evidência: `.ases/evidence/PHASE-17-verify.md`.
    - **Pendente do responsável:** o `ases doctor` no Windows real com os providers instalados.
+7e. **PHASE-18 (1.1.0, chat com IA principal e orquestração em paralelo): em REVIEW** (branch `ases/PHASE-18`; `.ases/evidence/PHASE-18-verify.md`).
+   - TAR-0078 a 0089 estão em REVIEW, e as correções da revisão final foram feitas.
+   - **Aguarda o responsável:**
+     - aprovar o merge;
+     - publicar a 1.1.0 pelo app Terminal (Touch ID);
+     - opcionalmente, um smoke real do chat com uma IA de verdade.
+   - **Roteiro aprovado:**
+     - **1.2:** Arena, placar das IAs, memória do projeto e `/salvar`/`/continuar` pelo Google Drive/OneDrive (código pelo GitHub);
+     - **1.3:** turno da noite, máquina do tempo, mesa de controle e orçamento.
 7d. **Próximas: PHASE-13 e PHASE-14** (pós-MVP, ordem do plano mestre).
 8. **Decisões do responsável (23/11/2026):**
    - **Licença:** CC BY-NC-ND 4.0, Open Access (`LICENSE`; `package.json` com `CC-BY-NC-ND-4.0`). AER-REQ-210 atendido.
