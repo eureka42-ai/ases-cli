@@ -114,10 +114,10 @@ const winChecked = new Set<string>();
 export function windowsDirAcl(dir: string): { me: string; allowed: string[] } {
   const ps = `${process.env.SystemRoot ?? 'C:\\Windows'}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe`;
   const p64 = Buffer.from(dir, 'utf8').toString('base64');
-  const script = `$p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${p64}')); 'ME ' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value; foreach ($r in (New-Object IO.DirectoryInfo $p).GetAccessControl().GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) { if ($r.AccessControlType -eq 'Allow') { 'ACE ' + $r.IdentityReference.Value } }`;
-  // sem PSModulePath herdado: chamado de dentro do pwsh 7, o PowerShell 5.1 tentaria carregar módulos do 7 (CI run 45408100121)
-  const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => k.toUpperCase() !== 'PSMODULEPATH'));
-  const r = spawnSync(ps, ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', '-'], { input: `${script}\n`, encoding: 'utf8', timeout: 30_000, windowsHide: true, env });
+  const script = `$p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${p64}')); 'ME ' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value; foreach ($r in ([IO.DirectoryInfo]::new($p)).GetAccessControl().GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) { if ($r.AccessControlType -eq 'Allow') { 'ACE ' + $r.IdentityReference.Value } }`;
+  // só .NET, sem cmdlet de módulo: chamado de dentro do pwsh 7, o 5.1 falhava ao carregar o Get-Acl (CI run 45408100121);
+  // tirar o PSModulePath travou o PowerShell no windows-11-arm (run 45409051065), então o ambiente segue herdado
+  const r = spawnSync(ps, ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', '-'], { input: `${script}\n`, encoding: 'utf8', timeout: 30_000, windowsHide: true });
   const me = /^ME (S-[\d-]+)\s*$/m.exec(r.stdout ?? '')?.[1];
   if (r.status !== 0 || !me) throw new PlatformError('INSECURE_PATH', `cannot read the ACL of ${dir} (exit ${r.status}): ${(r.stderr ?? '').trim().slice(0, 300)}`);
   return { me, allowed: [...(r.stdout ?? '').matchAll(/^ACE (\S+)\s*$/gm)].map((m) => m[1]!) };

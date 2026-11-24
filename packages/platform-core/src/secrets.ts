@@ -140,7 +140,7 @@ export function createWindowsCredentialStore(p: Spawner, o: { service?: string; 
   const target = (keyId: string) => `${service}/${keyId}`;
   const ps = async (body: string) => {
     const script = `$ErrorActionPreference='Stop'; try { Add-Type -TypeDefinition ${psString(WINCRED_CS)}; ${body} } catch { Write-Output ('AER-ERR:hresult' + $_.Exception.HResult) }`;
-    const r = await runWithInput(p, bin, ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', '-'], `iex ${psString(script)}\n`, 60_000, Object.fromEntries(Object.entries(env).filter(([k]) => k.toUpperCase() !== 'PSMODULEPATH')));
+    const r = await runWithInput(p, bin, ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', '-'], `iex ${psString(script)}\n`, 60_000);
     const m = /AER-(OK|NONE|ERR)(?::([A-Za-z0-9+/=-]*))?/.exec(r.stdout);
     if (!m) throw new PlatformError('SECRET_STORE_FAILED', `credential manager: no answer (exit ${r.exitCode})`);
     if (m[1] === 'ERR') throw new PlatformError('SECRET_STORE_FAILED', `credential manager call failed (${m[2] ?? '?'})`);
