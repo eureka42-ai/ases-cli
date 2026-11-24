@@ -131,4 +131,19 @@ describe.runIf(pty)('TUIs in a real Windows ConPTY (TAR-0070)', () => {
     await t.waitFor((s) => s.includes('engine encerrado'));
     expect(await t.exited).toBe(0);
   }, 90_000);
+
+  it('chat in ConPTY: banner, a request becomes a plan and Enter runs it (PHASE-18)', async () => {
+    const t = conpty(BIN.ases, [], p.dir, { WT_SESSION: 'aer-e2e', AER_SIMULATORS: '3' }, 100);
+    procs.push(t);
+    await t.waitFor((s) => s.includes('eureka42.org') && s.includes('você>'), 30_000);
+    await t.openHelp();
+    await t.keys('\u001b');
+    await new Promise((r) => setTimeout(r, 300));
+    await t.keys('divida em tarefas o cadastro\r');
+    await t.waitFor((s) => /Plano PLN-\d{4} \(3 tarefas\)/.test(s), 60_000);
+    await t.keys('\r');
+    await t.waitFor((s) => s.includes('resumo — 3 tarefas'), 180_000);
+    await t.keys('/sair\r');
+    expect(await t.exited).toBe(0);
+  }, 240_000);
 });

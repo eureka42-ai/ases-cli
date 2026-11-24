@@ -1,13 +1,13 @@
 import { parseArgs } from 'node:util';
 import { VERSIONS, type EventEnvelope } from '@aer/contracts';
-import { LOGO_MODES, THEME_CHOICES, pickLogoMode, renderBrand, resolveBrandPrefs, resolveTheme } from '@aer/branding';
+import { LOGO_MODES, SITE, THEME_CHOICES, aboutText, pickLogoMode, renderBrand, resolveBrandPrefs, resolveTheme } from '@aer/branding';
 import type { Snapshot } from '@aer/persistence';
 import { brandConfigLayers, findProjectRoot, loadPlatformAdapter, readManifest } from '@aer/project-store';
 import { formatEvent, isError } from './format.ts';
 import { Monitor, type LinkStatus, type MonitorHandlers } from './monitor.ts';
 import { runTui } from './tui.tsx';
 
-const HELP = `Eureka42 · ASES-TAR — monitor somente leitura ${VERSIONS.app}
+const HELP = `Eureka42 · ASES-TAR — monitor somente leitura ${VERSIONS.app} · eureka42.org
 
 Uso:
   ases-tar                         TUI ao vivo (em terminal interativo); fora de TTY, texto linha a linha
@@ -15,7 +15,7 @@ Uso:
   ases-tar --follow --format jsonl stream de eventos em JSONL no stdout (estado da conexão no stderr)
   ases-tar --json                  snapshot único em JSON e sai
 Filtros: --task TAR-XXXX  --phase PHASE-XX  --from-seq N  --errors (só severidade error/critical)
-Opções: --no-color  --no-banner  --no-animation (aceito; as TUIs não animam)  --theme auto|green|teal|blue|purple|gold|mono|contrast  --logo banner|full|compact|minimal|ascii  --version  --help
+Opções: --no-color  --no-banner  --no-animation (aceito; as TUIs não animam)  --theme auto|green|teal|blue|purple|gold|mono|contrast  --logo banner|full|compact|minimal|ascii  --version  --about  --help
 Tema e logo: --theme/--logo > .ases/CONFIG.json (ui.theme, ui.logo) > config global do usuário > auto
 Ainda NÃO implementado: --history (Replay)
 
@@ -31,11 +31,15 @@ async function main(argv: string[]): Promise<number> {
       help: { type: 'boolean' }, version: { type: 'boolean' }, json: { type: 'boolean' }, follow: { type: 'boolean' },
       format: { type: 'string' }, task: { type: 'string' }, phase: { type: 'string' }, 'from-seq': { type: 'string' },
       'no-color': { type: 'boolean' }, 'no-banner': { type: 'boolean' }, 'no-tui': { type: 'boolean' }, 'no-animation': { type: 'boolean' }, theme: { type: 'string' }, logo: { type: 'string' },
-      errors: { type: 'boolean' }, history: { type: 'boolean' }, live: { type: 'boolean' },
+      errors: { type: 'boolean' }, history: { type: 'boolean' }, live: { type: 'boolean' }, about: { type: 'boolean' },
     },
   });
   if (values.version) {
-    console.log(values.json ? JSON.stringify({ app: VERSIONS.app, protocol: VERSIONS.protocol }) : `ases-tar ${VERSIONS.app} (protocol ${VERSIONS.protocol})`);
+    console.log(values.json ? JSON.stringify({ app: VERSIONS.app, protocol: VERSIONS.protocol }) : `ases-tar ${VERSIONS.app} (protocol ${VERSIONS.protocol}) · ${SITE}`);
+    return 0;
+  }
+  if (values.about) {
+    console.log(aboutText(VERSIONS.app));
     return 0;
   }
   if (values.help) {

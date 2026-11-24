@@ -130,4 +130,29 @@ describe.runIf(hasScript)('TUIs in a real pseudo-terminal (TAR-0020)', () => {
     t.end();
     expect(await t.exited).toBe(0);
   }, 40_000);
+
+  it('chat in a real TTY: banner, / menu, a request becomes a plan and Enter runs it (PHASE-18)', async () => {
+    const t = pty(BIN.ases, [], p.dir, { AER_SIMULATORS: '3' });
+    procs.push(t);
+    await t.waitFor((s) => s.includes('eureka42.org') && s.includes('você>'), 20_000);
+    for (let i = 0; ; i++) {
+      // raw mode só depois do 1º desenho (ver o teste de NO_COLOR): insiste no "/" até o menu abrir
+      await t.keys('/');
+      try {
+        await t.waitFor((s) => s.includes('o que dá para fazer'), 1500);
+        break;
+      } catch (e) {
+        if (i >= 5) throw e;
+        await t.keys('\u007f');
+      }
+    }
+    await t.keys('\u007f'.repeat(8));
+    await t.keys('divida em tarefas o cadastro\r');
+    await t.waitFor((s) => /Plano PLN-\d{4} \(3 tarefas\)/.test(s), 30_000);
+    await t.keys('\r');
+    await t.waitFor((s) => s.includes('resumo — 3 tarefas'), 120_000);
+    await t.keys('/sair\r');
+    t.end();
+    expect(await t.exited).toBe(0);
+  }, 180_000);
 });

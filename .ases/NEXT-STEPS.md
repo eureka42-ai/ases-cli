@@ -27,7 +27,7 @@
    - TAR-0065..0068 estão em REVIEW: Credential Manager, DACL, caminhos UNC/junction/subst e matriz de suporte, todos com CI Windows real.
    - TAR-0069 (TUI no ConPTY) está FAILED/NOT_RUN e aguarda o responsável: rodar o roteiro manual (`docs/SUPORTE_TERMINAIS_WINDOWS.md`), ou aprovar o `node-pty` (dependência nativa) para um harness automático.
 7c. **PHASE-16: COMPLETED** (24/11/2026, aprovada e integrada em `main`, tag `v1.0.0`; `.ases/evidence/PHASE-16-verify.md`).
-   - **Release:** `@eureka42-ai/aer@1.0.0` publicado no npm pela conta `eureka42-ai`, com o mesmo shasum do tarball testado. Notas em `docs/RELEASE_NOTES_1.0.0.md`.
+   - **Release:** `@eureka42-ai/aer@1.0.0` publicado no npm pela conta `eureka42-ai`, com o mesmo shasum do tarball testado. Notas em `docs/RELEASE_NOTES.md`.
    - **TUI no Windows:** a TUI no ConPTY tem e2e automático (`node-pty` só no CI do Windows), PASS 3/3.
    - **Alvos:** Windows/Linux arm64 passam a TARGET. O macOS fica com verificação local, por decisão do responsável.
    - **Pendente do responsável:**

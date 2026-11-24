@@ -1,7 +1,7 @@
 import readline from 'node:readline';
 import { parseArgs } from 'node:util';
 import { VERSIONS } from '@aer/contracts';
-import { LOGO_MODES, THEME_CHOICES, pickLogoMode, renderBrand, resolveBrandPrefs, resolveTheme, type LogoMode, type ThemeName } from '@aer/branding';
+import { LOGO_MODES, SITE, THEME_CHOICES, aboutText, pickLogoMode, renderBrand, resolveBrandPrefs, resolveTheme, type LogoMode, type ThemeName } from '@aer/branding';
 import { copyFileSync, mkdirSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { ProjectStore, exportHistory, importLegacy, sqliteVersion } from '@aer/persistence';
@@ -19,7 +19,7 @@ import { runWizard } from './wizard.tsx';
 import { runUpdate } from './update.ts';
 import { attachRepl, connectResident, daemonStatus, runDaemon, startDaemon, stopDaemon } from './daemon.ts';
 
-const HELP = `Eureka42 · ASES Engineering Runtime — ases ${VERSIONS.app}
+const HELP = `Eureka42 · ASES Engineering Runtime — ases ${VERSIONS.app} · eureka42.org
 
 Uso:
   ases [opções]              sessão interativa: engine local + TUI (fora de TTY ou com --no-tui: modo linha)
@@ -28,6 +28,7 @@ Uso:
   ases migrate-interim       entrega ao engine um .ases/ criado pelo bootstrap interino (scripts/ases-dev.mjs)
   ases secret status | set <id> | has <id> | delete <id>   chave de API no cofre nativo (valor pelo stdin; nunca impresso)
   ases daemon start | stop | status   motor residente: tarefas seguem com o terminal fechado; o ases vira cliente dele
+  ases about                 quem faz o Eureka42, site e licença
   ases update [--check]      atualiza o AER para a versão mais nova do npm (--check só mostra; consulta o npm só quando pedido)
 
 Opções:
@@ -55,7 +56,7 @@ async function main(argv: string[]): Promise<number> {
     },
   });
   if (values.version) {
-    console.log(values.json ? JSON.stringify({ app: VERSIONS.app, protocol: VERSIONS.protocol }) : `ases ${VERSIONS.app} (protocol ${VERSIONS.protocol})`);
+    console.log(values.json ? JSON.stringify({ app: VERSIONS.app, protocol: VERSIONS.protocol }) : `ases ${VERSIONS.app} (protocol ${VERSIONS.protocol}) · ${SITE}`);
     return 0;
   }
   if (values.help) {
@@ -82,6 +83,10 @@ async function main(argv: string[]): Promise<number> {
   };
   const [cmd] = positionals;
 
+  if (cmd === 'about') {
+    console.log(aboutText(VERSIONS.app));
+    return 0;
+  }
   if (cmd === 'update') {
     const r = await runUpdate({ current: VERSIONS.app, check: values.check === true, running: 0, binPath: realpathSync(process.argv[1] ?? '') });
     if (values.json) console.log(JSON.stringify(r));

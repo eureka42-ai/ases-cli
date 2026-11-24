@@ -68,7 +68,7 @@ writeFileSync(path.join(out, 'THIRD_PARTY_LICENSES.md'), `# Licenças de terceir
 cpSync(path.join(repo, 'docs', 'INSTALL.md'), path.join(out, 'README.md'));
 const root = JSON.parse(readFileSync(path.join(repo, 'package.json'), 'utf8'));
 writeFileSync(path.join(out, 'package.json'), `${JSON.stringify({
-  name: '@eureka42-ai/aer', version, description: 'Eureka42 · ASES Engineering Runtime (AER): ases + ases-tar', type: 'module', license: root.license,
+  name: '@eureka42-ai/aer', version, description: 'Eureka42 · ASES Engineering Runtime (AER): ases + ases-tar', homepage: 'https://eureka42.org', type: 'module', license: root.license,
   engines: root.engines, bin: { ases: 'bin/ases.js', 'ases-tar': 'bin/ases-tar.js' },
   // o npm só embute bundleDependencies que também estão em dependencies; as @aer/* nunca são buscadas no registro
   dependencies: { ...external, ...Object.fromEntries(bundled.map((n) => [n, '0.0.0'])) }, bundleDependencies: [...bundled, ...Object.keys(external)].sort(),

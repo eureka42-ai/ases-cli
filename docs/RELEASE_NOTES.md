@@ -1,4 +1,26 @@
-# AER 1.0.x: notas de versão
+# AER 1.x: notas de versão
+
+## 1.1.0 (24/11/2026): console de conversa com IA principal e orquestração em paralelo
+- **Chat:** o `ases` abre num chat com a **IA principal** escolhida por você (`/ia`). Ela conversa, lê, planeja e edita o projeto.
+  - **Restauração:** antes de cada turno o AER grava um ponto de restauração, e `/desfazer` volta.
+  - **Sem Git:** o chat funciona, só o `/desfazer` fica indisponível.
+- **Orquestração:** um pedido grande vira um **plano**. O ASES divide as tarefas entre as **outras** IAs, explica cada escolha e as executa **em paralelo**, cada uma numa worktree.
+- **Qualidade automática:**
+  - **revisão cruzada** por outra IA;
+  - **troca automática** de IA em limite de cota, login expirado ou travamento (até 2 por tarefa);
+  - **testes obrigatórios**: uma tarefa só fica pronta com o comando de teste passando (até 2 refações).
+- **Comandos simples em português**, com alias em inglês e menu ao digitar `/`: `/ia`, `/ias`, `/plano`, `/auto`, `/tarefas`, `/ver`, `/aceitar`, `/refazer`, `/trocar`, `/desfazer`, `/parar`, `/nova`, `/config`, `/atualizar` e `/sobre`. Os comandos técnicos seguem em `/ajuda avançado`.
+- **Assistente de primeiro uso** (sem IA): detecta as IAs e pergunta a principal, o modo, o limite e o comando de teste.
+- **Logo:** banner **EUREKA 42** grande, em verde (`#22C55E`, tema `green`, padrão do `auto`).
+- **Sobre:** `/sobre`, `ases about` e `ases-tar --about`. `eureka42.org` aparece no banner, no `--help` e no `--version`.
+- **Atualização:** `ases update` e `/atualizar` instalam a versão mais nova do npm. O npm só é consultado quando você pede.
+- **Segurança:**
+  - uma IA real só roda com a sua autorização por sessão (`/config consentir`);
+  - a principal nunca escreve em `.git`, `.ases` ou segredos;
+  - nada entra no projeto sem `/aceitar`.
+- **Correção:** `/aceitar` e o merge ignoram os arquivos do engine em `.ases/` ao checar se o checkout está sujo.
+
+**Limitação conhecida:** uma tarefa que depende de outra do mesmo plano começa do HEAD e não vê as mudanças da anterior até o `/aceitar`.
 
 ## 1.0.1 (24/11/2026)
 - **Correção (Windows):** os providers instalados com `npm install -g`, como `claude.cmd` e `codex.cmd`, não eram encontrados e o `ases doctor` não os mostrava como READY.

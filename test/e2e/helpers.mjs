@@ -26,8 +26,8 @@ const env = { ...process.env, NO_COLOR: undefined, FORCE_COLOR: undefined };
 export const runSync = (bin, args, cwd, extraEnv = {}, timeout = 15_000) => spawnSync(process.execPath, [bin, ...args], { cwd, encoding: 'utf8', env: { ...env, ...extraEnv }, timeout, input: '' });
 
 /** Processo real com captura de stdout/stderr e espera por texto. */
-export function start(bin, args, cwd) {
-  const child = spawn(process.execPath, [bin, ...args], { cwd, env, stdio: ['pipe', 'pipe', 'pipe'] });
+export function start(bin, args, cwd, extraEnv = {}) {
+  const child = spawn(process.execPath, [bin, ...args], { cwd, env: { ...env, ...extraEnv }, stdio: ['pipe', 'pipe', 'pipe'] });
   const out = { stdout: '', stderr: '' };
   child.stdout.setEncoding('utf8').on('data', (d) => (out.stdout += d));
   child.stderr.setEncoding('utf8').on('data', (d) => (out.stderr += d));
