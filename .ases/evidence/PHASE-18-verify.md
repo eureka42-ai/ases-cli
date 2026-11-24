@@ -10,7 +10,8 @@
 
 **CI:**
 - run 45497487198 (`e5e0124`): Windows 3/3 e Linux 3/3. O chat completo no ConPTY passou em windows-latest (Node 22 e 24) e windows-11-arm (`conpty.test.mjs`, 4 testes). macOS NOT_RUN (cancelado na fila).
-- run 45507764866 (`3e48a93`, com as correções da revisão): ver o resultado abaixo.
+- run 45507764866 (`3e48a93`): 7/8; um teste de UI instável (fila) no ubuntu/Node 24, que foi tornado determinístico.
+- **run 45509057411 (`2aaf3f7`): 8/8**, com macOS 2/2, Windows 3/3 (ConPTY incluído) e Linux 3/3. `docs/MATRIZ_SUPORTE.md` foi gerada deste run.
 
 **Revisão final:** feita por um revisor independente (modelo Opus), que leu o branch inteiro. Veredito inicial: NÃO pronto. Foram 1 crítico e 7 importantes (contando o I2b), todos corrigidos, cada um com um teste que falha sem a correção:
 - **C1:** consentimento e comando de teste vindos do `CONFIG.json` versionado não valem como autorização.
