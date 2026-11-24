@@ -186,3 +186,89 @@ export function brandConfigLayers(root: string | undefined, globalFile: string =
     { source: globalFile, ...readUi(globalFile) },
   ];
 }
+
+// ---- PHASE-18: bloco `chat` do CONFIG (principal, modo, limites, revisão cruzada, teste, consentimentos) ----
+export type ChatMode = 'manual' | 'auto' | 'hybrid';
+export interface ChatConfig {
+  main?: string;
+  mode: ChatMode;
+  /** sessões simultâneas por IA; ausente = 1 */
+  limits: Record<string, number>;
+  crossReview: boolean;
+  /** argv do comando de teste do projeto (sem shell) */
+  testCommand?: string[];
+  /** IAs com consentimento gravado (`/config consentir <ia> --save`) */
+  consent: string[];
+}
+type ChatKey = keyof ChatConfig;
+const CHAT_KEYS: ChatKey[] = ['main', 'mode', 'limits', 'crossReview', 'testCommand', 'consent'];
+
+function readChat(file: string): Partial<ChatConfig> {
+  if (!existsSync(file)) return {};
+  let j: unknown;
+  try {
+    j = JSON.parse(readFileSync(file, 'utf8'));
+  } catch (err) {
+    throw new ProjectError('CONFIG_INVALID', `${file}: ${(err as Error).message}`);
+  }
+  const c = (j as { chat?: unknown } | null)?.chat;
+  if (c === undefined) return {};
+  const bad = (field: string, why: string) => new ProjectError('CONFIG_INVALID', `${file}: chat.${field} ${why}`);
+  if (!c || typeof c !== 'object' || Array.isArray(c)) throw bad('', 'must be an object');
+  const o = c as Record<string, unknown>;
+  const out: Partial<ChatConfig> = {};
+  if (o.main !== undefined) {
+    if (typeof o.main !== 'string' || !/^[a-z][a-z0-9-]*$/.test(o.main)) throw bad('main', 'must be a provider id');
+    out.main = o.main;
+  }
+  if (o.mode !== undefined) {
+    if (o.mode !== 'manual' && o.mode !== 'auto' && o.mode !== 'hybrid') throw bad('mode', 'must be manual|auto|hybrid');
+    out.mode = o.mode;
+  }
+  if (o.limits !== undefined) {
+    if (!o.limits || typeof o.limits !== 'object' || Object.values(o.limits).some((v) => !Number.isInteger(v) || (v as number) < 1 || (v as number) > 8)) throw bad('limits', 'must map provider → integer 1..8');
+    out.limits = o.limits as Record<string, number>;
+  }
+  if (o.crossReview !== undefined) {
+    if (typeof o.crossReview !== 'boolean') throw bad('crossReview', 'must be true|false');
+    out.crossReview = o.crossReview;
+  }
+  if (o.testCommand !== undefined) {
+    if (!Array.isArray(o.testCommand) || !o.testCommand.length || o.testCommand.some((x) => typeof x !== 'string' || !x)) throw bad('testCommand', 'must be a non-empty argv array, e.g. ["npm","test"]');
+    out.testCommand = o.testCommand as string[];
+  }
+  if (o.consent !== undefined) {
+    if (!Array.isArray(o.consent) || o.consent.some((x) => typeof x !== 'string')) throw bad('consent', 'must be a list of provider ids');
+    out.consent = o.consent as string[];
+  }
+  return out;
+}
+
+/** Config `chat` efetiva: projeto > global > padrão, com a origem de cada campo. */
+export function chatConfig(root: string | undefined, globalFile: string = globalConfigFile()): ChatConfig & { sources: Record<ChatKey, string> } {
+  const layers: [string, Partial<ChatConfig>][] = [...(root ? [['.ases/CONFIG.json', readChat(path.join(root, ASES_DIR, 'CONFIG.json'))] as [string, Partial<ChatConfig>]] : []), [globalFile, readChat(globalFile)]];
+  const defaults: ChatConfig = { mode: 'manual', limits: {}, crossReview: true, consent: [] };
+  const out = { ...defaults } as ChatConfig & { sources: Record<ChatKey, string> };
+  out.sources = Object.fromEntries(CHAT_KEYS.map((k) => [k, 'default'])) as Record<ChatKey, string>;
+  for (const k of CHAT_KEYS) {
+    const hit = layers.find(([, l]) => l[k] !== undefined);
+    if (hit) {
+      (out as unknown as Record<string, unknown>)[k] = hit[1][k];
+      out.sources[k] = hit[0];
+    }
+  }
+  return out;
+}
+
+/** Grava campos de `chat` (merge raso) no CONFIG do projeto ou no global, preservando as outras chaves; atômico. */
+export function saveChatConfig(target: 'project' | 'global', root: string | undefined, patch: Partial<ChatConfig>, globalFile: string = globalConfigFile()): void {
+  if (target === 'project' && !root) throw new ProjectError('NOT_A_PROJECT', 'no project to save the chat config in');
+  const file = target === 'project' ? path.join(root!, ASES_DIR, 'CONFIG.json') : globalFile;
+  const current: Record<string, unknown> = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {};
+  const chat = { ...((current.chat as Record<string, unknown> | undefined) ?? {}), ...patch };
+  mkdirSync(path.dirname(file), { recursive: true });
+  const tmp = `${file}.${process.pid}.tmp`;
+  writeFileSync(tmp, `${JSON.stringify({ ...current, chat }, null, 2)}\n`);
+  renameSync(tmp, file);
+  readChat(file); // valida o que foi gravado
+}

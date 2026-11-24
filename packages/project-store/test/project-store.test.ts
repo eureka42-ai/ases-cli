@@ -94,3 +94,51 @@ describe('brand preferences from config files (TAR-0073, AER-REQ-249)', () => {
     rmSync(d, { recursive: true, force: true });
   });
 });
+
+describe('chat config by layers (PHASE-18, TAR-0079)', () => {
+  const setup = (project: unknown, global: unknown) => {
+    const d = mkdtempSync(path.join(os.tmpdir(), 'aer chat cfg ç '));
+    mkdirSync(path.join(d, '.ases'));
+    if (project !== undefined) writeFileSync(path.join(d, '.ases', 'CONFIG.json'), JSON.stringify(project));
+    const g = path.join(d, 'global.json');
+    if (global !== undefined) writeFileSync(g, JSON.stringify(global));
+    return { d, g };
+  };
+  it('chat config: project overrides global, defaults otherwise', async () => {
+    const { chatConfig } = await import('../src/index.ts');
+    const { d, g } = setup({ chat: { main: 'claude' } }, { chat: { main: 'codex', mode: 'auto' } });
+    const c = chatConfig(d, g);
+    expect(c.main).toBe('claude');
+    expect(c.sources.main).toBe('.ases/CONFIG.json');
+    expect(c.mode).toBe('auto');
+    expect(c.sources.mode).toBe(g);
+    expect(c.crossReview).toBe(true);
+    expect(c.sources.crossReview).toBe('default');
+    expect(c.limits).toEqual({});
+    expect(c.consent).toEqual([]);
+    expect(chatConfig(undefined, path.join(d, 'none.json')).mode).toBe('manual');
+    rmSync(d, { recursive: true, force: true });
+  });
+  it('saveChatConfig keeps other keys and is atomic', async () => {
+    const { chatConfig, saveChatConfig } = await import('../src/index.ts');
+    const { d, g } = setup({ ui: { theme: 'blue' } }, undefined);
+    saveChatConfig('project', d, { main: 'kimi', limits: { codex: 2 } }, g);
+    const j = JSON.parse(readFileSync(path.join(d, '.ases', 'CONFIG.json'), 'utf8'));
+    expect(j.ui.theme).toBe('blue');
+    expect(j.chat).toEqual({ main: 'kimi', limits: { codex: 2 } });
+    saveChatConfig('global', undefined, { mode: 'hybrid' }, g);
+    expect(chatConfig(d, g).mode).toBe('hybrid');
+    expect(readdirSync(path.join(d, '.ases')).filter((f) => f.includes('.tmp'))).toEqual([]);
+    rmSync(d, { recursive: true, force: true });
+  });
+  it('invalid chat values name the file', async () => {
+    const { chatConfig } = await import('../src/index.ts');
+    const { d, g } = setup({ chat: { mode: 'turbo' } }, undefined);
+    expect(() => chatConfig(d, g)).toThrow(/CONFIG\.json.*chat\.mode/);
+    writeFileSync(path.join(d, '.ases', 'CONFIG.json'), JSON.stringify({ chat: { limits: { codex: 0 } } }));
+    expect(() => chatConfig(d, g)).toThrow(/chat\.limits/);
+    writeFileSync(path.join(d, '.ases', 'CONFIG.json'), JSON.stringify({ chat: { testCommand: 'npm test' } }));
+    expect(() => chatConfig(d, g)).toThrow(/chat\.testCommand/);
+    rmSync(d, { recursive: true, force: true });
+  });
+});
