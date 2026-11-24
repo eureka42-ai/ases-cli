@@ -48,8 +48,8 @@
 | 128 MCP/providers só com escopos aprovados | Instalar/iniciar extensão exige aprovação por hash | MCP não é carregado nas sessões, então não há pedido de escopo extra para testar |
 | 171 timeouts e limites de bytes | Timeout com a árvore encerrada; linha NDJSON ≤ 1 MiB (`LINE_TOO_LONG`) | Sem teto de bytes **totais** de stdout |
 | 174 nada sai para terceiros por padrão | Sem telemetria; sem servidor; só o provider escolhido | Sem teste de rede com endpoint falso |
-| 230 caminhos Windows/POSIX | Espaços e Unicode em todos os e2e (`ç`, `ã`) nos 3 SOs | UNC, junctions e ACLs não testados |
-| 234 TUI sem navegador nos terminais | pty em macOS/Linux; modo linha sem TTY nos 3 SOs (CI) | ConPTY/Windows Terminal não testado |
+| 230 caminhos Windows/POSIX | Espaços e Unicode em todos os e2e (`ç`, `ã`) nos 3 SOs | UNC, junction, `subst` e DACL testados no Windows real desde a PHASE-15 (`test/e2e/windows-paths.test.mjs`); SMB remoto não testado |
+| 234 TUI sem navegador nos terminais | pty em macOS/Linux; modo linha sem TTY nos 3 SOs (CI) | ConPTY/Windows Terminal testado desde a PHASE-16 (`test/e2e/conpty.test.mjs`); conhost antigo só no roteiro manual |
 
 ## NÃO IMPLEMENTADO (4): EXCEÇÃO APROVADA pelo responsável em 24/11/2026, fica para depois do MVP
 | REQ | Situação |

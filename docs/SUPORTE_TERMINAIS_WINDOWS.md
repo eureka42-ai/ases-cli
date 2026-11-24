@@ -1,8 +1,22 @@
-# TUI no Windows Terminal / ConPTY (TAR-0069, AER-REQ-234)
+# TUI no Windows Terminal / ConPTY (TAR-0069 → TAR-0070, AER-REQ-234)
 
-**Estado: NOT_RUN.** O CI do Windows testa o modo linha sem TTY (`--no-tui`, `--json`, `--follow --format jsonl`). A TUI interativa (Ink em raw mode num ConPTY) **não tem teste automático**, porque o projeto não tem harness de pseudo-terminal para Windows. No macOS e no Linux, o e2e `test/e2e/pty.test.mjs` usa `script`; no Windows ele é pulado.
+**Estado: PASS no CI** (run 45447285906: windows-latest com Node 22 e 24, e windows-11-arm).
 
-Adicionar um harness ConPTY (por exemplo `node-pty`) é dependência nova com binário nativo, e exige revisão do responsável (CLAUDE.md). Até lá, o suporte da TUI no Windows não é anunciado como testado.
+O e2e `test/e2e/conpty.test.mjs` abre as TUIs num **ConPTY real** pelo `node-pty@1.1.0`. A dependência nativa foi aprovada pelo responsável em 24/11/2026.
+- **Onde o node-pty entra:** só o CI do Windows instala, com `npm install --no-save`. Ele não vai para o lockfile nem para o pacote publicado.
+- **Sem harness, sem skip:** com `AER_REQUIRE_CONPTY=1`, a falta do harness falha o teste em vez de pulá-lo.
+
+O que o teste cobre:
+1. **`ases` com `WT_SESSION`:** a variável é a que o Windows Terminal define. Esperado:
+   - o logo com ⌘, em teal truecolor;
+   - o `?` abre a ajuda e o `Esc` fecha;
+   - um comando digitado cria uma fase;
+   - o redimensionamento para 40 colunas redesenha a tela;
+   - `Ctrl+C` duas vezes sai com código 0.
+2. **`ases-tar`:** fica LIVE, mostra a tarefa criada por um `ases` em outro processo, e `q` sai com 0.
+3. **`NO_COLOR`:** nenhuma cor sai, a ajuda continua completa e a saída é limpa.
+
+**Não coberto pelo teste:** o conhost antigo (fallback `E42`) e o Windows PowerShell 5.1 como host do terminal. O roteiro abaixo continua valendo para esses casos.
 
 ## Roteiro manual (Windows Terminal + PowerShell 7 e Windows PowerShell 5.1)
 Faça cada passo numa pasta com espaço e acento, por exemplo `C:\Users\<você>\Projetos\teste ç`.

@@ -1,11 +1,6 @@
-# Notas de versão: RASCUNHO do primeiro release (TAR-0075)
+# AER 1.0.0: notas de versão (TAR-0075, 24/11/2026)
 
-**Estado:** rascunho, **não publicado**. Ainda faltam três decisões do responsável:
-1. o número da versão (hoje `0.0.0`);
-2. publicar ou não no registro npm, e com qual conta/escopo (`@eureka42-ai/aer`);
-3. aceitar a cobertura atual do macOS (só local) ou esperar um run de CI com macOS.
-
-O tarball sai de `node scripts/pack.mjs` e é autocontido: instala sem rede.
+**Instalar:** `npm install -g @eureka42-ai/aer`, publicado pela conta npm `eureka42-ai`. O mesmo pacote existe como `.tgz` autocontido, gerado por `node scripts/pack.mjs`, que instala sem rede.
 
 ## O que vem nesta versão
 - **Dois comandos:** `ases` (TUI e comandos) e `ases-tar` (monitor somente leitura, ao vivo, por IPC local; sem servidor de rede).
@@ -39,15 +34,15 @@ A matriz por alvo está em `docs/MATRIZ_SUPORTE.md`, gerada dos jobs reais do CI
 
 | Alvo | Situação |
 |---|---|
-| Windows x64, Linux x64 | PASS no CI (Node 22 e 24), incluindo o pacote instalado e os shells |
-| macOS Apple Silicon | Verificado localmente a cada fase. Os jobs de macOS do CI ficaram na fila e foram cancelados (NOT_RUN); o último 8/8 foi o run 45304163008 |
-| Windows arm64, Linux arm64 | PASS no CI, mas **CONDITIONAL**: não anunciados como suportados |
+| Windows x64, Linux x64 | PASS no CI (Node 22 e 24), incluindo o pacote instalado, os shells e, no Windows, a TUI num ConPTY real |
+| Windows arm64, Linux arm64 | PASS no CI, **suportados** desde esta versão |
+| macOS Apple Silicon | Verificado na máquina do responsável (decisão de 24/11/2026). Os jobs de macOS do CI foram cancelados na fila (NOT_RUN); o último 8/8 no CI foi o run 45304163008 |
 | macOS Intel | Fora do escopo (CHANGE-0001) |
 
 ## Limitações conhecidas
-- **TUI no Windows Terminal/ConPTY:** NOT_RUN. O modo linha funciona; o roteiro manual está em `docs/SUPORTE_TERMINAIS_WINDOWS.md` (TAR-0070).
+- **TUI no Windows:** coberta no ConPTY/Windows Terminal (CI). O conhost antigo e o PowerShell 5.1 como host só têm o roteiro manual (`docs/SUPORTE_TERMINAIS_WINDOWS.md`).
 - **Sem supervisor do SO:** reboot ou queda do motor exigem `/resume` (ADR-0017).
-- **Exceções P0 aprovadas para depois desta versão** (`docs/AUDITORIA_P0.md`): 020, 025, 026, 029, 049, 082, 083, 086, 128, 174, 230 (SMB remoto) e 234.
+- **Exceções P0 aprovadas para depois desta versão** (`docs/AUDITORIA_P0.md`): 020, 025, 026, 029, 049, 082, 083, 086, 128, 174, e 230 (SMB remoto).
 - **Uso de tokens:** sem dados de uso para os providers ACP; só o que cada cliente reporta é mostrado.
 - **Constrained Language Mode no Windows:** o AER falha fechado (ADR-0018).
 

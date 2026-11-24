@@ -119,7 +119,7 @@ async function main(argv: string[]): Promise<number> {
       secretStore: await adapter.getSecretStore().probe(),
       target: { id: `${process.platform}-${process.arch}`, status: targetStatus(process.platform, process.arch) },
       // o resultado por alvo vem do CI (job support-matrix), não do binário; aqui só o nível declarado e o que nunca foi testado
-      support: { targets: SUPPORTED_TARGETS, matrix: 'docs/MATRIZ_SUPORTE.md (gerada dos jobs reais do CI; NOT_RUN não é PASS)', notRun: ['TUI interativa no ConPTY/Windows Terminal (AER-REQ-234)'], outOfScope: ['darwin-x64 (CHANGE-0001)'] },
+      support: { targets: SUPPORTED_TARGETS, matrix: 'docs/MATRIZ_SUPORTE.md (gerada dos jobs reais do CI; NOT_RUN não é PASS)', notRun: ['darwin-arm64 no CI do GitHub (jobs cancelados na fila; verificado localmente a cada fase)'], outOfScope: ['darwin-x64 (CHANGE-0001)'] },
     };
     if (values.json) console.log(JSON.stringify(report));
     else {
