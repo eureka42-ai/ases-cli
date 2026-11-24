@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0077",
+  "phaseId": "PHASE-17",
+  "title": "Worktrees em paralelo: git worktree add/remove serializados por repositório",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-051",
+    "AER-REQ-052"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 679 (PhaseUpdated, 2026-11-24T18:29:51.847Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 680 (TaskCreated, 2026-11-24T18:34:18.838Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -102,5 +102,6 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0074 | PHASE-16 | Sem animação nas TUIs (verificação automática) e larguras 40/50/80/120 nas duas TUIs | COMPLETED | — | .ases/evidence/PHASE-16-verify.md |
 | TAR-0075 | PHASE-16 | Gate de release cross-platform: matriz, pacote por plataforma e notas de versão | COMPLETED | — | docs/RELEASE_NOTES_RASCUNHO.md<br>docs/RELEASE_NOTES_1.0.0.md<br>docs/MATRIZ_SUPORTE.md<br>.ases/evidence/PHASE-16-verify.md |
 | TAR-0076 | PHASE-17 | Windows: providers instalados por npm (shim .cmd) executados sem shell | PLANNED | — | — |
+| TAR-0077 | PHASE-17 | Worktrees em paralelo: git worktree add/remove serializados por repositório | PLANNED | — | — |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

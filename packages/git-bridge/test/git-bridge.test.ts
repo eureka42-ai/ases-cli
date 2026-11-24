@@ -100,3 +100,14 @@ describe('merge (TAR-0024, AER-REQ-055/057)', () => {
     expect(await currentBranch(root)).toBe('outro');
   });
 });
+
+describe('concurrent worktrees (CI run 45460214446)', () => {
+  it('eight createWorktree calls at once on one repo all succeed, then all are removed', async () => {
+    const root = await tempRepo();
+    const ids = Array.from({ length: 8 }, (_, i) => `TAR-${String(i + 1).padStart(4, '0')}`);
+    const wts = await Promise.all(ids.map((t) => createWorktree(root, t, 'ATT-0001')));
+    expect(new Set(wts.map((w) => w.path)).size).toBe(8);
+    await Promise.all(wts.map((w) => removeWorktree(root, w.path)));
+    expect((await git(root, ['worktree', 'list'])).split('\n')).toHaveLength(1);
+  });
+});

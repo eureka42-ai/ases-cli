@@ -53,20 +53,29 @@ export interface Worktree {
   baseCommit: string;
 }
 
+// `git worktree add/remove` simultâneos no mesmo repo disputam .git/worktrees ("failed to read …/commondir", CI run
+// 45460214446). O engine é o único escritor do projeto, então uma fila por repo neste processo basta.
+const worktreeQueue = new Map<string, Promise<unknown>>();
+function serialized<T>(root: string, fn: () => Promise<T>): Promise<T> {
+  const next = (worktreeQueue.get(root) ?? Promise.resolve()).then(fn, fn);
+  worktreeQueue.set(root, next.catch(() => undefined));
+  return next;
+}
+
 /** Worktree isolada por tarefa/attempt em .ases/worktrees, branch ases/TAR-XXXX/ATT-XXXX (AER-REQ-051/052/053). */
 export async function createWorktree(root: string, taskId: string, attemptId: string, base = 'HEAD'): Promise<Worktree> {
   if (!TASK_RE.test(taskId) || !ATT_RE.test(attemptId)) throw new GitError('INVALID_ID', `invalid ids ${taskId}/${attemptId}`);
   const baseCommit = await git(root, ['rev-parse', '--verify', `${base}^{commit}`]);
   const branch = `ases/${taskId}/${attemptId}`;
   const wt = path.join(root, '.ases', 'worktrees', `${taskId}-${attemptId}`);
-  await git(root, ['worktree', 'add', '-b', branch, wt, baseCommit]);
+  await serialized(root, () => git(root, ['worktree', 'add', '-b', branch, wt, baseCommit]));
   return { path: realpathSync.native(wt), branch, baseCommit };
 }
 
 /** Remove a worktree só se estiver limpa; nunca --force (alterações não confirmadas ficam para o humano). */
 export async function removeWorktree(root: string, wt: string): Promise<void> {
   if (existsSync(wt) && !(await isClean(wt))) throw new GitError('NOT_CLEAN', `worktree has uncommitted changes, refusing to remove: ${wt}`);
-  await git(root, ['worktree', 'remove', wt]);
+  await serialized(root, () => git(root, ['worktree', 'remove', wt]));
 }
 
 /**
