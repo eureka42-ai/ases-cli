@@ -1,6 +1,6 @@
 import { currentBranch, restoreFromPoint } from '@aer/git-bridge';
 import type { ConversationRow, PlanRow, PlannedTask } from '@aer/persistence';
-import { chatConfig, saveChatConfig, type ChatConfig, type ChatMode } from '@aer/project-store';
+import { chatConfig, type ChatConfig, type ChatMode } from '@aer/project-store';
 import type { AgentStreamEvent, ProviderProbeResult } from '@aer/provider-sdk';
 import { ChatQueue, executePlan, mergeTask, runChatTurn, summaryMessage, type ChatTurnResult, type PlanProgress, type PlanResult, type WorkerDeps } from '@aer/scheduler';
 import type { Engine } from './engine.ts';
@@ -30,10 +30,44 @@ export class ChatSession {
   private events: ChatEvents = {};
   private readonly engine: Engine;
 
+  private turnAbort: AbortController | undefined;
+  private currentTurn: Promise<unknown> | undefined;
+
   constructor(engine: Engine) {
     this.engine = engine;
-    for (const id of this.config().consent) this.consent.add(id);
+    // autorizações lembradas vêm do banco LOCAL (não versionado), nunca do CONFIG.json que viaja pelo Git
+    for (const e of this.events_('provider-session')) {
+      if (e.payload.persist !== true) continue;
+      if (e.eventType === 'ApprovalGranted') this.consent.add(String(e.payload.providerId));
+      else this.consent.delete(String(e.payload.providerId));
+    }
     this.queue = new ChatQueue((m) => this.turn(m));
+    engine.addStopHook(() => this.stopTurn());
+  }
+
+  private events_(scope: string) {
+    const out = [];
+    for (let after = 0; ;) {
+      const page = this.engine.store.eventsSince(after, 1000);
+      if (!page.length) return out;
+      after = page.at(-1)!.seq;
+      out.push(...page.filter((e) => (e.eventType === 'ApprovalGranted' || e.eventType === 'ApprovalDenied') && e.payload.scope === scope));
+    }
+  }
+
+  /** O comando de teste do CONFIG só roda sozinho se o usuário o autorizou NESTE computador (mesmo argv). */
+  testApproved(argv: string[] | undefined): boolean {
+    if (!argv) return false;
+    const last = this.events_('chat-test-command').filter((e) => e.eventType === 'ApprovalGranted').at(-1);
+    return JSON.stringify(last?.payload.argv) === JSON.stringify(argv);
+  }
+
+  /** Interrompe o turno da principal em curso (/parar, saída do ases) e espera ele terminar. */
+  async stopTurn(): Promise<boolean> {
+    const running = this.turnAbort !== undefined;
+    this.turnAbort?.abort();
+    await this.currentTurn?.catch(() => undefined);
+    return running;
   }
 
   config(): ChatConfig & { sources: Record<keyof ChatConfig, string> } {
@@ -86,16 +120,15 @@ export class ChatSession {
     return { ...this.engine.workerDeps(), consented: new Set(this.consent) };
   }
 
+  /** `save`: lembrada neste computador (banco local do projeto), não no CONFIG.json versionado. */
   grantConsent(id: string, save: boolean): void {
     this.consent.add(id);
-    this.engine.mutate((s) => s.appendEvent({ eventType: 'ApprovalGranted', payload: { scope: 'provider-session', providerId: id, grantedBy: 'user (/config consentir)', note: 'usa a sessão do cliente oficial; pode consumir cota/cobrança da conta' } }));
-    if (save) saveChatConfig('project', this.engine.projectRoot, { consent: [...new Set([...this.config().consent, id])] });
+    this.engine.mutate((s) => s.appendEvent({ eventType: 'ApprovalGranted', payload: { scope: 'provider-session', providerId: id, persist: save, grantedBy: 'user (/config consentir)', note: 'usa a sessão do cliente oficial; pode consumir cota/cobrança da conta' } }));
   }
 
   revokeConsent(id: string): void {
     this.consent.delete(id);
-    const saved = this.config().consent;
-    if (saved.includes(id)) saveChatConfig('project', this.engine.projectRoot, { consent: saved.filter((x) => x !== id) });
+    this.engine.mutate((s) => s.appendEvent({ eventType: 'ApprovalDenied', payload: { scope: 'provider-session', providerId: id, persist: true, deniedBy: 'user (/config revogar)' } }));
   }
 
   /** Mensagem de texto livre: entra na fila de turnos da principal. */
@@ -105,10 +138,19 @@ export class ChatSession {
 
   private async turn(message: string): Promise<ChatTurnResult> {
     const c = await this.conversation();
-    return runChatTurn(this.deps(), {
-      conversationId: c.id, message, main: c.main, ready: await this.workers(), signal: new AbortController().signal, limits: this.config().limits,
+    const ac = new AbortController();
+    this.turnAbort = ac;
+    const p = (async () => runChatTurn(this.deps(), {
+      conversationId: c.id, message, main: c.main, ready: await this.workers(), signal: ac.signal, limits: this.config().limits,
       ...(this.events.onAgentEvent ? { onEvent: this.events.onAgentEvent } : {}),
-    });
+    }))();
+    this.currentTurn = p;
+    try {
+      return await p;
+    } finally {
+      if (this.turnAbort === ac) this.turnAbort = undefined;
+      this.currentTurn = undefined;
+    }
   }
 
   async pendingPlan(): Promise<PlanRow | undefined> {
@@ -122,7 +164,7 @@ export class ChatSession {
     const ready = await this.workers();
     const result = await this.engine.exclusive((signal, controllers) => executePlan(this.deps(), {
       planId, ready,
-      main: c.main, limits: cfg.limits, crossReview: cfg.crossReview, ...(cfg.testCommand ? { testCommand: cfg.testCommand } : {}), testsApproved: Boolean(cfg.testCommand),
+      main: c.main, limits: cfg.limits, crossReview: cfg.crossReview, ...(cfg.testCommand ? { testCommand: cfg.testCommand } : {}), testsApproved: this.testApproved(cfg.testCommand),
       platform: this.engine.platform, signal, controllers, ...(this.events.onProgress ? { onProgress: this.events.onProgress } : {}),
     }));
     const summary = await this.send(summaryMessage(result));
@@ -147,13 +189,14 @@ export class ChatSession {
 
   /** /aceitar: REVIEW → APPROVED → merge no branch atual. Checkout sujo ou conflito param com o motivo. */
   async accept(only?: string): Promise<string[]> {
-    const list = (await this.tasks()).filter((t) => t.state === 'REVIEW' && (!only || t.id === only));
+    // APPROVED também: uma recusa anterior (checkout sujo, branch errado) deixa a tarefa aprovada e ela pode ser repetida
+    const list = (await this.tasks()).filter((t) => (t.state === 'REVIEW' || t.state === 'APPROVED') && (!only || t.id === only));
     if (!list.length) return [only ? `${only} não está pronta (precisa estar em REVIEW)` : 'nenhuma tarefa pronta para aceitar'];
     const out: string[] = [];
     const target = await currentBranch(this.engine.projectRoot);
     for (const t of list) {
       try {
-        this.engine.mutate((s) => s.transitionTask(t.id, 'APPROVED', s.getTask(t.id)!.version, 'aceita pelo usuário (/aceitar)'));
+        if (t.state === 'REVIEW') this.engine.mutate((s) => s.transitionTask(t.id, 'APPROVED', s.getTask(t.id)!.version, 'aceita pelo usuário (/aceitar)'));
         const r = await mergeTask(this.engine.store, this.engine.projectRoot, t.id, { ownerId: `ases:${process.pid}`, target });
         this.engine.mutate(() => undefined); // publica os eventos do merge
         out.push(r.status === 'CONFLICT' ? `${t.id}: conflito em ${r.files.join(', ')}; resolva e rode /aceitar ${Number(t.id.slice(4))} de novo`

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0078",
+  "phaseId": "PHASE-18",
+  "title": "Banner EUREKA42 verde, tema green, /sobre e eureka42.org",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-240",
+    "AER-REQ-247"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

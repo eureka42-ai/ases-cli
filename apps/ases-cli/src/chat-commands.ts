@@ -64,7 +64,7 @@ export function chatSession(engine: Engine): ChatSession {
 export function formatPlan(p: PlanRow): string {
   return [`Plano ${p.id} (${p.tasks.length} tarefa${p.tasks.length > 1 ? 's' : ''}):`,
     ...p.tasks.map((t, i) => `  ${i + 1}. ${t.title} → ${t.provider}${t.dependsOn.length ? ` · depois de ${t.dependsOn.join(', ')}` : ''}${p.reasons[i] ? ` (${p.reasons[i]})` : ''}`),
-    'Enter ou /plano executar para rodar · /plano editar 1 provider=<ia> · /cancel descarta'].join('\n');
+    'Enter ou /plano executar para rodar · Ctrl+E ou /plano editar 1 provider=<ia> · Ctrl+N ou /cancel descarta'].join('\n');
 }
 
 const formatResult = (r: PlanResult) => r.tasks.map((t) => `  ${t.taskId} ${t.provider} ${t.state} · testes ${t.tests} · revisão ${t.review ?? '—'}${t.swaps ? ` · trocas ${t.swaps}` : ''}${t.reworks ? ` · refações ${t.reworks}` : ''} — ${t.reason}`).join('\n');
@@ -189,7 +189,11 @@ export async function handleChat(engine: Engine, cmd: string, args: string[], ad
       const running = engine.runningTasks;
       const aborted = engine.abortExclusive();
       for (const id of running) engine.cancelTask(id);
-      return running.length || aborted ? `parando: ${running.join(', ') || 'plano em execução'} (os processos das IAs são encerrados)` : 'nada em execução';
+      const turn = chat.stopTurn();
+      const what = [...running, ...(aborted ? ['plano em execução'] : [])];
+      const turnRunning = await Promise.race([turn, new Promise<boolean>((r) => setTimeout(() => r(true), 50))]);
+      if (turnRunning) what.push('turno da principal');
+      return what.length ? `parando: ${what.join(', ')} (os processos das IAs são encerrados)` : 'nada em execução';
     }
     case '/nova':
       return `nova conversa ${chat.newConversation()}`;
@@ -213,13 +217,13 @@ function config(engine: Engine, chat: ChatSession, a: string, b: string, rest: s
     case '':
       return [`principal: ${cfg.main ?? '(primeira IA pronta)'} (${cfg.sources.main})`, `modo: ${cfg.mode} (${cfg.sources.mode})`,
         `limites: ${Object.entries(cfg.limits).map(([k, v]) => `${k}=${v}`).join(' ') || '1 por IA'} (${cfg.sources.limits})`, `revisão cruzada: ${cfg.crossReview ? 'ligada' : 'desligada'} (${cfg.sources.crossReview})`,
-        `comando de teste: ${cfg.testCommand?.join(' ') ?? 'nenhum'} (${cfg.sources.testCommand})`, `autorizadas nesta sessão: ${[...chat.consent].join(', ') || 'nenhuma'}`,
+        `comando de teste: ${cfg.testCommand ? `${cfg.testCommand.join(' ')} (${chat.testApproved(cfg.testCommand) ? 'autorizado' : `não autorizado; confirme com /config teste ${cfg.testCommand.join(' ')}`})` : 'nenhum'} [${cfg.sources.testCommand}]`, `autorizadas: ${[...chat.consent].join(', ') || 'nenhuma'}`,
         'mude com: /config consentir|revogar <ia> · limite <ia> <n> · revisão on|off · teste <comando…> · modo manual|auto|hybrid · principal <ia> · tema <t> · logo <l>'].join('\n');
     case 'consentir': {
       if (!(b in engine.providers)) return `IA desconhecida: ${b}`;
       if (!engine.providers[b]!.requiresConsent) return `${b} é simulada e não precisa de autorização`;
       chat.grantConsent(b, rest.includes('--save'));
-      return `${b} autorizada nesta sessão${rest.includes('--save') ? ' e gravada no CONFIG do projeto' : ''}: ela usa a SUA conta e a sua cota de ${b}`;
+      return `${b} autorizada nesta sessão${rest.includes('--save') ? ' e lembrada neste computador' : ''}: ela usa a SUA conta e a sua cota de ${b}`;
     }
     case 'revogar':
       chat.revokeConsent(b);

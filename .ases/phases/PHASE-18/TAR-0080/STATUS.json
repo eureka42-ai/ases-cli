@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0080",
+  "phaseId": "PHASE-18",
+  "title": "Eventos, migração 5 e store da conversa",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-065"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

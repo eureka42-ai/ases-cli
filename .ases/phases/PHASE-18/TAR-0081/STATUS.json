@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0081",
+  "phaseId": "PHASE-18",
+  "title": "Simulador de chat e múltiplos simuladores",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-110"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

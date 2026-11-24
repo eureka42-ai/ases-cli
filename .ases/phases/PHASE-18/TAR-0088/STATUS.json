@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0088",
+  "phaseId": "PHASE-18",
+  "title": "ases update e /atualizar",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-174"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

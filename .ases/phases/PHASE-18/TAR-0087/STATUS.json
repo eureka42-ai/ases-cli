@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0087",
+  "phaseId": "PHASE-18",
+  "title": "TUI de chat, menu /, plano, autorização e assistente",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-234"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

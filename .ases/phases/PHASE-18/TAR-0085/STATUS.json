@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0085",
+  "phaseId": "PHASE-18",
+  "title": "Execução do plano: paralelo, testes, refação, troca automática e revisão cruzada",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-187"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

@@ -1,11 +1,11 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createRestorePoint, markTurnEnd, repoRoot, resolveInside } from '@aer/git-bridge';
 import type { ChatMessageRow, PhaseRow, TaskRow } from '@aer/persistence';
 import { redactText, type AgentStreamEvent } from '@aer/provider-sdk';
 import { assignProviders, parseMainReply } from './chat-plan.ts';
-import type { WorkerDeps } from './worker.ts';
+import { parseProviderSpec, type WorkerDeps } from './worker.ts';
 
 // PHASE-18: um turno da IA principal. Ela lê e edita direto no projeto (com ponto de restauração antes) e, para
 // trabalho grande, devolve um bloco aer-plan que o ASES distribui entre as outras IAs.
@@ -15,17 +15,25 @@ export type ChatTurnResult =
   | { ok: false; code: string; message: string };
 
 const DENIED_PATHS = ['.git', '.ases', '.env', '.env.*', '*.pem', '*.key'];
-const isDenied = (rel: string) => {
-  const parts = rel.split(/[\\/]/).filter(Boolean);
+/**
+ * Caminho protegido, depois de normalizar (`./.git`, `a/../.git`, `.GIT` em macOS/Windows). Atenção: o CLI avisa o
+ * `file_change` DEPOIS de escrever; isto detecta e interrompe o turno, não impede a primeira escrita.
+ */
+export function isDeniedPath(root: string, rel: string, platform: string = process.platform): boolean {
+  const abs = resolveInside(root, rel);
+  let norm = path.relative(realpathSync.native(root), abs).split(path.sep).join('/');
+  if (platform === 'darwin' || platform === 'win32') norm = norm.toLowerCase();
+  const parts = norm.split('/').filter(Boolean);
   const base = parts.at(-1) ?? '';
-  return parts[0] === '.git' || parts[0] === '.ases' || /^\.env(\..*)?$/.test(base) || /\.(pem|key)$/i.test(base);
-};
+  return parts[0] === '.git' || parts[0] === '.ases' || /^\.env(\..*)?$/i.test(base) || /\.(pem|key)$/i.test(base);
+}
 
 /** Prompt do papel de principal: regras, IAs disponíveis, projeto, histórico (cortado do mais antigo) e a mensagem. */
 export function buildMainPrompt(i: { project: string; phases: PhaseRow[]; openTasks: TaskRow[]; ready: string[]; main: string; history: ChatMessageRow[]; message: string; budgetChars?: number }): string {
   const budget = i.budgetChars ?? 24_000;
   const others = i.ready.filter((p) => p !== i.main);
-  const head = `# Você é a IA principal do ASES (Eureka42 · eureka42.org)
+  const phases = i.phases.slice(-10);
+  const head0 = `# Você é a IA principal do ASES (Eureka42 · eureka42.org)
 Converse com o usuário em português do Brasil. Você pode ler e editar os arquivos deste projeto, exceto .git, .ases e segredos (.env, chaves).
 Para um pedido grande, que vale dividir entre outras IAs trabalhando em paralelo, termine a resposta com um bloco:
 \`\`\`aer-plan
@@ -34,10 +42,15 @@ Para um pedido grande, que vale dividir entre outras IAs trabalhando em paralelo
 O ASES escolhe quem executa cada tarefa entre: ${others.length ? others.join(', ') : `${i.main} (só você está disponível)`}. Não use o bloco para conversa simples.
 
 ## Projeto
-${i.project} · fases: ${i.phases.map((p) => `${p.id} ${p.state} ${p.title}`).join('; ') || 'nenhuma'}
+${i.project} · fases${i.phases.length > phases.length ? ` (últimas ${phases.length} de ${i.phases.length})` : ''}: ${phases.map((p) => `${p.id} ${p.state} ${p.title}`).join('; ') || 'nenhuma'}
 Tarefas abertas: ${i.openTasks.map((t) => `${t.id} ${t.state} ${t.title}`).slice(0, 30).join('; ') || 'nenhuma'}
 `;
-  const tail = `\n## Mensagem do usuário\n${i.message.slice(0, Math.max(1000, budget - head.length - 200))}\n`;
+  // o cabeçalho tem teto; a mensagem é reservada primeiro e, se for cortada, o corte é dito
+  const head = head0.length > Math.floor(budget / 3) ? `${head0.slice(0, Math.floor(budget / 3) - 40)}\n[contexto do projeto cortado]\n` : head0;
+  const roomForMessage = budget - head.length - 120;
+  const cut = i.message.length > roomForMessage ? i.message.length - roomForMessage + 60 : 0;
+  const message = cut ? `${i.message.slice(0, i.message.length - cut)}\n[mensagem cortada: ${cut} caracteres]` : i.message;
+  const tail = `\n## Mensagem do usuário\n${message}\n`;
   const room = budget - head.length - tail.length - 80;
   const lines = i.history.map((m) => `${m.role === 'user' ? 'você' : m.role === 'main' ? (m.provider ?? 'principal') : 'sistema'}: ${m.text}`);
   const kept: string[] = [];
@@ -48,9 +61,9 @@ Tarefas abertas: ${i.openTasks.map((t) => `${t.id} ${t.state} ${t.title}`).slice
     kept.unshift(l);
     used += l.length + 1;
   }
-  const cut = lines.length - kept.length;
-  const history = `\n## Histórico\n${cut ? `[histórico anterior resumido: ${cut} mensagens omitidas]\n` : ''}${kept.join('\n')}\n`;
-  return `${head}${history}${tail}`.slice(0, budget);
+  const omitted = lines.length - kept.length;
+  const history = `\n## Histórico\n${omitted ? `[histórico anterior resumido: ${omitted} mensagens omitidas]\n` : ''}${kept.join('\n')}\n`;
+  return `${head}${history}${tail}`;
 }
 
 /** Um turno por vez por conversa: mensagens novas esperam na fila, na ordem (nunca duas sessões da mesma IA). */
@@ -87,7 +100,9 @@ export async function runChatTurn(d: WorkerDeps, o: { conversationId: string; me
   };
   const history = read((s) => s.listChatMessages(cnv));
   const n = d.mutate((s) => s.addChatMessage(cnv, { role: 'user', provider: null, text: o.message }));
-  const provider = d.providers[o.main];
+  // a principal pode vir como `ia:preferência` (modelo, ou cenário do simulador)
+  const spec = parseProviderSpec(o.main);
+  const provider = spec ? d.providers[spec.providerId] : undefined;
   if (!provider) return fail('PROVIDER_UNKNOWN', `IA principal desconhecida: ${o.main}`);
   // sem aceite explícito nada roda, nem o probe: a conta (cota/cobrança) é do usuário (AER-REQ-123)
   if (provider.requiresConsent && !d.consented?.has(provider.id)) return fail('CONSENT_REQUIRED', `autorize o uso da sua conta ${provider.id}: /config consentir ${provider.id}`);
@@ -109,8 +124,9 @@ export async function runChatTurn(d: WorkerDeps, o: { conversationId: string; me
   const ac = new AbortController();
   const onAbort = () => ac.abort();
   o.signal.addEventListener('abort', onAbort, { once: true });
+  if (o.signal.aborted) ac.abort(); // /parar antes de o provider começar (o evento já passou)
   try {
-    const preference = o.preference ?? (provider.id.startsWith('simulator') ? 'chat' : undefined);
+    const preference = o.preference ?? spec?.preference ?? (provider.id.startsWith('simulator') ? 'chat' : undefined);
     for await (const e of provider.start({
       taskId: 'TAR-0000', attemptId: `CHT-${String(n).padStart(4, '0')}`, workingDirectory: d.root, instructionsFile, allowedPaths: ['.'], deniedPaths: DENIED_PATHS, mode: 'WORKTREE_WRITE',
       approvedToolPolicyId: 'chat-main', timeoutMs: d.timeoutMs, signal: ac.signal, ...(preference ? { modelPreference: preference } : {}),
@@ -118,13 +134,11 @@ export async function runChatTurn(d: WorkerDeps, o: { conversationId: string; me
       o.onEvent?.(e);
       if (e.type === 'message' && e.visibleToUser) texts.push(e.text);
       else if (e.type === 'file_change') {
-        let bad = isDenied(e.relativePath) ? `caminho protegido: ${e.relativePath}` : undefined;
-        if (!bad) {
-          try {
-            resolveInside(d.root, e.relativePath);
-          } catch (err) {
-            bad = (err as Error).message;
-          }
+        let bad: string | undefined;
+        try {
+          if (isDeniedPath(d.root, e.relativePath)) bad = `caminho protegido: ${e.relativePath}`;
+        } catch (err) {
+          bad = (err as Error).message;
         }
         if (bad) {
           violation = bad;
@@ -134,6 +148,9 @@ export async function runChatTurn(d: WorkerDeps, o: { conversationId: string; me
       } else if (e.type === 'error') error = `${e.code}: ${e.userMessage}`;
       else if (e.type === 'exit') exit = e;
     }
+  } catch (err) {
+    // adapter/processo quebrou no meio: ainda assim o que já foi editado ganha ponto de restauração (abaixo)
+    error = `PROVIDER_ERROR: ${(err as Error).message}`;
   } finally {
     o.signal.removeEventListener('abort', onAbort);
     rmSync(tmp, { recursive: true, force: true });

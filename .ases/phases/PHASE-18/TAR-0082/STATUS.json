@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0082",
+  "phaseId": "PHASE-18",
+  "title": "Parser aer-plan e atribuição explicada de IAs",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-082"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

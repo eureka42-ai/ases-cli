@@ -259,7 +259,14 @@ export class Engine {
   }
 
   /** Encerra: cancela e reconcilia o que estiver rodando, depois fecha IPC e banco. */
+  private readonly stopHooks: (() => Promise<unknown>)[] = [];
+  /** Chamado no início do stop (p.ex. interromper o turno da principal do chat e esperar o encerramento dele). */
+  addStopHook(fn: () => Promise<unknown>): void {
+    this.stopHooks.push(fn);
+  }
+
   async stop(): Promise<{ cancelled: number; lastSeq: number }> {
+    await Promise.all(this.stopHooks.splice(0).map((fn) => fn().catch(() => undefined)));
     const cancelled = this.controllers.size;
     this.runAbort?.abort();
     await this.current?.catch(() => undefined);

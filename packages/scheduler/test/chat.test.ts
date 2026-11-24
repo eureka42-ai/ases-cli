@@ -142,3 +142,61 @@ describe('chat outside a Git repository (PHASE-18)', () => {
     expect(s.lastRestorePoint(cnv)).toBeUndefined();
   });
 });
+
+describe('review fixes for the chat turn (PHASE-18 final review)', () => {
+  const evil = (events: AgentStreamEvent[] | (() => AsyncGenerator<AgentStreamEvent>), id = 'simulator-4'): AgentProvider => ({
+    id: id as 'simulator', contractVersion: 1, requiresConsent: false,
+    probe: async () => ({ providerId: id as 'simulator', contractVersion: 1, simulated: true, contractStatus: 'SIMULATED', availability: 'READY', capabilities: [], evidence: [] }),
+    start: () => (typeof events === 'function' ? events() : (async function* () { yield* events; })()),
+    cancel: async () => undefined,
+  });
+
+  it('I1: protected paths are caught after normalization (./.git, a/../.git, case on darwin/win32)', async () => {
+    const tricks = ['./.git/config', 'a/../.git/hooks/pre-commit', './.ases/CONFIG.json', 'sub/../.env.local', ...(process.platform === 'linux' ? [] : ['.GIT/hooks/x'])];
+    for (const rel of tricks) {
+      const { d, cnv } = await setup({ 'simulator-4': evil([{ type: 'file_change', relativePath: rel, kind: 'modify' }, { type: 'message', text: 'ok', visibleToUser: true }, { type: 'exit', exitCode: 0, signal: null, cancelled: false, reconciled: true }]) });
+      expect(await turn(d, cnv, 'x', { main: 'simulator-4' }), rel).toMatchObject({ ok: false, code: 'SECURITY_VIOLATION' });
+    }
+  });
+
+  it('I3: an aborted signal stops a running main turn', async () => {
+    const { d, cnv } = await setup();
+    const ac = new AbortController();
+    setTimeout(() => ac.abort(), 500);
+    const t0 = Date.now();
+    const r = await turn(d, cnv, 'olá', { preference: 'hang', signal: ac.signal });
+    expect(r).toMatchObject({ ok: false });
+    expect(Date.now() - t0).toBeLessThan(10_000);
+  }, 20_000);
+
+  it('I3: a signal aborted before the provider starts still stops the turn', async () => {
+    const { d, cnv } = await setup();
+    const ac = new AbortController();
+    ac.abort();
+    const t0 = Date.now();
+    expect((await turn(d, cnv, 'olá', { preference: 'hang', signal: ac.signal })).ok).toBe(false);
+    expect(Date.now() - t0).toBeLessThan(10_000);
+  }, 20_000);
+
+  it('I4: a huge head and a huge message never lose the message start; a cut is marked', () => {
+    const phases = Array.from({ length: 600 }, (_, i) => ({ id: `PHASE-${i}`, sortOrder: i, title: `Conversa CNV-${String(i).padStart(4, '0')} com um título comprido`, state: 'RUNNING', version: 1 }) as never);
+    const msg = `INICIO ${'y'.repeat(40_000)} FIM`;
+    const p = buildMainPrompt({ project: 'p', phases, openTasks: [], ready: ['codex'], main: 'claude', history: [], message: msg });
+    expect(p.length).toBeLessThanOrEqual(24_000);
+    expect(p).toContain('## Mensagem do usuário\nINICIO');
+    expect(p).toMatch(/\[mensagem cortada: \d+ caracteres\]/);
+  });
+
+  it('I6: if the provider throws after editing, the edit still gets a restore point', async () => {
+    const { root, s, d, cnv } = await setup({
+      'simulator-4': evil(async function* () {
+        writeFileSync(path.join(root, 'feito-antes-do-erro.txt'), 'x');
+        yield { type: 'file_change', relativePath: 'feito-antes-do-erro.txt', kind: 'create' };
+        throw new Error('adapter quebrou');
+      }),
+    });
+    const r = await turn(d, cnv, 'x', { main: 'simulator-4' });
+    expect(r.ok).toBe(false);
+    expect(s.lastRestorePoint(cnv)?.files).toEqual(['feito-antes-do-erro.txt']);
+  });
+});

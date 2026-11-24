@@ -90,7 +90,7 @@ describe('ases chat TUI (PHASE-18, TAR-0087)', () => {
     await type(r, 'divida em tarefas o cadastro');
     await r.press(KEYS.enter);
     await until(r, (s) => /Plano PLN-0001 \(3 tarefas\)/.test(s));
-    expect(txt(r)).toMatch(/\[Enter\] executar/);
+    expect(txt(r)).toMatch(/\[Enter\] executar  \[Ctrl\+E\] editar  \[Ctrl\+N\] descartar/);
     await r.press(KEYS.enter);
     await until(r, (s) => s.includes('resumo — 3 tarefas'), 90_000);
     expect(txt(r)).toMatch(/TAR-000\d simulator-\d +(RUNNING|REVIEW)/);
@@ -98,18 +98,22 @@ describe('ases chat TUI (PHASE-18, TAR-0087)', () => {
     await e.stop();
   }, 120_000);
 
-  it('n cancels the plan; e lets you change the IA of item 1', async () => {
+  it('Ctrl+N discards the plan; Ctrl+E edits item 1; typing n/e starts a normal message (review I2)', async () => {
     const { e } = await project({ main: 'simulator', crossReview: false });
     const r = await renderForTest(<UiContext.Provider value={ui()}><AsesApp engine={e} onExit={() => {}} /></UiContext.Provider>, 120, 40);
     await type(r, 'divida em tarefas o cadastro');
     await r.press(KEYS.enter);
     await until(r, (s) => s.includes('Plano PLN-0001'));
-    await r.press('e');
+    await type(r, 'não gostei');
+    expect(txt(r)).toMatch(/você> não gostei█/); // n e e começam mensagens normais
+    for (let i = 0; i < 10; i++) await r.press(KEYS.backspace);
+    expect(e.store.getPlan('PLN-0001')!.state).toBe('PENDING');
+    await r.press('\u0005'); // Ctrl+E
     expect(txt(r)).toMatch(/você> \/plano editar 1 provider=█/);
     await type(r, 'simulator-3');
     await r.press(KEYS.enter);
     await until(r, (s) => /1\. Parte 1 → simulator-3/.test(s));
-    await r.press('n');
+    await r.press('\u000e'); // Ctrl+N
     await until(r, (s) => /plano PLN-0002 descartado/.test(s));
     expect(e.store.getPlan('PLN-0002')!.state).toBe('CANCELLED');
     r.unmount();

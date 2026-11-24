@@ -11,7 +11,7 @@ type EngineLike = Pick<Engine, 'info' | 'store' | 'onChange' | 'mirrorError' | '
 const MAX_LOG = 1000;
 const KEYS: [string, string][] = [
   ['Enter', 'envia a mensagem à principal ou executa o /comando; com plano pendente e prompt vazio, executa o plano'],
-  ['e / n', 'com plano pendente e prompt vazio: editar o item 1 / descartar o plano'],
+  ['Ctrl+E / Ctrl+N', 'com plano pendente: editar o item 1 / descartar o plano'],
   ['/', 'abre o menu de comandos (↑↓ escolhe, Tab completa)'],
   ['↑ ↓', 'histórico de comandos (prompt) / seleção (tarefas)'],
   ['Tab', 'alterna foco: prompt / tarefas'],
@@ -98,7 +98,7 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
       // a conta (cota/cobrança) é do usuário: nada roda antes do "s" (AER-REQ-123)
       if (ch === 's' || ch === 'a') {
         chat.grantConsent(consentAsk.provider, ch === 'a');
-        push(`${consentAsk.provider} autorizada${ch === 'a' ? ' e gravada no projeto' : ' nesta sessão'}`);
+        push(`${consentAsk.provider} autorizada${ch === 'a' ? ' e lembrada neste computador' : ' nesta sessão'}`);
         const again = consentAsk.message;
         setConsentAsk(undefined);
         run(again);
@@ -109,10 +109,11 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
       return;
     }
     const plan = engine.store.currentConversation() ? engine.store.pendingPlan(engine.store.currentConversation()!.id) : undefined;
-    if (plan && focus === 'prompt' && input === '') {
-      if (key.return) return run('/plano executar');
-      if (ch === 'n') return run('/cancel');
-      if (ch === 'e') return setInput('/plano editar 1 provider=');
+    // n/e soltos começam mensagens ("não", "explique"): o plano usa Ctrl+N/Ctrl+E (revisão final, I2)
+    if (plan && focus === 'prompt') {
+      if (key.return && input === '') return run('/plano executar');
+      if (key.ctrl && ch === 'n') return run('/cancel');
+      if (key.ctrl && ch === 'e') return setInput('/plano editar 1 provider=');
     }
     const menu = focus === 'prompt' && input.startsWith('/') && !input.includes(' ') ? filterMenu(input) : [];
     if (menu.length) {
@@ -223,8 +224,8 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
       {header}
       {body}
       {menuItems.map((m, i) => <Text key={m.cmd} wrap="truncate-end" inverse={i === Math.min(menuSel, menuItems.length - 1)}>{`  ${m.cmd.padEnd(11)} ${m.desc}`}</Text>)}
-      {consentAsk ? <Text wrap="truncate-end" bold>{`Autorizar o uso da sua conta ${consentAsk.provider}? Ela usa a SUA cota. [s] nesta sessão  [a] sempre neste projeto  [n] não`}</Text> : null}
-      {pendingPlan && !consentAsk ? <Text wrap="truncate-end">{`${pendingPlan.id} pendente: [Enter] executar  [e] editar  [n] descartar`}</Text> : null}
+      {consentAsk ? <Text wrap="truncate-end" bold>{`Autorizar o uso da sua conta ${consentAsk.provider}? Ela usa a SUA cota. [s] nesta sessão  [a] sempre neste computador  [n] não`}</Text> : null}
+      {pendingPlan && !consentAsk ? <Text wrap="truncate-end">{`${pendingPlan.id} pendente: [Enter] executar  [Ctrl+E] editar  [Ctrl+N] descartar`}</Text> : null}
       <Text wrap="truncate-start">
         <Text bold {...(accent ? { color: accent } : {})}>você&gt; </Text>
         {`${input}${focus === 'prompt' ? cursor : ''}`}

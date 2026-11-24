@@ -115,12 +115,13 @@ export async function executePlan(d: WorkerDeps, o: {
             continue;
           }
           x.tests = 'PASS';
-        } else x.reason = 'sem teste configurado';
+        } else x.reason = o.testCommand && !o.testsApproved ? `comando de teste do projeto não autorizado (confirme com /config teste ${o.testCommand.join(' ')})` : 'sem teste configurado';
         // 2) revisão cruzada por uma IA que não escreveu a tarefa
         if (o.crossReview) {
           const authors = new Set(read((s) => s.listAttempts(x.taskId)).map((a) => a.providerId));
           const busy = busyCount();
-          const pool = [o.main, ...o.ready.filter((p) => p !== o.main).sort((a, b) => (busy[a] ?? 0) - (busy[b] ?? 0))].filter((p) => !authors.has(p) && (!d.providers[p]?.requiresConsent || d.consented?.has(p)));
+          // a principal fica por último: ela atende o chat, e uma IA não abre duas sessões ao mesmo tempo
+          const pool = [...o.ready.filter((p) => p !== o.main).sort((a, b) => (busy[a] ?? 0) - (busy[b] ?? 0)), o.main].filter((p) => !authors.has(p) && (!d.providers[p]?.requiresConsent || d.consented?.has(p)));
           if (pool[0]) {
             const rv = await runReview(d, x.taskId, reviewerSpec(pool[0]), o.signal).catch((err: Error) => ({ verdict: 'INVALID' as const, reason: err.message }));
             x.review = rv.verdict;

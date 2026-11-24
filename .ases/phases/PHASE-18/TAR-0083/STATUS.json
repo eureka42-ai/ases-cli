@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0083",
+  "phaseId": "PHASE-18",
+  "title": "Ponto de restauração e /desfazer",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-180"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

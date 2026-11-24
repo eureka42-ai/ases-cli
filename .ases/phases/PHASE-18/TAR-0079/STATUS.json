@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0079",
+  "phaseId": "PHASE-18",
+  "title": "Config chat por camadas (principal, modo, limites, revisão, teste, autorizações)",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-083"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

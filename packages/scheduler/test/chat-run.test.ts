@@ -56,7 +56,11 @@ describe('plan execution and quality loop (PHASE-18, TAR-0085)', () => {
     const { run } = await setup([task('A', 'simulator-2')]);
     const r = await run({ testCommand: [process.execPath, '-e', 'process.exit(0)'], testsApproved: false });
     expect(r.tasks[0]!.tests).toBe('NONE');
-    expect(r.tasks[0]!.reason).toMatch(/sem teste/);
+    expect(r.tasks[0]!.reason).toMatch(/não autorizado/); // comando do CONFIG sem autorização local
+    const { run: run2 } = await setup([task('B', 'simulator-2')]);
+    const r2 = await run2();
+    expect(r2.tasks[0]!.tests).toBe('NONE');
+    expect(r2.tasks[0]!.reason).toMatch(/sem teste/);
   });
 
   it('rate-limit swaps to another IA with a handoff', async () => {
@@ -72,6 +76,13 @@ describe('plan execution and quality loop (PHASE-18, TAR-0085)', () => {
     expect(r.tasks[0]!.review).toBe('APPROVED');
     const rev = s.eventsSince(0, 5000).find((e) => e.eventType === 'TaskReviewRequested')!;
     expect(String(rev.payload.reviewer)).not.toMatch(/^simulator-2/);
+  });
+
+  it('I2b: cross review prefers a non-main IA so the main stays free for the chat', async () => {
+    const { s, run } = await setup([task('A', 'simulator-2')]);
+    await run({ crossReview: true });
+    const rev = s.eventsSince(0, 5000).find((e) => e.eventType === 'TaskReviewRequested')!;
+    expect(String(rev.payload.reviewer)).toMatch(/^simulator-3/);
   });
 
   it('summaryMessage lists every task with its outcome', () => {
