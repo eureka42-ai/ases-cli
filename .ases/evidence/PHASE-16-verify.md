@@ -19,3 +19,12 @@
 | 0074 | `--no-animation` aceito; teste que falha se as TUIs ganharem timer de desenho; largura 50 também no `ases` | `tui-shared/test/no-animation.test.ts`; `apps/ases-cli/test/tui.test.tsx` 40/50/80/120 |
 | 0075 | Gate de release: versão 1.0.0, matriz (`docs/MATRIZ_SUPORTE.md`, run 45447285906), notas (`docs/RELEASE_NOTES_1.0.0.md`), pacote único autocontido para todas as plataformas | `pack-smoke` nos 6 jobs do CI e local; publicação registrada abaixo |
 | 0070 | TUI no ConPTY real (`node-pty@1.1.0`, só no CI do Windows, com `AER_REQUIRE_CONPTY=1`) | `test/e2e/conpty.test.mjs` 3/3 em windows-latest (Node 22 e 24) e windows-11-arm |
+
+## Publicação (24/11/2026)
+- **Publicado:** `@eureka42-ai/aer@1.0.0` no registro npm pela conta `eureka42-ai`, pelo responsável, com 2FA confirmado por Touch ID no navegador. A tag `latest` aponta para 1.0.0.
+- **Mesmo arquivo:** o shasum do registro, `9c69c74606038014f0f9a199bdedbfea8e5ed3ac`, é igual ao do `.pack/eureka42-ai-aer-1.0.0.tgz` testado pelo `pack-smoke`.
+- **Instalado do registro (darwin-arm64, Node 22.19.0, prefixo temporário):**
+  - `ases --version` e `ases-tar --version` mostram `1.0.0 (protocol 1)`;
+  - o `doctor` mostra `secretStore` disponível (`macos-keychain`);
+  - num projeto novo com `ç` no caminho, `init` e `/phase new` funcionam.
+- **Windows:** a instalação do registro numa máquina Windows real ainda **não** foi confirmada pelo responsável.

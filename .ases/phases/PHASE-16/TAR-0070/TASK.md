@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0070 |
 | phase_id | PHASE-16 |
-| estado | PLANNED (v1) |
+| estado | COMPLETED (v9) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |
@@ -25,7 +25,8 @@ TUI em ConPTY/Windows Terminal: roteiro manual do responsável ou harness autom�
 - nenhum (validação NÃO concluída)
 
 ## Evidências, revisões e handoffs
-- nenhuma
+- EVIDENCE test/e2e/conpty.test.mjs (sha256 68ffaf72e61f…) — ConPTY 3/3 em windows-latest 22/24 e windows-11-arm (run 45447285906)
+- EVIDENCE .ases/evidence/PHASE-16-verify.md (sha256 5a4c90aeb178…)
 
 ## Critério de saída
 COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

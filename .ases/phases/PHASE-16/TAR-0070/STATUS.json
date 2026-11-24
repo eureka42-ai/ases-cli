@@ -4,12 +4,21 @@
   "taskId": "TAR-0070",
   "phaseId": "PHASE-16",
   "title": "TUI em ConPTY/Windows Terminal: roteiro manual do responsável ou harness automático (vem da TAR-0069)",
-  "state": "PLANNED",
-  "version": 1,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-234"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": "test/e2e/conpty.test.mjs",
+      "sha256": "68ffaf72e61f6e82ec82f2abf3ae7e92bb6b064383fc2c5774fb3052484120f2"
+    },
+    {
+      "path": ".ases/evidence/PHASE-16-verify.md",
+      "sha256": "5a4c90aeb1783b257099264fcc67c89939a4ba8b4cedd1a0a294b83d1d5af890"
+    }
+  ],
   "lastTest": null
 }

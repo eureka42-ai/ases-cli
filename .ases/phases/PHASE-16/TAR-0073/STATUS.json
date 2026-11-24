@@ -4,8 +4,8 @@
   "taskId": "TAR-0073",
   "phaseId": "PHASE-16",
   "title": "Precedência de tema e logo: CLI > projeto > global > padrão",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-248",
     "AER-REQ-249"

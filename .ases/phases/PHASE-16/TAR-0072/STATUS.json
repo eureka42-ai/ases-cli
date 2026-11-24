@@ -4,8 +4,8 @@
   "taskId": "TAR-0072",
   "phaseId": "PHASE-16",
   "title": "Tema de alto contraste e tema auto, com razão de contraste medida",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-243"
   ],

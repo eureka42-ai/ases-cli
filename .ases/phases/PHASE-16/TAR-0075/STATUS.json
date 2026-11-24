@@ -4,8 +4,8 @@
   "taskId": "TAR-0075",
   "phaseId": "PHASE-16",
   "title": "Gate de release cross-platform: matriz, pacote por plataforma e notas de versão",
-  "state": "PLANNED",
-  "version": 1,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-225",
     "AER-REQ-232",
@@ -16,6 +16,18 @@
     {
       "path": "docs/RELEASE_NOTES_RASCUNHO.md",
       "sha256": "e8f708177c88dc690728d8071fdb8a59009c3389bf89153bf3bf434225160dcb"
+    },
+    {
+      "path": "docs/RELEASE_NOTES_1.0.0.md",
+      "sha256": "22ddcf11a2e13ff2be5985432b10a2e9a78e49784979f397e03bdb408fc92fd3"
+    },
+    {
+      "path": "docs/MATRIZ_SUPORTE.md",
+      "sha256": "6b70de25bbe537b8c7ac188c060ca439a8beea2001997b95ac7173742abb9dfa"
+    },
+    {
+      "path": ".ases/evidence/PHASE-16-verify.md",
+      "sha256": "db408500231ac7d1aa084cbd681532f5e17b7bca38cc932ecabe8902a0a057e0"
     }
   ],
   "lastTest": null

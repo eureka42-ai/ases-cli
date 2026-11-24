@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 645 (TaskUpdated, 2026-11-24T15:05:37.123Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 675 (PhaseUpdated, 2026-11-24T18:16:08.648Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -18,7 +18,7 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | PHASE-11 | Continuidade, métricas e review | COMPLETED |
 | PHASE-12 | Daemon local, portabilidade final e release multiplataforma | COMPLETED |
 | PHASE-15 | Portabilidade Windows e Linux verificada | COMPLETED |
-| PHASE-16 | Eureka42 Branding, UX portátil e release estável | RUNNING |
+| PHASE-16 | Eureka42 Branding, UX portátil e release estável | COMPLETED |
 | PHASE-13 | Brain, Swarm, Arena e recursos avançados (pós-MVP) | PLANNED |
 | PHASE-14 | Time Machine, Digital Twin e Learning Engine | PLANNED |
 
@@ -94,11 +94,11 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0067 | PHASE-15 | Caminhos Windows: UNC, junction, letra de unidade, acentos e espaços | COMPLETED | — | .ases/evidence/PHASE-15-verify.md |
 | TAR-0068 | PHASE-15 | Matriz de suporte publicada por SO/arquitetura com PASS/FAIL/NOT_RUN e doctor | COMPLETED | — | .ases/evidence/PHASE-15-verify.md |
 | TAR-0069 | PHASE-15 | TUI em ConPTY/Windows Terminal ou registro NOT_RUN honesto | CANCELLED | — | docs/SUPORTE_TERMINAIS_WINDOWS.md |
-| TAR-0070 | PHASE-16 | TUI em ConPTY/Windows Terminal: roteiro manual do responsável ou harness automático (vem da TAR-0069) | PLANNED | — | — |
-| TAR-0071 | PHASE-16 | Profundidade de cor: truecolor, 256 e 16 cores pelo terminal | REVIEW | — | .ases/evidence/PHASE-16-verify.md |
-| TAR-0072 | PHASE-16 | Tema de alto contraste e tema auto, com razão de contraste medida | REVIEW | — | .ases/evidence/PHASE-16-verify.md |
-| TAR-0073 | PHASE-16 | Precedência de tema e logo: CLI > projeto > global > padrão | REVIEW | — | .ases/evidence/PHASE-16-verify.md |
-| TAR-0074 | PHASE-16 | Sem animação nas TUIs (verificação automática) e larguras 40/50/80/120 nas duas TUIs | REVIEW | — | .ases/evidence/PHASE-16-verify.md |
-| TAR-0075 | PHASE-16 | Gate de release cross-platform: matriz, pacote por plataforma e notas de versão | PLANNED | — | docs/RELEASE_NOTES_RASCUNHO.md |
+| TAR-0070 | PHASE-16 | TUI em ConPTY/Windows Terminal: roteiro manual do responsável ou harness automático (vem da TAR-0069) | COMPLETED | — | test/e2e/conpty.test.mjs<br>.ases/evidence/PHASE-16-verify.md |
+| TAR-0071 | PHASE-16 | Profundidade de cor: truecolor, 256 e 16 cores pelo terminal | COMPLETED | — | .ases/evidence/PHASE-16-verify.md |
+| TAR-0072 | PHASE-16 | Tema de alto contraste e tema auto, com razão de contraste medida | COMPLETED | — | .ases/evidence/PHASE-16-verify.md |
+| TAR-0073 | PHASE-16 | Precedência de tema e logo: CLI > projeto > global > padrão | COMPLETED | — | .ases/evidence/PHASE-16-verify.md |
+| TAR-0074 | PHASE-16 | Sem animação nas TUIs (verificação automática) e larguras 40/50/80/120 nas duas TUIs | COMPLETED | — | .ases/evidence/PHASE-16-verify.md |
+| TAR-0075 | PHASE-16 | Gate de release cross-platform: matriz, pacote por plataforma e notas de versão | COMPLETED | — | docs/RELEASE_NOTES_RASCUNHO.md<br>docs/RELEASE_NOTES_1.0.0.md<br>docs/MATRIZ_SUPORTE.md<br>.ases/evidence/PHASE-16-verify.md |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

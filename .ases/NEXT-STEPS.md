@@ -1,4 +1,4 @@
-# Próximos passos (atualizado 24/11/2026, MVP concluído; PHASE-15 em REVIEW)
+# Próximos passos (atualizado 24/11/2026: AER 1.0.0 publicado no npm; PHASE-16 concluída)
 
 **Local do projeto:** `~/Projetos/eureka42/ases-cli` (clone de `eureka42-ai/ases-cli`, privado). A cópia antiga em `~/Desktop/ASES CLI` está numa pasta sincronizada pelo iCloud e **não deve mais ser usada**: o iCloud criou cópias de conflito de arquivos do `.ases/`, e o banco SQLite corre risco lá. Abra o Claude Code na pasta nova.
 
@@ -26,14 +26,14 @@
    - A ordem do plano mestre foi mantida. PHASE-13..16 existem no engine; a 15 vem primeiro (`/phase order`) porque é obrigatória para o lançamento multiplataforma.
    - TAR-0065..0068 estão em REVIEW: Credential Manager, DACL, caminhos UNC/junction/subst e matriz de suporte, todos com CI Windows real.
    - TAR-0069 (TUI no ConPTY) está FAILED/NOT_RUN e aguarda o responsável: rodar o roteiro manual (`docs/SUPORTE_TERMINAIS_WINDOWS.md`), ou aprovar o `node-pty` (dependência nativa) para um harness automático.
-7c. **PHASE-16 (Branding, UX portátil e release): em andamento** (branch `ases/PHASE-16`; `.ases/evidence/PHASE-16-verify.md`).
-   - TAR-0071..0074 em REVIEW: cor 24/8/4 bits, temas contrast/auto, precedência de tema/logo, sem animação, larguras.
-   - TAR-0075 (release) aguarda o responsável:
-     - número da versão;
-     - publicar no npm ou não, e com qual conta;
-     - aceitar o macOS só local.
-     Rascunho em `docs/RELEASE_NOTES_RASCUNHO.md`.
-   - TAR-0070 (ConPTY) aguarda o roteiro manual ou a aprovação do `node-pty`.
+7c. **PHASE-16: COMPLETED** (24/11/2026, aprovada e integrada em `main`, tag `v1.0.0`; `.ases/evidence/PHASE-16-verify.md`).
+   - **Release:** `@eureka42-ai/aer@1.0.0` publicado no npm pela conta `eureka42-ai`, com o mesmo shasum do tarball testado. Notas em `docs/RELEASE_NOTES_1.0.0.md`.
+   - **TUI no Windows:** a TUI no ConPTY tem e2e automático (`node-pty` só no CI do Windows), PASS 3/3.
+   - **Alvos:** Windows/Linux arm64 passam a TARGET. O macOS fica com verificação local, por decisão do responsável.
+   - **Pendente do responsável:**
+     - confirmar a instalação pelo npm numa máquina Windows real e o roteiro manual de `docs/SUPORTE_TERMINAIS_WINDOWS.md` (conhost e PowerShell 5.1);
+     - **publicações futuras:** pelo app Terminal, porque o 2FA é por Touch ID e só funciona num terminal interativo. Para automatizar, considerar trusted publishing (OIDC) pelo GitHub Actions.
+7d. **Próximas: PHASE-13 e PHASE-14** (pós-MVP, ordem do plano mestre).
 8. **Decisões do responsável (23/11/2026):**
    - **Licença:** CC BY-NC-ND 4.0, Open Access (`LICENSE`; `package.json` com `CC-BY-NC-ND-4.0`). AER-REQ-210 atendido.
    - **Termos dos providers:** o responsável declarou que todos os vendors autorizaram a orquestração. A declaração está registrada; os documentos de autorização não estão no repositório.

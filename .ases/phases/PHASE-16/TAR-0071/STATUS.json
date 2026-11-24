@@ -4,8 +4,8 @@
   "taskId": "TAR-0071",
   "phaseId": "PHASE-16",
   "title": "Profundidade de cor: truecolor, 256 e 16 cores pelo terminal",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-243",
     "AER-REQ-245"
