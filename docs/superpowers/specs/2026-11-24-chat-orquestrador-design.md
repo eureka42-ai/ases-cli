@@ -1,6 +1,6 @@
 # AER 1.1.0: console de conversa com IA principal e orquestração em paralelo
 
-**Data:** 24/11/2026. **Estado:** lista de comandos aprovada pelo responsável (24/11/2026); desenho completo aguardando aprovação final.
+**Data:** 24/11/2026. **Estado:** APROVADO pelo responsável (24/11/2026).
 **Requisitos:** AER-REQ-082 (escolher provider por comando), AER-REQ-083 (manual/automático/híbrido) e o §8/§11 do `ASES_CLI_MD_MESTRE.md`, que descreve o `ases` como "chat textual interativo, escolha manual/automática/híbrida de agentes".
 - **Roteiro 1.2/1.3:** PHASE-13 (Brain, Swarm, Arena), PHASE-14 (Time Machine) e Project Passport (§14.12).
 
@@ -133,6 +133,7 @@ O plano mestre já previa esse chat. Ele ficou sem fase marcada para fazer (AER-
 | `/desfazer` | `/undo` | Desfaz a última edição da principal |
 | `/parar` | `/stop` | Para tudo da conversa |
 | `/nova` | `/new` | Nova conversa |
+| `/sobre` | `/about` | Quem faz o Eureka42, site e licença |
 | `/config` | `/settings` | Menu com tema, logo, modo, limite por IA, revisão cruzada, comando de teste, consentimentos e assistente inicial |
 | `/sair` | `/exit` | Sai |
 
@@ -161,6 +162,25 @@ O plano mestre já previa esse chat. Ele ficou sem fase marcada para fazer (AER-
 ### 5.7 Simulador
 - **Cenário `chat`:** responde de forma determinística, emite `aer-plan` quando a mensagem pede trabalho e edita um arquivo quando a mensagem pede.
 - **Cenários `review`, `rate-limit` e `test-fail`:** para cobrir os itens do §5.3 sem conta.
+
+### 5.8 Eureka42.org e "Sobre" (pedido do responsável na aprovação)
+- **Endereço `eureka42.org`:**
+  - na linha abaixo do banner: `⌘  ASES Engineering Runtime · eureka42.org · principal: X · N IAs prontas`;
+  - no rodapé do `/ajuda`;
+  - no `--help` e no `--version` dos dois bins;
+  - no `README`/`INSTALL`;
+  - no `homepage` do `package.json` publicado (`https://eureka42.org`).
+- **Comando `/sobre`** (alias `/about`) no `ases`, e `ases about` / `ases-tar --about` fora da sessão:
+  ```
+  ⌘ Eureka42 · ASES Engineering Runtime (AER) <versão>
+  O Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.
+  eureka42.org · Licença CC BY-NC-ND 4.0
+  ```
+  O texto é o literal do responsável. A grafia dos nomes deve ser confirmada antes do release.
+- **Testes:**
+  - o texto exato aparece em `/sobre` e no `--help`;
+  - `eureka42.org` aparece no banner e no `--version`;
+  - com `NO_COLOR`, a saída fica limpa.
 
 ## 6. Testes e evidência
 - **Unidade:**
