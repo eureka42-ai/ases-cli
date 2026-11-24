@@ -133,6 +133,7 @@ O plano mestre já previa esse chat. Ele ficou sem fase marcada para fazer (AER-
 | `/desfazer` | `/undo` | Desfaz a última edição da principal |
 | `/parar` | `/stop` | Para tudo da conversa |
 | `/nova` | `/new` | Nova conversa |
+| `/atualizar` | `/update` | Atualiza o AER para a versão mais nova do npm |
 | `/sobre` | `/about` | Quem faz o Eureka42, site e licença |
 | `/config` | `/settings` | Menu com tema, logo, modo, limite por IA, revisão cruzada, comando de teste, consentimentos e assistente inicial |
 | `/sair` | `/exit` | Sai |
@@ -181,6 +182,24 @@ O plano mestre já previa esse chat. Ele ficou sem fase marcada para fazer (AER-
   - o texto exato aparece em `/sobre` e no `--help`;
   - `eureka42.org` aparece no banner e no `--version`;
   - com `NO_COLOR`, a saída fica limpa.
+
+### 5.9 Atualizar com um comando (pedido do responsável)
+- **`ases update`** (e `/atualizar`, alias `/update`, dentro da sessão):
+  1. Consulta `https://registry.npmjs.org/@eureka42-ai/aer` (só o `dist-tags.latest`) **somente quando o usuário pede**. Nada de checagem automática nem telemetria (AER-REQ-174).
+  2. Mostra `instalada X → disponível Y`.
+  3. Se houver versão nova, roda `npm install -g @eureka42-ai/aer@Y` pelo `npm-cli.js` do próprio Node, sem shell, e confere com `ases --version`.
+- **Sem rede ou se o npm falhar:** mostra o erro do npm e não altera nada.
+- **Já atualizada:** responde "já está na versão mais nova".
+- **Instalação que não veio do npm global** (rodando do repositório, como `node apps/ases-cli/...`): recusa e explica o motivo.
+- **Dentro da sessão:**
+  - **Com tarefas rodando:** o `/atualizar` recusa com "pare as tarefas antes (/parar)".
+  - **Sem tarefas rodando:** atualiza e pede para reabrir o `ases`. O banco migra na primeira abertura, com backup automático (já existente).
+- **`ases update --check`:** só mostra se há versão nova, sem instalar.
+- **Testes:**
+  - o registro é falso, via a variável `AER_REGISTRY` (só em teste) apontando para um arquivo local;
+  - casos: mais nova, igual, sem rede, rodando do repositório e tarefas rodando;
+  - o `npm install` é simulado por um npm falso, usando o mesmo mecanismo do `pack-smoke`;
+  - no CI, `pack-smoke` instala a 1.1.0 e roda `ases update --check` contra o registro falso.
 
 ## 6. Testes e evidência
 - **Unidade:**
