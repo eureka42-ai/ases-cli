@@ -18,6 +18,15 @@ ases --version && ases-tar --version
 ```
 Funciona igual em bash, zsh e PowerShell. No Windows, o npm cria `ases.cmd`/`ases-tar.cmd` no prefixo global.
 
+## Motor residente (tarefas seguem com o terminal fechado)
+```sh
+ases daemon start      # sobe o motor em segundo plano (sem admin)
+ases                   # neste projeto, vira cliente do motor; /exit sai sem parar as tarefas
+ases daemon status     # pid, saúde e caminho do log
+ases daemon stop       # para o motor (cancela tarefas em execução, sem deixar processos órfãos)
+```
+**Sem supervisor do SO nesta versão:** reboot, logoff ou crash do motor não são cobertos. Depois de um desses, rode `ases` e `/resume`.
+
 ## Atualizar e voltar atrás (rollback)
 - **Atualizar:** `npm install -g ./eureka42-aer-<nova>.tgz`.
   - O banco do projeto (`.ases/db/ases.sqlite`) é migrado na primeira abertura, **com backup automático antes** (`.ases/db/ases.sqlite.bak-v<N>-…`).

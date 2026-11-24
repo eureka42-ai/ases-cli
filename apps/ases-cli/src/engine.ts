@@ -101,6 +101,9 @@ export class Engine {
     return { root: this.root, mutate: (fn) => this.mutate(fn), read: (fn) => fn(this.store), providers: this.providers, ttlMs: 30_000, timeoutMs, consented: new Set(consent) };
   }
 
+  /** Definido só no motor residente (`ases daemon run`): executa uma linha vinda de um cliente `control`. */
+  commandHandler?: (line: string) => Promise<string>;
+
   get platform(): PlatformAdapter {
     return this.adapter;
   }
@@ -165,6 +168,11 @@ export class Engine {
         if (Array.isArray(p.dependsOn)) input.dependsOn = p.dependsOn.map(String);
         return st.createTask(input);
       }),
+      // motor residente (PHASE-12): o cliente `ases` ligado envia linhas de comando; quem executa é o motor
+      'session.command': (p) => {
+        if (!this.commandHandler) throw Object.assign(new Error('this engine does not accept remote commands'), { code: 'NOT_RESIDENT' });
+        return this.commandHandler(str(p.line, 'line'));
+      },
       'task.transition': (p) => this.mutate((st) => st.transitionTask(str(p.taskId, 'taskId'), str(p.to, 'to') as TaskState, int(p.expectedVersion, 'expectedVersion'), typeof p.reason === 'string' ? p.reason : null)),
     };
   }

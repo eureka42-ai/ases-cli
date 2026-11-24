@@ -23,7 +23,8 @@ export const READ_METHODS: ReadonlySet<string> = new Set([
 ]);
 
 /** Métodos mutantes: só com token de controle (AER-REQ-079, C20). */
-export const MUTATING_METHODS: ReadonlySet<string> = new Set(['phase.create', 'task.create', 'task.transition']);
+/** `session.command`: o cliente `ases` ligado a um motor residente envia uma linha de comando (PHASE-12). */
+export const MUTATING_METHODS: ReadonlySet<string> = new Set(['phase.create', 'task.create', 'task.transition', 'session.command']);
 
 export const DEFAULT_MAX_FRAME_BYTES = 1024 * 1024;
 

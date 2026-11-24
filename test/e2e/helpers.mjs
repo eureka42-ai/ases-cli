@@ -23,7 +23,7 @@ export function tempProject(name = 'e2e proj ç') {
 }
 
 const env = { ...process.env, NO_COLOR: undefined, FORCE_COLOR: undefined };
-export const runSync = (bin, args, cwd, extraEnv = {}) => spawnSync(process.execPath, [bin, ...args], { cwd, encoding: 'utf8', env: { ...env, ...extraEnv }, timeout: 15_000, input: '' });
+export const runSync = (bin, args, cwd, extraEnv = {}, timeout = 15_000) => spawnSync(process.execPath, [bin, ...args], { cwd, encoding: 'utf8', env: { ...env, ...extraEnv }, timeout, input: '' });
 
 /** Processo real com captura de stdout/stderr e espera por texto. */
 export function start(bin, args, cwd) {

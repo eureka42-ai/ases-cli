@@ -174,13 +174,12 @@ export class IpcServer {
       }
       const handler = this.o.handlers[msg.method];
       if (!handler || (!READ_METHODS.has(msg.method) && !MUTATING_METHODS.has(msg.method))) throw new RpcError(RPC.METHOD_NOT_FOUND, `unknown method ${msg.method}`);
-      reply(handler(params, { role: c.role }));
+      const result = handler(params, { role: c.role });
+      // handlers assíncronos (session.command): responde quando a Promise resolver, com o mesmo mapeamento de erro
+      if (result instanceof Promise) result.then(reply, (err: unknown) => fail(toRpcError(err)));
+      else reply(result);
     } catch (err) {
-      if (err instanceof RpcError) fail(err);
-      else {
-        const e = err as Error & { code?: unknown };
-        fail(new RpcError(RPC.APP_ERROR, e.message, { code: typeof e.code === 'string' ? e.code : 'INTERNAL' }));
-      }
+      fail(toRpcError(err));
     }
   }
 
@@ -207,4 +206,10 @@ export class IpcServer {
     }
     reply({ subscribed: c.subLastSeq !== undefined, fromSeq, backlog });
   }
+}
+
+function toRpcError(err: unknown): RpcError {
+  if (err instanceof RpcError) return err;
+  const e = err as Error & { code?: unknown };
+  return new RpcError(RPC.APP_ERROR, e.message, { code: typeof e.code === 'string' ? e.code : 'INTERNAL' });
 }

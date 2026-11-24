@@ -15,6 +15,7 @@ import { writeReports } from './reports.ts';
 import { Engine } from './engine.ts';
 import { handleLine } from './commands.ts';
 import { runTui } from './tui.tsx';
+import { attachRepl, connectResident, daemonStatus, runDaemon, startDaemon, stopDaemon } from './daemon.ts';
 
 const HELP = `Eureka42 · ASES Engineering Runtime — ases ${VERSIONS.app}
 
@@ -24,6 +25,7 @@ Uso:
   ases doctor [--json]       diagnóstico local (sem login, sem rede, sem custo)
   ases migrate-interim       entrega ao engine um .ases/ criado pelo bootstrap interino (scripts/ases-dev.mjs)
   ases secret status | set <id> | has <id> | delete <id>   chave de API no cofre nativo (valor pelo stdin; nunca impresso)
+  ases daemon start | stop | status   motor residente: tarefas seguem com o terminal fechado; o ases vira cliente dele
 
 Opções:
   --no-color   --no-banner   --no-tui   --theme teal|blue|purple|gold|mono   --logo full|compact|minimal|ascii
@@ -119,6 +121,20 @@ async function main(argv: string[]): Promise<number> {
       console.log('providers:');
       for (const p of report.providers) console.log(`  ${p.id.padEnd(10)} ${p.availability.padEnd(22)} ${(p.version ?? '-').padEnd(10)} ${p.contract.padEnd(10)} ${p.evidence.join('; ')}`);
     }
+    return 0;
+  }
+  if (cmd === 'daemon') {
+    // motor residente (PHASE-12): as tarefas seguem quando o terminal/TUI fecha; sem supervisor do SO nesta fase
+    const root = findProjectRoot(process.cwd());
+    if (!root) throw new UsageError('no .ases/ project here (run `ases init` first)');
+    const op = positionals[1];
+    if (op === 'run') return runDaemon(root, adapter);
+    if (op === 'start') console.log(await startDaemon(root, adapter, process.argv[1]!));
+    else if (op === 'stop') console.log(await stopDaemon(root, adapter));
+    else if (op === 'status') {
+      const st = await daemonStatus(root, adapter);
+      console.log(values.json ? JSON.stringify(st.json) : st.text);
+    } else throw new UsageError('usage: ases daemon start | stop | status');
     return 0;
   }
   if (cmd === 'migrate-interim') {
@@ -217,6 +233,16 @@ const exitNote = (n: number) => (n ? `${n} tarefa(s) em execução cancelada(s),
 async function interactive(root: string, adapter: Awaited<ReturnType<typeof loadPlatformAdapter>>, ui: { color: boolean; banner: boolean; theme: ThemeName; mode: LogoMode; unicode: boolean; logo: LogoMode | undefined; tui: boolean }): Promise<number> {
   const synced = syncedFolderHint(adapter.id, defaultDeps(), root);
   if (synced) console.error(`AVISO: o projeto está numa pasta sincronizada (${synced}). O sync pode copiar o banco SQLite no meio de uma escrita e corrompê-lo; mova o projeto para uma pasta não sincronizada.`);
+  // há um motor residente neste projeto? então este `ases` é só um cliente dele (PHASE-12)
+  const resident = await connectResident(adapter, root, 'control');
+  if (resident) {
+    const probe = await resident.client.call<string>('session.command', { line: '/status' }).catch((e: Error) => e);
+    if (probe instanceof Error) {
+      resident.client.close();
+      throw Object.assign(new Error(`outro \`ases\` interativo já está aberto neste projeto (pid ${resident.pid}); use-o, ou feche-o e rode \`ases daemon start\``), { code: 'ENGINE_ALREADY_RUNNING' });
+    }
+    return attachRepl(resident.client, resident.pid, process.stdin.isTTY === true);
+  }
   const engine = await Engine.start(root, adapter);
   if (ui.tui) {
     const reason = await runTui(engine, { color: ui.color, unicode: ui.unicode, theme: ui.theme, logo: ui.logo });
