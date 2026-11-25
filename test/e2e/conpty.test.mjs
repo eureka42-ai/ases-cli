@@ -58,7 +58,7 @@ function conpty(bin, args, cwd, extraEnv = {}, cols = 80) {
       for (let i = 0; i < 30; i++) {
         term.write('x');
         await new Promise((r) => setTimeout(r, 500));
-        const m = /> (x+)█/.exec(raw.replace(ANSI, '').split('LIVE').at(-1));
+        const m = /> (x+)[█_]/.exec(raw.replace(ANSI, '').split('LIVE').at(-1));
         if (m) {
           term.write('\u007f'.repeat(m[1].length + 3));
           await new Promise((r) => setTimeout(r, 300));
