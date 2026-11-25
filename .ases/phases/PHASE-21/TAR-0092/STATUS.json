@@ -4,14 +4,19 @@
   "taskId": "TAR-0092",
   "phaseId": "PHASE-21",
   "title": "Adaptador do Cursor CLI (stream-json, sandbox, shell bloqueado, modelos, login)",
-  "state": "PLANNED",
-  "version": 1,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-101",
     "AER-REQ-109",
     "AER-REQ-123"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-21-verify.md",
+      "sha256": "7455c36f0c08d1ef250d0f53fb31abeda9e50dcd5f8842d524f4861fbaa81f7c"
+    }
+  ],
   "lastTest": null
 }
