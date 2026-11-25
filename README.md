@@ -199,7 +199,8 @@ Professor · Eureka42
 
 | Versão | Data | Destaques |
 |---|---|---|
-| **1.2.1** | 25/11/2026 | Cursor seguro: shell barrado pela regra `deny` antes de executar e acesso fora do projeto interrompido; Cursor **VERIFIED** 2026.11.22 |
+| **1.3.0** | 25/11/2026 | `/iniciar-projeto`: ASES-500 guiada → requisitos → ASES-300 → G1 → repositório no GitHub (privado por padrão) |
+| 1.2.1 | 25/11/2026 | Cursor seguro: shell barrado pela regra `deny` antes de executar e acesso fora do projeto interrompido; Cursor **VERIFIED** 2026.11.22 |
 | 1.2.0 | 25/11/2026 | Cursor como nova IA (não use: o shell não era barrado; use a 1.2.1) |
 | 1.1.2 | 24/11/2026 | Abertura limpa; `/modelo` com seletor (← → ↑ ↓ e Espaço); Codex em pasta sem Git; plano avisa quando falta Git |
 | 1.1.1 | 24/11/2026 | Visual no estilo do Claude Code (`>`, `●`, ações ao vivo, diff +/−, ✻ pensando com o tempo, `Esc`); tela "Onde vamos trabalhar?" sem `ases init`; autorização única das IAs; `ases-tar` mostra quem faz o quê |
