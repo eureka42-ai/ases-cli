@@ -148,9 +148,9 @@ describe.runIf(pty)('TUIs in a real Windows ConPTY (TAR-0070)', () => {
     procs.push(t);
     await t.pastStart();
     await t.waitFor((s) => s.includes('eureka42.org') && s.includes('? ajuda'), 30_000);
-    await t.openHelp();
-    await t.keys('\u001b');
-    await new Promise((r) => setTimeout(r, 300));
+    // runner arm64 lento: o "?" chegava antes do raw mode e ia para o prompt (run 45518480429). Uma mensagem com Enter
+    // funciona nos dois modos (em cooked mode ela chega inteira quando o raw liga), então basta esperar a tela assentar
+    await new Promise((r) => setTimeout(r, 2000));
     await t.keys('divida em tarefas o cadastro\r');
     await t.waitFor((s) => /Plano PLN-\d{4} \(3 tarefas\)/.test(s), 60_000);
     await t.keys('\r');
