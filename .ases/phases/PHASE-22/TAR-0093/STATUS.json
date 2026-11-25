@@ -4,8 +4,8 @@
   "taskId": "TAR-0093",
   "phaseId": "PHASE-22",
   "title": "Regra deny Shell(*) durante a execução do Cursor, acesso fora do projeto como violação, smoke real e VERIFIED",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-101",
     "AER-REQ-109"
