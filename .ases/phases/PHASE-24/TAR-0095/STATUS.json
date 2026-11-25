@@ -4,12 +4,17 @@
   "taskId": "TAR-0095",
   "phaseId": "PHASE-24",
   "title": "Listas de modelos do /modelo: Claude 5.5, Codex GPT-6/5.6, Kimi K3.1 (IDs da CLI)",
-  "state": "PLANNED",
-  "version": 1,
+  "state": "REVIEW",
+  "version": 6,
   "reqs": [
     "AER-REQ-082"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-24-verify.md",
+      "sha256": "4b682fb5ffd9e25039e12df79ebc978038e4045d9b548ac5afbb90d07358b301"
+    }
+  ],
   "lastTest": null
 }

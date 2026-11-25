@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 902 (TaskCreated, 2026-11-25T03:19:15.890Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 907 (TaskUpdated, 2026-11-25T03:28:06.840Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -127,6 +127,6 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0092 | PHASE-21 | Adaptador do Cursor CLI (stream-json, sandbox, shell bloqueado, modelos, login) | COMPLETED | — | .ases/evidence/PHASE-21-verify.md |
 | TAR-0093 | PHASE-22 | Regra deny Shell(*) durante a execução do Cursor, acesso fora do projeto como violação, smoke real e VERIFIED | COMPLETED | — | .ases/evidence/PHASE-22-verify.md |
 | TAR-0094 | PHASE-23 | /iniciar-projeto: Git, fontes, ASES-500 guiada, requisitos, ASES-300, G1 e GitHub privado | COMPLETED | — | .ases/evidence/PHASE-23-verify.md |
-| TAR-0095 | PHASE-24 | Listas de modelos do /modelo: Claude 5.5, Codex GPT-6/5.6, Kimi K3.1 (IDs da CLI) | PLANNED | — | — |
+| TAR-0095 | PHASE-24 | Listas de modelos do /modelo: Claude 5.5, Codex GPT-6/5.6, Kimi K3.1 (IDs da CLI) | REVIEW | — | .ases/evidence/PHASE-24-verify.md |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.
