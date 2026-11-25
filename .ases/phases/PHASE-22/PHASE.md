@@ -7,7 +7,7 @@
 ## Tarefas e dependências (DAG)
 | Tarefa | Estado | Provider | Depende de | Requisitos |
 |---|---|---|---|---|
-| TAR-0093 — Regra deny Shell(*) durante a execução do Cursor, acesso fora do projeto como violação, smoke real e VERIFIED | PLANNED | — | — | AER-REQ-101, AER-REQ-109 |
+| TAR-0093 — Regra deny Shell(*) durante a execução do Cursor, acesso fora do projeto como violação, smoke real e VERIFIED | REVIEW | — | — | AER-REQ-101, AER-REQ-109 |
 
 ## Critérios
 - **Entrada:** tarefas com requisitos ligados e dependências sem ciclo.

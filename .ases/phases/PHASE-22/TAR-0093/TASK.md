@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0093 |
 | phase_id | PHASE-22 |
-| estado | PLANNED (v1) |
+| estado | REVIEW (v6) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |
@@ -26,7 +26,7 @@ Regra deny Shell(*) durante a execução do Cursor, acesso fora do projeto como 
 - nenhum (validação NÃO concluída)
 
 ## Evidências, revisões e handoffs
-- nenhuma
+- EVIDENCE .ases/evidence/PHASE-22-verify.md (sha256 581bba6a2f72…)
 
 ## Critério de saída
 COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).
