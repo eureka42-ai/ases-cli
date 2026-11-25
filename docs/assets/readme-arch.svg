@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="520" viewBox="0 0 1100 520" role="img" aria-label="Como o ASES orquestra as IAs">
+  <defs><marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#22C55E"/></marker>
+  <linearGradient id="bg3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#06120C"/><stop offset="1" stop-color="#0A1A12"/></linearGradient></defs>
+  <rect width="1100" height="520" rx="20" fill="url(#bg3)"/>
+  <text x="550" y="44" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="bold" fill="#ECFDF5">Como o ASES trabalha</text>
+  <rect x="40" y="90" width="200" height="76" rx="14" fill="#0D1F16" stroke="#22C55E" stroke-opacity="0.8"/>
+  <text x="140.0" y="120" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="bold" fill="#ECFDF5">Você</text>
+  <text x="140.0" y="144" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#A7F3D0">texto livre no ases</text>
+  <rect x="330" y="90" width="240" height="76" rx="14" fill="#0D1F16" stroke="#22C55E" stroke-opacity="0.8"/>
+  <text x="450.0" y="120" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="bold" fill="#ECFDF5">IA principal</text>
+  <text x="450.0" y="144" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#A7F3D0">conversa · lê · planeja · edita</text>
+  <rect x="660" y="90" width="400" height="76" rx="14" fill="#0D1F16" stroke="#22C55E" stroke-opacity="0.8"/>
+  <text x="860.0" y="120" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="bold" fill="#ECFDF5">ASES (motor local)</text>
+  <text x="860.0" y="144" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#A7F3D0">plano → tarefas → IA certa para cada uma</text>
+  <line x1="240" y1="128" x2="326" y2="128" stroke="#22C55E" stroke-width="2" marker-end="url(#ah)"/><text x="283.0" y="120.0" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" fill="#86EFAC">mensagem</text>
+  <line x1="570" y1="128" x2="656" y2="128" stroke="#22C55E" stroke-width="2" marker-end="url(#ah)"/><text x="613.0" y="120.0" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" fill="#86EFAC">aer-plan</text>
+  <rect x="660" y="230" width="120" height="70" rx="14" fill="#0D1F16" stroke="#4ADE80" stroke-opacity="0.8"/>
+  <text x="720.0" y="260" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="bold" fill="#ECFDF5">codex</text>
+  <text x="720.0" y="284" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#A7F3D0">worktree 1</text>
+  <rect x="800" y="230" width="120" height="70" rx="14" fill="#0D1F16" stroke="#4ADE80" stroke-opacity="0.8"/>
+  <text x="860.0" y="260" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="bold" fill="#ECFDF5">kimi</text>
+  <text x="860.0" y="284" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#A7F3D0">worktree 2</text>
+  <rect x="940" y="230" width="120" height="70" rx="14" fill="#0D1F16" stroke="#4ADE80" stroke-opacity="0.8"/>
+  <text x="1000.0" y="260" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="bold" fill="#ECFDF5">opencode</text>
+  <text x="1000.0" y="284" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#A7F3D0">worktree 3</text>
+  <line x1="760" y1="166" x2="720" y2="226" stroke="#22C55E" stroke-width="2" marker-end="url(#ah)"/><line x1="860" y1="166" x2="860" y2="226" stroke="#22C55E" stroke-width="2" marker-end="url(#ah)"/><line x1="960" y1="166" x2="1000" y2="226" stroke="#22C55E" stroke-width="2" marker-end="url(#ah)"/>
+  <rect x="660" y="350" width="400" height="70" rx="14" fill="#0D1F16" stroke="#F97316" stroke-opacity="0.8"/>
+  <text x="860.0" y="380" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="bold" fill="#ECFDF5">Qualidade automática</text>
+  <text x="860.0" y="404" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#A7F3D0">testes · revisão cruzada · troca de IA</text>
+  <line x1="720" y1="300" x2="760" y2="346" stroke="#22C55E" stroke-width="2" marker-end="url(#ah)"/><line x1="860" y1="300" x2="860" y2="346" stroke="#22C55E" stroke-width="2" marker-end="url(#ah)"/><line x1="1000" y1="300" x2="960" y2="346" stroke="#22C55E" stroke-width="2" marker-end="url(#ah)"/>
+  <rect x="330" y="350" width="240" height="70" rx="14" fill="#0D1F16" stroke="#22C55E" stroke-opacity="0.8"/>
+  <text x="450.0" y="380" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="bold" fill="#ECFDF5">Resumo da principal</text>
+  <text x="450.0" y="404" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#A7F3D0">/ver · /aceitar · /desfazer</text>
+  <line x1="656" y1="385" x2="574" y2="385" stroke="#22C55E" stroke-width="2" marker-end="url(#ah)"/>
+  <rect x="40" y="350" width="200" height="70" rx="14" fill="#0D1F16" stroke="#86EFAC" stroke-opacity="0.8"/>
+  <text x="140.0" y="380" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="bold" fill="#ECFDF5">ases-tar</text>
+  <text x="140.0" y="404" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#A7F3D0">monitor ao vivo</text>
+  <line x1="240" y1="385" x2="326" y2="385" stroke="#86EFAC" stroke-dasharray="5 5" stroke-width="2"/>
+  <text x="550" y="470" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#A7F3D0">Tudo vira evento auditável no banco local · nada entra no projeto sem /aceitar · sem shell, sem servidor de rede</text>
+</svg>
