@@ -50,8 +50,26 @@ function conpty(bin, args, cwd, extraEnv = {}, cols = 80) {
         await new Promise((r) => setTimeout(r, 50));
       }
     },
+    /**
+     * PHASE-20: depois da tela da pasta o Ink liga o raw mode só após o 1º desenho do chat; teclas antes disso ficam no
+     * buffer e caem no prompt depois. Sonda com "x" até ela aparecer NO prompt e apaga, então a tela já está interativa.
+     */
+    async waitInteractive() {
+      for (let i = 0; i < 30; i++) {
+        term.write('x');
+        await new Promise((r) => setTimeout(r, 500));
+        const m = /> (x+)█/.exec(raw.replace(ANSI, '').split('LIVE').at(-1));
+        if (m) {
+          term.write('\u007f'.repeat(m[1].length + 3));
+          await new Promise((r) => setTimeout(r, 300));
+          return;
+        }
+      }
+      throw new Error(`a tela do chat não ficou interativa; output:\n${raw.replace(ANSI, '').slice(-1500)}`);
+    },
     /** o Ink liga o raw mode depois do 1º desenho: insiste no "?" até a ajuda abrir (mesmo motivo do pty.test) */
     async openHelp() {
+      await this.waitInteractive();
       for (let i = 0; ; i++) {
         await this.keys('?');
         try {
