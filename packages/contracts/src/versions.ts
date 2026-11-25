@@ -1,6 +1,6 @@
 // AER-REQ-010: app, protocolo, .ases/, SQLite, adapters e extensões versionam de forma independente.
 export const VERSIONS = {
-  app: '1.3.0',
+  app: '1.3.1',
   protocol: 1,
   projectSchema: 1,
   dbSchema: 5, // migração 5 = conversas do chat (PHASE-18)

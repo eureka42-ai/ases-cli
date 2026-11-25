@@ -15,12 +15,28 @@ type Run = (cmd: string, args: string[]) => Promise<{ exitCode: number | null; s
 export async function listModels(provider: string, run: Run): Promise<ModelList> {
   switch (provider) {
     case 'claude':
-      // `claude --help`: "Use an alias for the latest model (e.g. 'fable', 'opus', or 'sonnet') or a model's full name"
-      return { provider, canSet: true, source: 'claude --help', models: ['fable', 'opus', 'sonnet'].map((id) => ({ id, name: id })), note: 'ou digite o nome completo de um modelo' };
+      // `claude --help`: aliases (fable, opus, sonnet) ou o nome completo; IDs completos informados pelo responsável (25/11/2026)
+      return { provider, canSet: true, source: 'claude --help + lista de 25/11/2026', models: [
+        ...['fable', 'opus', 'sonnet'].map((id) => ({ id, name: `${id} (o mais novo dessa linha)` })),
+        { id: 'claude-opus-5-5', name: 'Claude Opus 5.5' }, { id: 'claude-opus-5', name: 'Claude Opus 5' }, { id: 'claude-sonnet-5-5', name: 'Claude Sonnet 5.5' },
+        { id: 'claude-haiku-5-5', name: 'Claude Haiku 5.5' }, { id: 'claude-fable-5-2', name: 'Claude Fable 5.2 (tier Mythos)' },
+      ] };
     case 'codex':
-      return { provider, canSet: true, source: 'codex -m', models: [], note: 'o codex não tem comando de lista: digite o nome do modelo (o mesmo de `codex -m`)' };
+      // o codex não tem comando de lista: linha GPT-6 e 5.6 (a linha -codex foi desligada), lista de 25/11/2026
+      return { provider, canSet: true, source: 'lista de 25/11/2026 (codex -m)', note: 'ou digite outro nome de `codex -m`', models: [
+        ['gpt-6.2-astra', 'GPT-6.2 Astra · mais capaz'], ['gpt-6.2-sol', 'GPT-6.2 Sol · dia a dia, código e agentes'], ['gpt-6.1-sol', 'GPT-6.1 Sol · perto do Astra, custo menor'],
+        ['gpt-6.1-terra', 'GPT-6.1 Terra · rápido'], ['gpt-6-astra', 'GPT-6 Astra · código complexo'], ['gpt-6-sol', 'GPT-6 Sol · código e fluxos agênticos'],
+        ['gpt-6-luna', 'GPT-6 Luna · eficiente, alto volume'], ['gpt-6-cyber', 'GPT-6 Cyber · segurança autorizada'],
+        ['gpt-5.6-sol', 'GPT-5.6 Sol'], ['gpt-5.6-terra', 'GPT-5.6 Terra'], ['gpt-5.6-luna', 'GPT-5.6 Luna'], ['gpt-5.6-cyber', 'GPT-5.6 Cyber'],
+      ].map(([id, name]) => ({ id: id!, name: name! })) };
     case 'kimi':
-      return { provider, canSet: true, source: 'kimi -m', models: [], note: 'o kimi informa os modelos só dentro da sessão: digite o nome (ex.: o de `kimi -m`)' };
+      // IDs da CLI do Kimi (os da sessão real, kimi-code/…); os da API (kimi-k3.1-pro) não valem na CLI. ",thinking" = com raciocínio
+      return { provider, canSet: true, source: 'kimi CLI (sessão real) + nomes de 25/11/2026', note: 'ou digite outro nome', models: [
+        ['kimi-code/k3.1-pro', 'Kimi K3.1 Pro'], ['kimi-code/k3.1-pro,thinking', 'Kimi K3.1 Pro (com raciocínio)'],
+        ['kimi-code/k3.1-pro-highspeed', 'Kimi K3.1 Pro Highspeed'], ['kimi-code/k3.1-pro-highspeed,thinking', 'Kimi K3.1 Pro Highspeed (com raciocínio)'],
+        ['kimi-code/k3', 'Kimi K3'], ['kimi-code/k3,thinking', 'Kimi K3 (com raciocínio)'], ['kimi-code/k3-256k', 'Kimi K3 256k'],
+        ['kimi-code/kimi-for-coding', 'kimi-for-coding'], ['kimi-code/kimi-for-coding-highspeed', 'kimi-for-coding highspeed'],
+      ].map(([id, name]) => ({ id: id!, name: name! })) };
     case 'google':
     case 'cursor':
     case 'opencode': {

@@ -8,14 +8,18 @@ const run = (outputs: Record<string, string>) => async (cmd: string, args: strin
 describe('model lists per AI (PHASE-20)', () => {
   it('claude: aliases from its help; codex/kimi: type the name; google and opencode: their own list commands', async () => {
     const r = run({ 'agy models': 'Fetching available models...\ngemini-4-neon-high\tGemini 4 Neon (High)\ngemini-4-argon-low\tGemini 4 Argon (Low)\n', 'opencode models': 'ollama/gpt-oss:20b\nopencode-go/glm-5.3\n' });
-    expect((await listModels('claude', r)).models.map((m) => m.id)).toEqual(['fable', 'opus', 'sonnet']);
+    // listas atualizadas pelo responsável em 25/11/2026 (Claude e Codex); Kimi com os IDs da própria CLI (kimi-code/…)
+    expect((await listModels('claude', r)).models.map((m) => m.id)).toEqual(['fable', 'opus', 'sonnet', 'claude-opus-5-5', 'claude-opus-5', 'claude-sonnet-5-5', 'claude-haiku-5-5', 'claude-fable-5-2']);
+    expect((await listModels('codex', r)).models.map((m) => m.id).slice(0, 3)).toEqual(['gpt-6.2-astra', 'gpt-6.2-sol', 'gpt-6.1-sol']);
+    expect((await listModels('codex', r)).models.some((m) => /codex/.test(m.id))).toBe(false); // a linha -codex foi desligada
+    expect((await listModels('kimi', r)).models.find((m) => m.id === 'kimi-code/k3.1-pro')).toMatchObject({ name: 'Kimi K3.1 Pro' });
     const g = await listModels('google', r);
     expect(g).toMatchObject({ canSet: true, models: [{ id: 'gemini-4-neon-high', name: 'Gemini 4 Neon (High)' }, { id: 'gemini-4-argon-low', name: 'Gemini 4 Argon (Low)' }] });
     const o = await listModels('opencode', r);
     expect(o.canSet).toBe(false);
     expect(o.models.map((m) => m.id)).toEqual(['ollama/gpt-oss:20b', 'opencode-go/glm-5.3']);
     expect(o.note).toMatch(/opencode\.json/);
-    expect(await listModels('codex', r)).toMatchObject({ canSet: true, models: [] });
+    expect(await listModels('codex', r)).toMatchObject({ canSet: true });
     expect((await listModels('google', run({}))).note).toMatch(/não consegui listar/);
     expect((await listModels('opencode', run({}))).note).toMatch(/não troca de modelo.*não consegui listar/); // sem opencode instalado (CI)
   });

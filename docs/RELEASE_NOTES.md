@@ -1,5 +1,12 @@
 # AER 1.x: notas de versão
 
+## 1.3.1 (25/11/2026): listas de modelos atualizadas
+- **`/modelo` com as listas atuais:**
+  - **Claude:** Opus 5.5, Opus 5, Sonnet 5.5, Haiku 5.5 e Fable 5.2, além dos aliases `fable`, `opus` e `sonnet`.
+  - **Codex:** a linha GPT-6 (6.2 Astra, 6.2 Sol, 6.1 Sol, 6.1 Terra, 6 Astra, 6 Sol, 6 Luna, 6 Cyber) e a 5.6. A antiga linha `-codex`, desligada, não aparece.
+  - **Kimi:** K3.1 Pro, K3.1 Pro Highspeed e K3, com e sem raciocínio, nos IDs da própria CLI (`kimi-code/…`). Os IDs da API não valem na CLI.
+  - **Outro modelo:** continua dando para digitar o nome.
+
 ## 1.3.0 (25/11/2026): /iniciar-projeto
 - **`/iniciar-projeto`:** a metodologia guiada, do zero, no próprio chat.
   1. **Preparação:** cria o Git, se faltar, e importa e confere as fontes (G0).

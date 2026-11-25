@@ -283,3 +283,4 @@ req_id,phase_id,task_id,last_test,evidence,state
 "AER-REQ-151","PHASE-23","TAR-0094","",".ases/evidence/PHASE-23-verify.md#4895a6197360","COMPLETED"
 "AER-REQ-154","PHASE-23","TAR-0094","",".ases/evidence/PHASE-23-verify.md#4895a6197360","COMPLETED"
 "AER-REQ-160","PHASE-23","TAR-0094","",".ases/evidence/PHASE-23-verify.md#4895a6197360","COMPLETED"
+"AER-REQ-082","PHASE-24","TAR-0095","","","PLANNED"
