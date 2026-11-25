@@ -13,7 +13,7 @@ import type { Engine } from './engine.ts';
 export const CHAT_ALIASES: Record<string, string> = {
   '/help': '/ajuda', '/model': '/ia', '/agent': '/ia', '/agents': '/ias', '/plan': '/plano', '/diff': '/ver',
   '/accept': '/aceitar', '/redo': '/refazer', '/assign': '/trocar', '/undo': '/desfazer', '/stop': '/parar', '/new': '/nova',
-  '/settings': '/config', '/about': '/sobre', '/exit': '/sair', '/update': '/atualizar',
+  '/settings': '/config', '/about': '/sobre', '/exit': '/sair', '/update': '/atualizar', '/models': '/modelo',
 };
 
 export const SLASH_MENU: { cmd: string; desc: string }[] = [
@@ -30,6 +30,7 @@ export const SLASH_MENU: { cmd: string; desc: string }[] = [
   { cmd: '/desfazer', desc: 'desfaz a última edição da principal' },
   { cmd: '/parar', desc: 'para tudo' },
   { cmd: '/nova', desc: 'começa uma conversa nova' },
+  { cmd: '/modelo', desc: 'escolhe o modelo de cada IA (← → ↑ ↓ e Espaço)' },
   { cmd: '/config', desc: 'tema, logo, modo, limites, teste, autorizações' },
   { cmd: '/atualizar', desc: 'atualiza o AER pelo npm' },
   { cmd: '/sobre', desc: 'quem faz o Eureka42' },
@@ -47,7 +48,7 @@ ${SLASH_MENU.map((m) => `  ${m.cmd.padEnd(11)} ${m.desc}`).join('\n')}
 Equivalentes em inglês: ${Object.keys(CHAT_ALIASES).join(' ')}
 Comandos técnicos (fases, tarefas, gates): /ajuda avançado · eureka42.org`;
 
-export const CHAT_COMMANDS = new Set(['/ajuda', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/config', '/sobre', '/sair', '/atualizar']);
+export const CHAT_COMMANDS = new Set(['/modelo', '/ajuda', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/config', '/sobre', '/sair', '/atualizar']);
 
 /** `12` → `TAR-0012`; `TAR-0012` fica igual. */
 export function resolveTaskRef(ref: string): string {
@@ -111,6 +112,26 @@ export async function handleChat(engine: Engine, cmd: string, args: string[], ad
       return a === 'avançado' || a === 'avancado' || a === 'advanced' ? advancedHelp() : CHAT_HELP;
     case '/sobre':
       return aboutText(VERSIONS.app);
+    case '/modelo': {
+      const { chosenModels, setChosenModel } = await import('@aer/project-store');
+      const real = Object.keys(engine.providers).filter((p) => !p.startsWith('simulator'));
+      if (!a) {
+        const cur = chosenModels();
+        return ['Modelo de cada IA (na TUI, /modelo abre a lista com ← → ↑ ↓ e Espaço):', ...real.map((p) => `  ${p.padEnd(10)} ${cur[p] ?? 'padrão (o da própria IA)'}`), 'mude com /modelo <ia> <modelo> · /modelo <ia> lista os modelos · /modelo <ia> padrão volta ao da IA'].join('\n');
+      }
+      if (!real.includes(a)) return `IA desconhecida: ${a} (use uma de: ${real.join(', ')})`;
+      const list = await chat.models(a);
+      const name = [b, ...rest].join(' ').trim();
+      if (!name) return [`${a} · lista: ${list.source}${list.note ? ` · ${list.note}` : ''}`, ...list.models.slice(0, 60).map((m) => `  ${m.id}${m.name !== m.id ? `  ${m.name}` : ''}`)].join('\n');
+      if (!list.canSet) return `${a}: ${list.note ?? 'sem troca de modelo pelo AER'}`.replace(/^opencode: o OpenCode/, 'opencode: o OpenCode');
+      if (name === 'padrão' || name === 'padrao' || name === 'default') {
+        setChosenModel(a, null);
+        return `${a}: padrão (o modelo configurado na própria IA)`;
+      }
+      if (!/^[A-Za-z0-9][A-Za-z0-9._/,:@+-]{0,120}$/.test(name)) return `nome de modelo inválido: ${name}`;
+      setChosenModel(a, name);
+      return `${a}: ${name} (vale para a principal e para as tarefas desta IA; fica na sua config pessoal)`;
+    }
     case '/ia': {
       const c = await chat.conversation();
       if (!a) return `principal: ${c.main} · modo: ${c.mode} · troque com /ia <nome> (${Object.keys(engine.providers).join(', ')})`;

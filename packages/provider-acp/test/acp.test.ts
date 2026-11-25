@@ -18,13 +18,13 @@ let n = 0;
 const env = (x: Record<string, string> = {}) => ({ PATH: process.env.PATH, HOME: process.env.HOME, SystemRoot: process.env.SystemRoot, FAKE_LOG: log, ANTHROPIC_API_KEY: 'sk-ant-nao-deve-chegar-0000', OPENAI_API_KEY: 'sk-nao-deve-chegar-0000', ...x });
 const provider = (spec: AcpSpec, x: Record<string, string> = {}) => new AcpProvider(adapter, spec, { executable: process.execPath, prefixArgs: [fake], env: env(x), graceMs: 300 });
 
-async function run(p: AcpProvider, o: { mode?: 'READ_ONLY' | 'WORKTREE_WRITE'; timeoutMs?: number; signal?: AbortSignal } = {}) {
+async function run(p: AcpProvider, o: { mode?: 'READ_ONLY' | 'WORKTREE_WRITE'; timeoutMs?: number; signal?: AbortSignal; model?: string } = {}) {
   const wt = path.join(root, `wt${++n}`);
   (await import('node:fs')).mkdirSync(wt);
   const instructionsFile = path.join(root, `INSTR${n}.md`);
   writeFileSync(instructionsFile, '# tarefa de teste\n');
   const ev: AgentStreamEvent[] = [];
-  for await (const e of p.start({ taskId: 'TAR-0001', attemptId: `ATT-${n}`, workingDirectory: wt, instructionsFile, allowedPaths: ['.'], deniedPaths: [], mode: o.mode ?? 'WORKTREE_WRITE', approvedToolPolicyId: 't', timeoutMs: o.timeoutMs ?? 10_000, signal: o.signal ?? new AbortController().signal })) ev.push(e);
+  for await (const e of p.start({ taskId: 'TAR-0001', attemptId: `ATT-${n}`, workingDirectory: wt, instructionsFile, allowedPaths: ['.'], deniedPaths: [], mode: o.mode ?? 'WORKTREE_WRITE', approvedToolPolicyId: 't', timeoutMs: o.timeoutMs ?? 10_000, signal: o.signal ?? new AbortController().signal, ...(o.model ? { modelPreference: o.model } : {}) })) ev.push(e);
   return { ev, wt };
 }
 const calls = () => readFileSync(log, 'utf8').trim().split('\n').map((l) => JSON.parse(l));
@@ -206,5 +206,23 @@ describe('probe (no prompt, no login)', () => {
     expect(await provider(ANTIGRAVITY_SPEC, { FAKE_VERSION: '0.70.0' }).probe()).toMatchObject({ availability: 'UNSUPPORTED_VERSION' });
     expect(ANTIGRAVITY_SPEC.acpArgs('/w')).toEqual(['acp', '--sandbox']);
     expect(ANTIGRAVITY_SPEC.acpArgs('/w').join(' ')).not.toMatch(/dangerously/);
+  });
+});
+
+describe('choosing the model over ACP (PHASE-20)', () => {
+  it('sends session/set_model with the chosen model before the prompt', async () => {
+    const { KIMI_SPEC } = await import('../src/index.ts');
+    const before = existsSync(log) ? calls().length : 0;
+    const { ev } = await run(provider(KIMI_SPEC), { model: 'kimi-code/kimi-for-coding,thinking' });
+    expect(ev.at(-1)).toMatchObject({ type: 'exit', exitCode: 0 });
+    const sent = calls().slice(before).filter((c) => c.recv?.method).map((c) => c.recv.method);
+    expect(sent.indexOf('session/set_model')).toBeGreaterThan(sent.indexOf('session/new'));
+    expect(sent.indexOf('session/set_model')).toBeLessThan(sent.indexOf('session/prompt'));
+    expect(calls().slice(before).find((c) => c.recv?.method === 'session/set_model').recv.params).toMatchObject({ modelId: 'kimi-code/kimi-for-coding,thinking' });
+  });
+  it('a model the agent refuses is MODEL_UNAVAILABLE with the reason, and nothing is prompted', async () => {
+    const { KIMI_SPEC } = await import('../src/index.ts');
+    const { ev } = await run(provider(KIMI_SPEC, { FAKE_SCENARIO: 'nomodel' }), { model: 'nao-existe' });
+    expect(ev.find((e) => e.type === 'error')).toMatchObject({ code: 'MODEL_UNAVAILABLE' });
   });
 });

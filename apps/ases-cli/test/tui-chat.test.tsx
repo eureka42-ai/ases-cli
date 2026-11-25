@@ -189,6 +189,25 @@ describe('ases chat TUI (PHASE-18, TAR-0087)', () => {
     await e.stop();
   });
 
+  it('/modelo opens the model picker; Space selects; Esc closes (PHASE-20)', async () => {
+    const { e } = await project({ main: 'simulator', crossReview: false });
+    const r = await renderForTest(<UiContext.Provider value={ui()}><AsesApp engine={e} onExit={() => {}} /></UiContext.Provider>, 100, 40);
+    await type(r, '/modelo');
+    await r.press(KEYS.enter);
+    await until(r, (s) => /\[ claude \]/.test(s) && s.includes('Espaço escolhe'), 60_000);
+    await r.press(KEYS.down);
+    await r.press(KEYS.down); // fable → opus
+    await r.press(' ');
+    await until(r, (s) => s.includes('› ● opus')); // marcado como o escolhido
+    const { chosenModels, setChosenModel } = await import('@aer/project-store');
+    expect(chosenModels().claude).toBe('opus');
+    await r.press(KEYS.esc);
+    await until(r, (s) => !s.includes('Espaço escolhe'));
+    setChosenModel('claude', null);
+    r.unmount();
+    await e.stop();
+  }, 90_000);
+
   it('wizard offers the hybrid mode and lets you type your own test command (PHASE-19)', async () => {
     const { root, e } = await project(null);
     let done = false;

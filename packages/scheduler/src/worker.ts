@@ -37,7 +37,9 @@ export interface AttemptOutcome {
 
 /** `simulator:hang` → provider `simulator`, preferência `hang` (no simulador, o cenário). */
 export function parseProviderSpec(spec: string | null): { providerId: string; preference?: string } | undefined {
-  const m = spec ? /^([a-z][a-z0-9-]*)(?::([a-z0-9][a-z0-9.-]*))?$/.exec(spec) : null;
+  // a preferência é um modelo de verdade (ex.: kimi-code/kimi-for-coding,thinking, ollama/gpt-oss:120b-cloud); vai
+  // num vetor de argumentos (sem shell), e mesmo assim metacaracteres de shell são recusados
+  const m = spec ? /^([a-z][a-z0-9-]*)(?::([A-Za-z0-9][A-Za-z0-9._/,:@+-]{0,120}))?$/.exec(spec) : null;
   if (!m) return undefined;
   return m[2] ? { providerId: m[1]!, preference: m[2] } : { providerId: m[1]! };
 }

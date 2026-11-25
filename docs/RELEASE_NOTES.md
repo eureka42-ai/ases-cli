@@ -2,6 +2,10 @@
 
 ## 1.1.2 (24/11/2026)
 - **Abertura limpa:** ao rodar `ases`, a tela é limpa e aparece só a pergunta **"Onde vamos trabalhar?"**. Depois da escolha, a tela é limpa de novo e entram o logo e o chat.
+- **`/modelo`:** escolhe o modelo de cada IA num seletor: `←` `→` escolhe a IA, `↑` `↓` o modelo, Espaço seleciona, Esc fecha. Também dá para usar `/modelo <ia> <modelo>`. O modelo escolhido vale para a principal e para as tarefas daquela IA, e fica na sua config pessoal.
+  - **De onde vêm as listas:** `claude --help` (fable, opus, sonnet), `agy models` (Google) e `opencode models`. No Codex e no Kimi, você digita o nome.
+  - **Como o AER aplica:** `--model` no Claude, `-m` no Codex, e `session/set_model` pelo ACP no Kimi e no Google. Modelo recusado vira erro claro (`MODEL_UNAVAILABLE`).
+  - **OpenCode 2.4.1:** não troca de modelo pelo ACP. A lista aparece, e a escolha fica no `opencode.json` dele.
 - **Codex numa pasta sem Git (por exemplo, a Mesa):** o Codex se recusava a rodar e o chat só mostrava "exit 1". O AER passa a enviar `--skip-git-repo-check`; o isolamento continua sendo o sandbox `-s` do AER. Quando uma IA falha, a mensagem agora traz o motivo que ela deu, sem repetir o código.
 - **Planos sem Git:** numa pasta sem Git, o plano avisa antes de começar que as tarefas em paralelo precisam de Git (`git init` e um primeiro commit). A conversa com a principal continua funcionando.
 - **Assistente:** a pergunta do modo diz "(escolha uma)" e explica cada opção (manual, automático, híbrido).

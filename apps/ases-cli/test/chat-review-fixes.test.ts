@@ -102,6 +102,26 @@ describe('final review fixes (PHASE-18)', () => {
     }
   }, 60_000);
 
+  it('PHASE-20: /modelo sets the model per AI and it is applied to the main and to tasks', async () => {
+    const { withModel } = await import('../src/chat-session.ts');
+    expect(withModel('claude', { claude: 'opus' })).toBe('claude:opus');
+    expect(withModel('claude:sonnet', { claude: 'opus' })).toBe('claude:sonnet'); // escolha explícita vence
+    expect(withModel('codex', {})).toBe('codex');
+    expect(withModel('simulator', { simulator: 'x' })).toBe('simulator'); // o simulador usa cenários, não modelos
+    const { e } = await project({ main: 'simulator', crossReview: false });
+    try {
+      expect(await say(e, '/modelo google gemini-4-neon-high')).toMatch(/google: gemini-4-neon-high/);
+      expect(await say(e, '/modelo opencode x')).toMatch(/OpenCode não troca de modelo/);
+      expect(await say(e, '/modelo codex gpt; rm')).toMatch(/nome de modelo inválido/);
+      expect(await say(e, '/modelo')).toMatch(/google\s+gemini-4-neon-high/);
+      expect(await say(e, '/modelo google padrão')).toMatch(/google: padrão/);
+      const { chosenModels } = await import('@aer/project-store');
+      expect(chosenModels()).toEqual({});
+    } finally {
+      await e.stop();
+    }
+  }, 60_000);
+
   it('I3: /parar and engine stop interrupt a running main turn', async () => {
     const { e } = await project({ main: 'simulator', crossReview: false });
     try {

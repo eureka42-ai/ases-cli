@@ -1,6 +1,6 @@
 import { currentBranch, repoRoot, restoreFromPoint } from '@aer/git-bridge';
 import type { ConversationRow, PlanRow, PlannedTask } from '@aer/persistence';
-import { chatConfig, consentAllGranted, setConsentAll, type ChatConfig, type ChatMode } from '@aer/project-store';
+import { chatConfig, chosenModels, consentAllGranted, setConsentAll, type ChatConfig, type ChatMode } from '@aer/project-store';
 import type { AgentStreamEvent, ProviderProbeResult } from '@aer/provider-sdk';
 import { ChatQueue, executePlan, mergeTask, runChatTurn, summaryMessage, type ChatTurnResult, type PlanProgress, type PlanResult, type WorkerDeps } from '@aer/scheduler';
 import type { Engine } from './engine.ts';
@@ -9,6 +9,12 @@ import type { Engine } from './engine.ts';
 // e liga os planos aprovados à execução em paralelo (executePlan) e ao resumo final.
 
 const ORDER = ['claude', 'codex', 'kimi', 'opencode', 'google', 'simulator'];
+
+/** IA + modelo escolhido em /modelo (`claude` → `claude:opus`); uma escolha explícita (`claude:sonnet`) vence; simuladores não têm modelo. */
+export function withModel(spec: string, chosen: Readonly<Record<string, string>>): string {
+  if (spec.includes(':') || spec.startsWith('simulator')) return spec;
+  return chosen[spec] ? `${spec}:${chosen[spec]}` : spec;
+}
 
 /** O plano espera o usuário (`ask`) ou roda direto (`run`). */
 export function decidePlanMode(mode: ChatMode, plan: { tasks: Pick<PlannedTask, 'provider'>[] }, consented: ReadonlySet<string>): 'ask' | 'run' {
@@ -65,6 +71,18 @@ export class ChatSession {
     if (!argv) return false;
     const last = this.events_('chat-test-command').filter((e) => e.eventType === 'ApprovalGranted').at(-1);
     return JSON.stringify(last?.payload.argv) === JSON.stringify(argv);
+  }
+
+  /** Lista de modelos de uma IA (comando de lista da própria CLI, sem shell, só leitura). */
+  async models(provider: string) {
+    const { listModels } = await import('./models.ts');
+    const { findExecutable, runShort } = await import('@aer/provider-sdk');
+    return listModels(provider, async (cmd, args) => {
+      const exe = findExecutable(cmd);
+      if (!exe) return { exitCode: 127, stdout: '' };
+      const r = await runShort(this.engine.platform, exe, args, { cwd: this.engine.projectRoot, timeoutMs: 30_000 });
+      return { exitCode: r.exitCode, stdout: r.stdout };
+    });
   }
 
   /** Interrompe o turno da principal em curso (/parar, saída do ases) e espera ele terminar. */
@@ -153,7 +171,7 @@ export class ChatSession {
     const ac = new AbortController();
     this.turnAbort = ac;
     const p = (async () => runChatTurn(this.deps(), {
-      conversationId: c.id, message, main: c.main, ready: await this.workers(), signal: ac.signal, limits: this.config().limits,
+      conversationId: c.id, message, main: withModel(c.main, chosenModels()), ready: await this.workers(), signal: ac.signal, limits: this.config().limits,
       ...(this.events.onAgentEvent ? { onEvent: this.events.onAgentEvent } : {}),
     }))();
     this.currentTurn = p;
@@ -181,7 +199,7 @@ export class ChatSession {
     const result = await this.engine.exclusive((signal, controllers) => executePlan(this.deps(), {
       planId, ready,
       main: c.main, limits: cfg.limits, crossReview: cfg.crossReview, ...(cfg.testCommand ? { testCommand: cfg.testCommand } : {}), testsApproved: this.testApproved(cfg.testCommand),
-      platform: this.engine.platform, signal, controllers, ...(this.events.onProgress ? { onProgress: this.events.onProgress } : {}),
+      platform: this.engine.platform, signal, controllers, modelFor: (p: string) => withModel(p, chosenModels()), ...(this.events.onProgress ? { onProgress: this.events.onProgress } : {}),
     }));
     const summary = await this.send(summaryMessage(result));
     return { result, summary };

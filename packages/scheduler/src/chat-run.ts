@@ -35,6 +35,8 @@ const reviewerSpec = (id: string) => (id.startsWith('simulator') ? `${id}:review
 export async function executePlan(d: WorkerDeps, o: {
   planId: string; ready: string[]; main: string; limits: Record<string, number>; crossReview: boolean; testCommand?: string[]; testsApproved: boolean;
   platform: ProcessPlatform; signal: AbortSignal; onProgress?: (p: PlanProgress) => void; controllers?: Map<string, AbortController>;
+  /** IA → IA:modelo escolhido em /modelo (PHASE-20) */
+  modelFor?: (provider: string) => string;
 }): Promise<PlanResult> {
   const read = d.read ?? d.mutate;
   const plan = read((s) => s.getPlan(o.planId));
@@ -48,7 +50,7 @@ export async function executePlan(d: WorkerDeps, o: {
     d.mutate((s) => s.setConversationPhase(plan.conversationId, phaseId!));
     for (const to of ['READY', 'RUNNING'] as const) d.mutate((s) => s.transitionPhase(phaseId!, to, s.listPhases().find((p) => p.id === phaseId)!.version, `plano ${o.planId}`));
   }
-  const ids = plan.tasks.map((t) => d.mutate((s) => s.createTask({ phaseId: phaseId!, title: t.title, description: t.instructions, provider: t.provider })));
+  const ids = plan.tasks.map((t) => d.mutate((s) => s.createTask({ phaseId: phaseId!, title: t.title, description: t.instructions, provider: o.modelFor ? o.modelFor(t.provider) : t.provider })));
   const state = ids.map((taskId, i) => ({ taskId, i, swaps: 0, reworks: 0, tests: 'NONE' as PlanTaskResult['tests'], review: undefined as PlanTaskResult['review'], done: false, reason: '', released: false }));
   const task = (id: string) => read((s) => s.getTask(id))!;
   const progress = (id: string, note?: string) => {
@@ -139,7 +141,7 @@ export async function executePlan(d: WorkerDeps, o: {
         const target = o.ready.filter((p) => p !== current && p !== o.main && !cooling(p)).sort((a, b) => (busy[a] ?? 0) - (busy[b] ?? 0))[0];
         if (code && x.swaps < MAX_SWAPS && target) {
           x.swaps++;
-          await handoffTask(d, x.taskId, target, `${code}: troca automática ${current} → ${target} (${x.swaps}/${MAX_SWAPS})`);
+          await handoffTask(d, x.taskId, o.modelFor ? o.modelFor(target) : target, `${code}: troca automática ${current} → ${target} (${x.swaps}/${MAX_SWAPS})`);
           progress(x.taskId, `${code}: passou de ${current} para ${target}`);
           changed = true;
         } else {

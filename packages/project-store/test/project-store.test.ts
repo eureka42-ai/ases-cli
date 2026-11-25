@@ -177,3 +177,18 @@ describe('desktop, recent projects and one-time AI consent (PHASE-19)', () => {
     rmSync(d, { recursive: true, force: true });
   });
 });
+
+describe('chosen model per AI in the personal config (PHASE-20)', () => {
+  it('set, read and clear', async () => {
+    const { chosenModels, setChosenModel } = await import('../src/index.ts');
+    const d = mkdtempSync(path.join(os.tmpdir(), 'aer models '));
+    const g = path.join(d, 'global.json');
+    expect(chosenModels(g)).toEqual({});
+    setChosenModel('google', 'gemini-4-neon-high', g);
+    setChosenModel('claude', 'opus', g);
+    expect(chosenModels(g)).toEqual({ google: 'gemini-4-neon-high', claude: 'opus' });
+    setChosenModel('claude', null, g);
+    expect(chosenModels(g)).toEqual({ google: 'gemini-4-neon-high' });
+    rmSync(d, { recursive: true, force: true });
+  });
+});

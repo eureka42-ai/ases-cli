@@ -5,6 +5,9 @@ import { handleLine } from './commands.ts';
 import { chatSession, filterMenu } from './chat-commands.ts';
 import { activityText, parseOutput, renderEntries, thinkingParts, type Color, type Entry, type Thinking } from './chat-format.ts';
 import { useNow } from './ticker.ts';
+import { ModelPicker } from './model-picker.tsx';
+import type { ModelList } from './models.ts';
+import { chosenModels, setChosenModel } from '@aer/project-store';
 import type { Engine } from './engine.ts';
 
 /** O que a TUI precisa do engine; o Engine real satisfaz isto e os testes usam o mesmo Engine sobre um projeto temporário. */
@@ -33,6 +36,7 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
   const [, setTick] = useState(0);
   const [log, setLog] = useState<Entry[]>([{ kind: 'system', text: 'Bem-vindo. Converse com a IA principal em texto livre; /ajuda mostra os comandos. Abra `ases-tar` noutro terminal para acompanhar.' }]);
   const [thinking, setThinking] = useState<Thinking | undefined>(undefined);
+  const [picker, setPicker] = useState<ModelList[] | undefined>(undefined);
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [hIdx, setHIdx] = useState(-1);
@@ -72,6 +76,13 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
     app.exit();
   };
   const run = (line: string) => {
+    // /modelo sem argumentos: seletor (← → IA, ↑ ↓ modelo, Espaço escolhe)
+    if (/^\/(modelo|models)$/i.test(line.trim())) {
+      add({ kind: 'user', text: line }, { kind: 'system', text: 'carregando a lista de modelos de cada IA…' });
+      const ids = Object.keys((engine as Engine).providers).filter((p) => !p.startsWith('simulator'));
+      void Promise.all(ids.map((p) => chat.models(p))).then(setPicker, (err: Error) => add({ kind: 'error', text: `erro: ${err.message}` }));
+      return;
+    }
     const isChat = !line.startsWith('/');
     if (isChat && chat.pending > 0) add({ kind: 'system', text: `na fila: ${line}` });
     else add({ kind: 'user', text: line });
@@ -99,6 +110,7 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
   const tasks = engine.store.listTasks();
 
   useInput((ch, key) => {
+    if (picker) return; // o seletor de modelos tem o próprio teclado
     if (key.ctrl && ch === 'c') {
       // §6.4: primeiro Ctrl+C avisa; o segundo (em até 2 s) encerra
       if (armed.current) return exit('Ctrl+C');
@@ -250,7 +262,12 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
       {sideLines.length ? sideLines.slice(start, start + visible) : <Text dimColor>(nenhuma; /phase new &lt;título&gt;)</Text>}
     </Pane>
   );
-  const body = help ? <HelpOverlay title="ases" keys={KEYS} /> : wide ? <Box>{logPane}{side}</Box> : focus === 'tasks' ? side : logPane;
+  const body = picker ? (
+    <ModelPicker lists={picker} current={chosenModels()}
+      onChoose={(p, m) => { setChosenModel(p, m); add({ kind: 'system', text: `${p}: ${m ?? 'padrão (o da própria IA)'}` }); setTick((n) => n + 1); }}
+      onType={(p) => { setPicker(undefined); setInput(`/modelo ${p} `); }}
+      onClose={() => setPicker(undefined)} />
+  ) : help ? <HelpOverlay title="ases" keys={KEYS} /> : wide ? <Box>{logPane}{side}</Box> : focus === 'tasks' ? side : logPane;
   const cursor = y.cursor;
   return (
     <Box flexDirection="column" width={columns}>

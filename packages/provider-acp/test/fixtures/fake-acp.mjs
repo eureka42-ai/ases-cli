@@ -25,7 +25,10 @@ process.stdin.on('data', async (d) => {
     log({ recv: m });
     if (!m.method && waiting.has(m.id)) { waiting.get(m.id)(m); waiting.delete(m.id); continue; }
     if (m.method === 'initialize') await out({ id: m.id, result: { protocolVersion: scenario === 'v2' ? 2 : 1, agentCapabilities: {}, agentInfo: { name: 'Fake ACP', version: '1.50.0' }, authMethods: [{ id: 'login', name: 'Login' }] } });
-    else if (m.method === 'session/new') {
+    else if (m.method === 'session/set_model') {
+      if (scenario === 'nomodel') await out({ id: m.id, error: { code: -32602, message: `Unknown model: ${m.params.modelId}` } });
+      else await out({ id: m.id, result: {} });
+    } else if (m.method === 'session/new') {
       cwd = m.params.cwd;
       if (scenario === 'auth') await out({ id: m.id, error: { code: -32000, message: 'Authentication required' } });
       else if (scenario === 'noresult') process.exit(0);

@@ -332,3 +332,16 @@ export function consentAllGranted(globalFile: string = globalConfigFile()): bool
 export function setConsentAll(on: boolean, globalFile: string = globalConfigFile()): void {
   writeGlobal(globalFile, { aiConsentAll: on, aiConsentAt: new Date().toISOString() });
 }
+
+/** Modelo escolhido para cada IA (`/modelo`), na config pessoal: vale para a principal e para as tarefas. */
+export function chosenModels(globalFile: string = globalConfigFile()): Record<string, string> {
+  const v = readGlobal(globalFile).models;
+  return v && typeof v === 'object' ? Object.fromEntries(Object.entries(v as Record<string, unknown>).filter((e): e is [string, string] => typeof e[1] === 'string' && e[1] !== '')) : {};
+}
+
+export function setChosenModel(provider: string, model: string | null, globalFile: string = globalConfigFile()): void {
+  const cur = chosenModels(globalFile);
+  if (model) cur[provider] = model;
+  else delete cur[provider];
+  writeGlobal(globalFile, { models: cur });
+}

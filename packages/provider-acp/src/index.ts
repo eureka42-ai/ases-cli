@@ -87,14 +87,16 @@ export class AcpSession {
   readonly state: AcpSessionState = { phase: 'init' };
   private readonly tools = new Map<string, ToolInfo>();
   private text = '';
-  private readonly req: Pick<AgentRunRequest, 'mode' | 'workingDirectory'>;
+  private readonly req: Pick<AgentRunRequest, 'mode' | 'workingDirectory' | 'modelPreference'>;
   private readonly prompt: string;
   private readonly io: { write: (line: string) => void; end: () => void };
+  private readonly setModel: boolean;
 
-  constructor(req: Pick<AgentRunRequest, 'mode' | 'workingDirectory'>, prompt: string, io: { write: (line: string) => void; end: () => void }) {
+  constructor(req: Pick<AgentRunRequest, 'mode' | 'workingDirectory' | 'modelPreference'>, prompt: string, io: { write: (line: string) => void; end: () => void }, setModel = true) {
     this.req = req;
     this.prompt = prompt;
     this.io = io;
+    this.setModel = setModel;
   }
 
   private send(m: Json) {
@@ -138,6 +140,10 @@ export class AcpSession {
     // resposta a um pedido nosso
     if (!method && id !== undefined) {
       const err = obj(m.error);
+      if (err && id === 4) {
+        // o agente recusou o modelo escolhido (/modelo): erro claro, e nada foi pedido a ele
+        return this.finish(undefined, { code: 'MODEL_UNAVAILABLE', message: `o agente não aceitou o modelo ${this.req.modelPreference ?? ''}: ${str(err.message) ?? 'erro'}` });
+      }
       if (err) {
         const message = str(err.message) ?? 'ACP error';
         const data = str(obj(err.data)?.message) ?? (err.data === undefined ? '' : JSON.stringify(err.data));
@@ -156,9 +162,19 @@ export class AcpSession {
         const sessionId = str(result.sessionId);
         if (!sessionId) return this.finish(undefined, { code: 'PARSE_ERROR', message: 'session/new without sessionId' });
         this.state.sessionId = sessionId;
+        // PHASE-20: modelo escolhido pelo usuário (/modelo) antes do prompt; agentes sem troca de modelo ignoram a escolha
+        if (this.req.modelPreference && this.setModel) {
+          this.send({ id: 4, method: 'session/set_model', params: { sessionId, modelId: this.req.modelPreference } });
+          return [{ type: 'status', status: 'SESSION_STARTED' }];
+        }
         this.state.phase = 'prompt';
         this.send({ id: 3, method: 'session/prompt', params: { sessionId, prompt: [{ type: 'text', text: this.prompt }] } });
         return [{ type: 'status', status: 'SESSION_STARTED' }];
+      }
+      if (id === 4) {
+        this.state.phase = 'prompt';
+        this.send({ id: 3, method: 'session/prompt', params: { sessionId: this.state.sessionId, prompt: [{ type: 'text', text: this.prompt }] } });
+        return [{ type: 'status', status: 'MODEL_SET', detail: this.req.modelPreference ?? '' }];
       }
       if (id === 3) return this.finish(str(result.stopReason));
       return [];
@@ -243,6 +259,8 @@ export interface AcpSpec {
   label: string;
   /** argumentos que sobem o servidor ACP na worktree */
   acpArgs: (cwd: string) => string[];
+  /** aceita `session/set_model` (Kimi, Antigravity); o OpenCode 2.4.1 não expõe modelos pelo ACP */
+  setModel?: boolean;
   versionArgs: string[];
   /** faixa testada; null = nenhuma versão testada ainda (UNSUPPORTED_VERSION sempre) */
   supported: { min: string; maxExclusive: string } | null;
@@ -328,7 +346,7 @@ export class AcpProvider implements AgentProvider {
         command: probe.executable, args: [...(this.o.prefixArgs ?? []), ...this.spec.acpArgs(req.workingDirectory)], cwd: req.workingDirectory, env: this.env(),
         timeoutMs: req.timeoutMs, signal: req.signal, ...(this.o.graceMs === undefined ? {} : { graceMs: this.o.graceMs }),
         stdin: (io) => {
-          session = new AcpSession(req, prompt, io);
+          session = new AcpSession(req, prompt, io, this.spec.setModel !== false);
           session.begin();
         },
         map: (v) => session?.handle(v) ?? [],
@@ -361,6 +379,7 @@ export const KIMI_SPEC: AcpSpec = {
 export const OPENCODE_SPEC: AcpSpec = {
   id: 'opencode', binary: 'opencode', label: 'OpenCode',
   // 2.4.1 removeu `acp --cwd` (com a flag, imprime a ajuda e não sobe o servidor): o diretório vem do cwd do processo e do session/new
+  setModel: false, // 2.4.1: session/new sem `models` e configOptions vazio — o modelo vem do opencode.json
   acpArgs: () => ['acp'], versionArgs: ['--version'],
   supported: { min: '2.4.1', maxExclusive: '2.5.0' }, verifiedVersions: OPENCODE_VERIFIED_VERSIONS,
   loginHint: 'run `opencode auth login` yourself; the AER never logs in for you',

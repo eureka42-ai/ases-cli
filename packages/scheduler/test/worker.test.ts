@@ -33,6 +33,13 @@ describe('parseProviderSpec', () => {
     expect(parseProviderSpec('sim; rm -rf')).toBeUndefined();
     expect(parseProviderSpec(null)).toBeUndefined();
   });
+  it('accepts real model ids after the colon, never shell metacharacters (PHASE-20)', () => {
+    expect(parseProviderSpec('kimi:kimi-code/kimi-for-coding,thinking')).toEqual({ providerId: 'kimi', preference: 'kimi-code/kimi-for-coding,thinking' });
+    expect(parseProviderSpec('google:gemini-4-neon-high')).toEqual({ providerId: 'google', preference: 'gemini-4-neon-high' });
+    expect(parseProviderSpec('opencode:ollama/gpt-oss:120b-cloud')).toEqual({ providerId: 'opencode', preference: 'ollama/gpt-oss:120b-cloud' });
+    expect(parseProviderSpec('codex:gpt-5; rm -rf /')).toBeUndefined();
+    expect(parseProviderSpec('codex:$(whoami)')).toBeUndefined();
+  });
 });
 
 describe('runAttempt (TAR-0030)', () => {
