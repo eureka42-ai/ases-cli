@@ -1,5 +1,15 @@
 # AER 1.x: notas de versão
 
+## 1.2.1 (25/11/2026): Cursor seguro e verificado
+- **Shell barrado antes de executar:** num teste real, o Cursor rodou `ls` mesmo com `--sandbox enabled`. Agora o AER coloca `deny: Shell(*)` no `.cursor/cli.json` só durante a execução. No teste real com a regra, o Cursor **recusou** o comando ("Command blocked by permissions configuration").
+  - **O arquivo do usuário:** um `.cursor/cli.json` que já exista volta intacto, byte a byte, mesmo com erro, e antes de o trabalho ser salvo.
+  - **Tentativa barrada:** fica só registrada.
+  - **Shell que chegue a executar:** interrompe o agente como violação.
+- **Arquivos fora do projeto:** o Cursor leu sozinho uma "skill" em `~/.claude`. Qualquer acesso dele fora da pasta do projeto agora interrompe o agente como violação.
+- **Cursor VERIFIED na versão 2026.11.22:** dois testes reais (escrita, e shell barrado) viraram fixtures, sem dados pessoais.
+
+> A 1.2.0 não deve ser usada com o Cursor: publique a 1.2.1.
+
 ## 1.2.0 (25/11/2026): Cursor
 - **Nova IA: Cursor** (`cursor-agent`), pelo modo oficial sem tela (`-p --output-format stream-json`).
   - **Usos:** principal, executora de tarefas e revisora (`--mode ask`, só leitura).
@@ -9,7 +19,7 @@
     - no modo `-p` o Cursor tem acesso ao shell, então o AER liga `--sandbox enabled`;
     - o AER nunca passa `--force`/`--yolo`;
     - **qualquer tentativa de usar o shell interrompe o agente na hora** e a tarefa falha com `SECURITY_VIOLATION`.
-  - **Contrato UNVERIFIED:** o formato dos eventos veio da documentação oficial e ainda não de uma saída real capturada.
+  - **Contrato:** veio da documentação oficial (na 1.2.1, conferido com saída real).
 - **Segurança geral:** qualquer IA cujo adaptador relate uma violação é interrompida na hora (antes só falhava no fim).
 
 ## 1.1.2 (24/11/2026)

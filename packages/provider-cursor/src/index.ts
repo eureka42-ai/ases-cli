@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {
@@ -16,7 +16,8 @@ import {
  * Segurança: no modo -p o Cursor "tem acesso a todas as ferramentas, inclusive shell". O AER não deixa agente usar shell:
  * `--sandbox enabled`, nunca `--force`/`--yolo`, e qualquer ferramenta de shell vira SECURITY_VIOLATION (o worker aborta).
  */
-export const CURSOR_VERIFIED_VERSIONS: readonly string[] = [];
+// smoke real com consentimento (25/11/2026): escrita, shell barrado pela regra deny e o formato do stream
+export const CURSOR_VERIFIED_VERSIONS: readonly string[] = ['2026.11.22'];
 export const CURSOR_SUPPORTED = { min: '2026.11.0', maxExclusive: '2026.12.0', researchedVersion: '2026.11.19' } as const;
 
 export interface CursorOptions {
@@ -87,8 +88,15 @@ export function mapCursorEvent(v: unknown, state: CursorStreamState, cwd: string
       const [key = '', body] = Object.entries(tc)[0] ?? [];
       const b = obj(body) ?? {};
       const fnName = key === 'function' ? str(b.name) ?? 'function' : key;
-      // shell nunca: nem por chave (shellToolCall) nem pelo nome da função (run_terminal_cmd)
-      if (SHELL_TOOL.test(fnName)) return [{ type: 'error', code: 'SECURITY_VIOLATION', userMessage: `o cursor tentou usar o shell (${fnName}); o AER não permite shell para agentes` }];
+      // shell: o AER coloca `deny: Shell(*)` no .cursor/cli.json durante a execução (smoke real: o Cursor recusa antes de
+      // rodar). Tentativa barrada só fica registrada; um shell que chegou a executar é violação (a regra falhou)
+      if (SHELL_TOOL.test(fnName)) {
+        if (e.subtype === 'started') return [{ type: 'tool_call', name: 'Shell', safeArguments: {} }];
+        if (e.subtype !== 'completed') return [];
+        const r = obj(b.result) ?? {};
+        if (r.permissionDenied !== undefined) return [{ type: 'tool_result', name: 'Shell', success: false, safeSummary: 'shell bloqueado pela regra do AER' }];
+        return [{ type: 'error', code: 'SECURITY_VIOLATION', userMessage: `o cursor executou um comando de shell (${fnName}) apesar da regra de bloqueio; o AER não permite shell para agentes` }];
+      }
       const name = key === 'function' ? fnName : toolName(key);
       const args = obj(b.args) ?? {};
       const p = str(args.path);
@@ -119,6 +127,50 @@ export function mapCursorEvent(v: unknown, state: CursorStreamState, cwd: string
       return [];
     default:
       return []; // user, reconnecting/reconnected e outros não documentados
+  }
+}
+
+const AER_MARK = '_aer_temporario';
+
+/**
+ * Coloca `deny: Shell(*)` no `.cursor/cli.json` da pasta e devolve a função que restaura o arquivo como estava (byte a
+ * byte). Um arquivo deixado por uma execução interrompida (marcado com _aer_temporario) é tratado como do AER.
+ */
+export function denyShell(workspace: string): () => void {
+  const dir = path.join(workspace, '.cursor');
+  const file = path.join(dir, 'cli.json');
+  const dirExisted = existsSync(dir);
+  const original = existsSync(file) ? readFileSync(file, 'utf8') : undefined;
+  let base: Record<string, unknown> = {};
+  let userFile = original !== undefined;
+  if (original !== undefined) {
+    try {
+      base = JSON.parse(original) as Record<string, unknown>;
+      if (base[AER_MARK]) userFile = false;
+    } catch {
+      throw Object.assign(new Error(`${file} não é um JSON válido; corrija antes de usar o Cursor pelo AER`), { code: 'CONFIG_INVALID' });
+    }
+  }
+  const perms = (base.permissions as { allow?: string[]; deny?: string[] } | undefined) ?? {};
+  const next = { ...base, ...(userFile ? {} : { [AER_MARK]: 'regra do AER: some ao fim da execução' }), permissions: { ...perms, deny: [...new Set([...(perms.deny ?? []), 'Shell(*)'])] } };
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(file, `${JSON.stringify(next, null, 2)}\n`);
+  return () => {
+    if (userFile && original !== undefined) writeFileSync(file, original);
+    else {
+      rmSync(file, { force: true });
+      if (!dirExisted) rmSync(dir, { recursive: true, force: true });
+    }
+  };
+}
+
+/** `denyShell` em volta de `fn`, restaurando mesmo com erro. */
+export async function withShellDenied<T>(workspace: string, fn: () => Promise<T>): Promise<T> {
+  const restore = denyShell(workspace);
+  try {
+    return await fn();
+  } finally {
+    restore();
   }
 }
 
@@ -174,6 +226,15 @@ export class CursorProvider implements AgentProvider {
       return;
     }
     const state: CursorStreamState = {};
+    // a regra que barra o shell existe só durante a execução; o arquivo do usuário volta intacto antes do commit
+    let restore: () => void;
+    try {
+      restore = denyShell(req.workingDirectory);
+    } catch (err) {
+      yield { type: 'error', code: 'CONFIG_INVALID', userMessage: (err as Error).message };
+      yield { type: 'exit', exitCode: null, signal: null, cancelled: false, reconciled: true };
+      return;
+    }
     try {
       yield* runAgentProcess(this.platform, {
         command: probe.executable, args: [...(this.o.prefixArgs ?? []), ...cursorArgs(req, readFileSync(req.instructionsFile, 'utf8'))], cwd: req.workingDirectory, env: this.env(),
@@ -184,6 +245,7 @@ export class CursorProvider implements AgentProvider {
       });
     } finally {
       this.running.delete(req.attemptId);
+      restore();
     }
   }
 

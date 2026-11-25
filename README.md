@@ -111,7 +111,7 @@ Digite `/` no `ases` para abrir o menu. Cada comando em português tem o equival
 | **Kimi** | ACP (stdio) | VERIFIED 1.50.0 |
 | **OpenCode** | ACP (stdio) | VERIFIED 2.4.1 |
 | **Google (Antigravity CLI)** | ACP (stdio) | VERIFIED 1.5.13 |
-| **Cursor** | `cursor-agent -p` com saída `stream-json`, sandbox ligado e shell bloqueado | UNVERIFIED (2026.11) |
+| **Cursor** | `cursor-agent -p` com saída `stream-json`; shell barrado pela regra `deny` do AER | VERIFIED 2026.11.22 |
 | **Simulador** | determinístico, sem IA nem custo | para testes |
 
 Cada IA usa a **sua** sessão oficial, conta e cota. No Windows, os atalhos `.cmd` do npm são abertos sem shell.

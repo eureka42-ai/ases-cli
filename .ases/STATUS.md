@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 871 (PhaseUpdated, 2026-11-25T02:27:09.860Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 873 (TaskCreated, 2026-11-25T02:34:39.829Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -26,6 +26,7 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | PHASE-19 | Manutenção 1.1.x: conversa no estilo do Claude Code e ases-tar com quem faz o quê | COMPLETED |
 | PHASE-20 | Manutenção 1.1.2: abertura limpa e modo explicado | COMPLETED |
 | PHASE-21 | Cursor como IA do AER (1.2.0) | COMPLETED |
+| PHASE-22 | Cursor seguro e verificado (1.2.1) | PLANNED |
 
 ## Tarefas
 | Tarefa | Fase | Título | Estado | Último teste | Evidência |
@@ -122,5 +123,6 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0090 | PHASE-19 | Conversa legível, atividades ao vivo, diff do que mudou, pensando com tempo, ases-tar com IA e ação por tarefa, assistente com híbrido e teste digitado | COMPLETED | — | .ases/evidence/PHASE-19-verify.md |
 | TAR-0091 | PHASE-20 | Tela limpa ao abrir, pergunta da pasta antes do logo, modo do assistente explicado | COMPLETED | — | .ases/evidence/PHASE-20-verify.md |
 | TAR-0092 | PHASE-21 | Adaptador do Cursor CLI (stream-json, sandbox, shell bloqueado, modelos, login) | COMPLETED | — | .ases/evidence/PHASE-21-verify.md |
+| TAR-0093 | PHASE-22 | Regra deny Shell(*) durante a execução do Cursor, acesso fora do projeto como violação, smoke real e VERIFIED | PLANNED | — | — |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.
