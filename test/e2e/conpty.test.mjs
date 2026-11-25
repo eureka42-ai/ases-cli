@@ -132,7 +132,8 @@ describe.runIf(pty)('TUIs in a real Windows ConPTY (TAR-0070)', () => {
     await t.pastStart();
     await t.waitFor((s) => (s.includes('Eureka42') || s.includes('eureka42.org')) && s.includes('? ajuda'), 30_000);
     await t.openHelp();
-    expect(t.raw()).not.toMatch(/\u001b\[(3[0-9]|9[0-7]|38;)/);
+    // mostra os códigos achados (e o trecho em volta) se falhar
+    expect([...t.raw().matchAll(/.{0,40}\u001b\[(?:3[0-9]|9[0-7]|38;)[0-9;]*m.{0,20}/gs)].map((m) => JSON.stringify(m[0]))).toEqual([]);
     await t.keys('\u001b');
     await new Promise((r) => setTimeout(r, 300));
     await t.keys('\u0003');

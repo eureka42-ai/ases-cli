@@ -148,7 +148,7 @@ export function Wizard({ engine, onDone }: { engine: Engine; onDone: () => void 
             : step === 'testInput' ? (
               <Box flexDirection="column" marginTop={1}><Text bold>{titles.testInput}</Text><Text>{`  > ${typed}${ui.unicode ? '█' : '_'}`}</Text></Box>
             ) : <Choice title={titles[step]} options={options[step]} sel={sel} />}
-          {step === 'main' && ids.some((id) => probes[id]!.availability !== 'READY') ? <Text dimColor>As IAs com {ui.unicode ? '✗' : 'x'} não aparecem na escolha: instale e faça login nelas e rode /config para trocar depois.</Text> : null}
+          {step === 'main' && ids.some((id) => probes[id]!.availability !== 'READY') ? <Text dimColor={ui.color}>As IAs com {ui.unicode ? '✗' : 'x'} não aparecem na escolha: instale e faça login nelas e rode /config para trocar depois.</Text> : null}
         </>
       )}
     </Box>

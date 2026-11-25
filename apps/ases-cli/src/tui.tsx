@@ -229,7 +229,7 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
   const logPane = (
     <Box flexDirection="column" height={bodyRows} width={logWidth} paddingX={1} overflow="hidden">
       {renderEntries(log.slice(-200), logWidth - 2, ui.unicode).slice(-(bodyRows)).map((l, i) => (
-        <Text key={`${log.length}-${i}`} wrap="truncate-end" {...tint(l.color)} bold={l.bold ?? false} dimColor={l.dim ?? false}>
+        <Text key={`${log.length}-${i}`} wrap="truncate-end" {...tint(l.color)} bold={l.bold ?? false} dimColor={ui.color && (l.dim ?? false)}>
           {l.segments.map((sg, k) => <Text key={k} bold={sg.bold ?? false} {...tint(sg.color)}>{sg.text}</Text>)}
         </Text>
       ))}
@@ -260,10 +260,10 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
       {consentAsk ? <Text wrap="truncate-end" bold>{`Autorizar o uso da sua conta ${consentAsk.provider}? Ela usa a SUA cota. [s] só nesta sessão  [a] sempre, todas as IAs  [n] não`}</Text> : null}
       {thinking ? (() => {
         const t = thinkingParts(thinking, now, ui.unicode);
-        return <Text wrap="truncate-end"><Text {...tint('orange')}>{`${t.glyph} `}</Text><Text bold {...tint('orange')}>{t.word}</Text><Text dimColor>{` ${t.rest}`}</Text></Text>;
+        return <Text wrap="truncate-end"><Text {...tint('orange')}>{`${t.glyph} `}</Text><Text bold {...tint('orange')}>{t.word}</Text><Text dimColor={ui.color}>{` ${t.rest}`}</Text></Text>;
       })() : null}
       {pendingPlan && !consentAsk ? <Text wrap="truncate-end">{`${pendingPlan.id} pendente: [Enter] executar  [Ctrl+E] editar  [Ctrl+N] descartar`}</Text> : null}
-      <Box borderStyle={ui.unicode ? 'round' : 'classic'} borderDimColor width={columns} paddingX={1}>
+      <Box borderStyle={ui.unicode ? 'round' : 'classic'} borderDimColor={ui.color} width={columns} paddingX={1}>
         <Text wrap="truncate-start">
           <Text bold {...(accent ? { color: accent } : {})}>&gt; </Text>
           {`${input}${focus === 'prompt' ? cursor : ''}`}
