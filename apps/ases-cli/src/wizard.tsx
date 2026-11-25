@@ -40,7 +40,7 @@ function Choice({ title, options, sel }: { title: string; options: string[]; sel
   return (
     <Box flexDirection="column" marginTop={1}>
       <Text bold>{title}</Text>
-      {options.map((o, i) => <Text key={o} inverse={i === sel}>{`  ${i === sel ? (ui.unicode ? '›' : '>') : ' '} ${o}`}</Text>)}
+      {options.map((o, i) => <Text key={o} inverse={ui.color && i === sel}>{`  ${i === sel ? (ui.unicode ? '›' : '>') : ' '} ${o}`}</Text>)}
     </Box>
   );
 }

@@ -15,10 +15,13 @@ const type = async (r: Awaited<ReturnType<typeof renderForTest>>, s: string) => 
 
 describe('start screen: where do we work? (PHASE-19)', () => {
   it('offers this folder, the Desktop, choosing a folder and the recent projects', () => {
-    const o = startOptions({ cwd: '/Users/u/Projetos/app', home: '/Users/u', desktop: '/Users/u/Desktop', recent: ['/Users/u/Projetos/site', '/Users/u/Projetos/app'] });
-    expect(o.map((x) => x.label)).toEqual(['Esta pasta (~/Projetos/app)', 'Mesa (~/Desktop)', 'Escolher uma pasta…', 'Recente: ~/Projetos/site']);
+    const home = path.resolve('/Users/u'); // no Windows vira D:\Users\u
+    const j = (...p: string[]) => path.join(home, ...p);
+    const t = (...p: string[]) => `~${path.sep}${p.join(path.sep)}`;
+    const o = startOptions({ cwd: j('Projetos', 'app'), home, desktop: j('Desktop'), recent: [j('Projetos', 'site'), j('Projetos', 'app')] });
+    expect(o.map((x) => x.label)).toEqual([`Esta pasta (${t('Projetos', 'app')})`, `Mesa (${t('Desktop')})`, 'Escolher uma pasta…', `Recente: ${t('Projetos', 'site')}`]);
     // na home, "esta pasta" não aparece (a home não deve virar projeto)
-    expect(startOptions({ cwd: '/Users/u', home: '/Users/u', desktop: '/Users/u/Desktop', recent: [] }).map((x) => x.label)).toEqual(['Mesa (~/Desktop)', 'Escolher uma pasta…']);
+    expect(startOptions({ cwd: home, home, desktop: j('Desktop'), recent: [] }).map((x) => x.label)).toEqual([`Mesa (${t('Desktop')})`, 'Escolher uma pasta…']);
   });
 
   it('Enter on Mesa chooses the Desktop; typing a folder chooses it (~ is expanded)', async () => {

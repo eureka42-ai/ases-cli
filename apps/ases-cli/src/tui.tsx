@@ -240,7 +240,7 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
     sideLines.push(<Text key={p.id} bold wrap="truncate-end">{`${p.id} `}<StateText state={p.state} />{` ${p.title}`}</Text>);
     for (const t of tasks.filter((x) => x.phaseId === p.id)) {
       const isSel = focus === 'tasks' && tasks[sel]?.id === t.id;
-      sideLines.push(<Text key={t.id} wrap="truncate-end" inverse={isSel}>{`${isSel ? y.select : ' '} ${t.id} `}<StateText state={t.state} />{` ${t.title}`}</Text>);
+      sideLines.push(<Text key={t.id} wrap="truncate-end" inverse={ui.color && isSel}>{`${isSel ? y.select : ' '} ${t.id} `}<StateText state={t.state} />{` ${t.title}`}</Text>);
     }
   }
   const selLine = sideLines.findIndex((l) => l.key === tasks[sel]?.id);
@@ -256,7 +256,7 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
     <Box flexDirection="column" width={columns}>
       {header}
       {body}
-      {menuItems.map((m, i) => <Text key={m.cmd} wrap="truncate-end" inverse={i === Math.min(menuSel, menuItems.length - 1)}>{`  ${m.cmd.padEnd(11)} ${m.desc}`}</Text>)}
+      {menuItems.map((m, i) => <Text key={m.cmd} wrap="truncate-end" inverse={ui.color && i === Math.min(menuSel, menuItems.length - 1)}>{`${i === Math.min(menuSel, menuItems.length - 1) ? (ui.unicode ? '›' : '>') : ' '} ${m.cmd.padEnd(11)} ${m.desc}`}</Text>)}
       {consentAsk ? <Text wrap="truncate-end" bold>{`Autorizar o uso da sua conta ${consentAsk.provider}? Ela usa a SUA cota. [s] só nesta sessão  [a] sempre, todas as IAs  [n] não`}</Text> : null}
       {thinking ? (() => {
         const t = thinkingParts(thinking, now, ui.unicode);

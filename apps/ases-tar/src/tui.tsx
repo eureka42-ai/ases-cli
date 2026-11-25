@@ -129,7 +129,7 @@ export function TarApp({ monitor, projectName, filter }: { monitor: MonitorLike;
     for (const t of own) {
       const isSel = selected?.id === t.id && focus === 'tasks';
       taskLines.push(
-        <Text key={t.id} wrap="truncate-end" inverse={isSel}>
+        <Text key={t.id} wrap="truncate-end" inverse={ui.color && isSel}>
           {`${isSel ? y.select : ' '} ${t.id} `}<StateText state={t.state} width={16} />
           {t.provider ? <Text bold>{` ${t.provider.split(':')[0]}${t.state === 'RUNNING' && lastAction.get(t.id) ? ` · ${lastAction.get(t.id)}` : ''} ${y.sep.trim()}`}</Text> : null}
           {` ${t.title}`}

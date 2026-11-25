@@ -62,7 +62,7 @@ export function StartScreen({ cwd, home, desktop, recent, onChoose }: { cwd: str
           <Text>{`  > ${typed}${ui.unicode ? '█' : '_'}`}</Text>
           {error ? <Text {...(ui.color ? { color: 'red' } : {})}>{`  ${error}`}</Text> : null}
         </Box>
-      ) : options.map((o, i) => <Text key={o.label} inverse={i === sel}>{`  ${i === sel ? (ui.unicode ? '›' : '>') : ' '} ${o.label}`}</Text>)}
+      ) : options.map((o, i) => <Text key={o.label} inverse={ui.color && i === sel}>{`  ${i === sel ? (ui.unicode ? '›' : '>') : ' '} ${o.label}`}</Text>)}
       <Text dimColor>{'A pasta escolhida vira um projeto do ASES sozinha (nada do que já existe é apagado).'}</Text>
     </Box>
   );
