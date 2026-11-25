@@ -200,6 +200,7 @@ describe('ases chat TUI (PHASE-18, TAR-0087)', () => {
     await r.press(KEYS.enter); // perguntar a cada sessão
     await until(r, (s) => s.includes('Modo de execução'));
     expect(txt(r)).toMatch(/híbrido/);
+    expect(txt(r)).toContain('(escolha uma)');
     await r.press(KEYS.down);
     await r.press(KEYS.down);
     await r.press(KEYS.enter); // híbrido

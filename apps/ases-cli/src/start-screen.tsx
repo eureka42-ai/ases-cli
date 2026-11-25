@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { Box, Text, render, useInput } from 'ink';
 import { useState, type ReactElement } from 'react';
-import { BrandHeader, UiContext, useTerminalSize, useUi, type Ui } from '@aer/tui-shared';
+import { UiContext, useTerminalSize, useUi, type Ui } from '@aer/tui-shared';
 
 // PHASE-19: ao abrir o `ases`, "Onde vamos trabalhar?". A pasta escolhida vira projeto sozinha (sem `ases init`).
 
@@ -54,8 +54,8 @@ export function StartScreen({ cwd, home, desktop, recent, onChoose }: { cwd: str
 
   return (
     <Box flexDirection="column" width={columns}>
-      <BrandHeader app="ASES CLI" columns={columns} banner={{}} />
-      <Text bold>{'Onde vamos trabalhar?'}</Text>
+      {/* PHASE-20: só a pergunta; o logo grande aparece depois, já na pasta escolhida */}
+      <Text bold>{`${ui.unicode ? '⌘' : '[E42]'} Onde vamos trabalhar?`}</Text>
       {typing ? (
         <Box flexDirection="column">
           <Text>{'Digite o caminho da pasta (~ é a sua pasta pessoal) e Enter; Esc volta:'}</Text>
@@ -74,4 +74,9 @@ export async function runStartScreen(ui: Ui, o: { cwd: string; desktop: string; 
   const instance = render(<UiContext.Provider value={ui}><StartScreen cwd={o.cwd} home={os.homedir()} desktop={o.desktop} recent={o.recent} onChoose={(p) => { chosen = p; instance.unmount(); }} /></UiContext.Provider>, { exitOnCtrlC: true });
   await instance.waitUntilExit();
   return chosen;
+}
+
+/** Limpa a tela (e o histórico de rolagem) quando é um terminal de verdade; em pipe/arquivo não escreve nada. */
+export function clearScreen(out: { isTTY?: boolean; write: (s: string) => boolean } = process.stdout): void {
+  if (out.isTTY) out.write('\u001b[2J\u001b[3J\u001b[H');
 }

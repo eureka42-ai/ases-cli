@@ -65,7 +65,7 @@ export function Wizard({ engine, onDone }: { engine: Engine; onDone: () => void 
   const options: Record<Step, string[]> = {
     main: readyIds,
     consent: ['Sim, sempre neste computador (recomendado)', 'Perguntar a cada sessão'],
-    mode: ['perguntar antes de cada plano (manual)', 'automático', 'híbrido (planos pequenos e já autorizados rodam direto; os outros perguntam)'],
+    mode: ['manual: pergunta antes de rodar cada plano', 'automático: roda direto, sem perguntar', 'híbrido: roda direto os planos pequenos (até 3 tarefas) e pergunta nos outros'],
     limit: ['1 (padrão, conforme os termos de uso individual)', '2', '3'],
     test: [...(suggested ? [`${suggested.join(' ')} (detectado)`] : []), 'digitar outro comando', 'nenhum por enquanto'],
     testInput: [],
@@ -124,7 +124,7 @@ export function Wizard({ engine, onDone }: { engine: Engine; onDone: () => void 
   const titles: Record<Step, string> = {
     main: 'Qual será a principal? (↑↓ e Enter)',
     consent: 'Usar as suas IAs (sua conta e cota) sem perguntar de novo?',
-    mode: 'Modo de execução dos planos?',
+    mode: 'Modo de execução dos planos (escolha uma)? Quando a principal propõe um plano, o ASES…',
     limit: 'Tarefas em paralelo por IA?',
     test: 'Comando de teste do projeto (roda em cada tarefa antes de ela ficar pronta)?',
     testInput: 'Digite o comando de teste (sem shell, ex.: make check) e Enter; Esc volta:',

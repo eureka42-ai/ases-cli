@@ -32,6 +32,7 @@ describe('start screen: where do we work? (PHASE-19)', () => {
     let chosen: string | undefined;
     const r = await renderForTest(<UiContext.Provider value={ui}><StartScreen cwd={home} home={home} desktop={path.join(home, 'Desktop')} recent={[]} onChoose={(p) => { chosen = p; }} /></UiContext.Provider>, 100, 30);
     expect(txt(r)).toContain('Onde vamos trabalhar?');
+    expect(txt(r)).not.toContain('███'); // o logo grande vem depois da escolha da pasta
     await r.press(KEYS.enter);
     expect(chosen).toBe(path.join(home, 'Desktop'));
     r.unmount();
@@ -49,5 +50,17 @@ describe('start screen: where do we work? (PHASE-19)', () => {
     await r2.press(KEYS.enter);
     expect(chosen).toBe(path.join(home, 'Projetos', 'novo'));
     r2.unmount();
+  });
+});
+
+describe('clean screen when ases opens (PHASE-20)', () => {
+  it('clearScreen clears only real terminals', async () => {
+    const { clearScreen } = await import('../src/start-screen.tsx');
+    let out = '';
+    clearScreen({ isTTY: true, write: (s: string) => { out += s; return true; } });
+    expect(out).toBe('\u001b[2J\u001b[3J\u001b[H');
+    out = '';
+    clearScreen({ isTTY: false, write: (s: string) => { out += s; return true; } });
+    expect(out).toBe('');
   });
 });

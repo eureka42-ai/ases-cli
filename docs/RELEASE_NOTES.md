@@ -1,5 +1,9 @@
 # AER 1.x: notas de versão
 
+## 1.1.2 (24/11/2026)
+- **Abertura limpa:** ao rodar `ases`, a tela é limpa e aparece só a pergunta **"Onde vamos trabalhar?"**. Depois da escolha, a tela é limpa de novo e entram o logo e o chat.
+- **Assistente:** a pergunta do modo diz "(escolha uma)" e explica cada opção (manual, automático, híbrido).
+
 ## 1.1.1 (24/11/2026): conversa no estilo do Claude Code e ases-tar mostrando quem faz o quê
 - **Conversa:**
   - sua mensagem aparece com `>` em cinza, e a resposta da IA com `●` verde;

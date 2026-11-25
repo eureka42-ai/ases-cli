@@ -16,7 +16,7 @@ import { Engine } from './engine.ts';
 import { handleLine } from './commands.ts';
 import { runTui } from './tui.tsx';
 import { runWizard } from './wizard.tsx';
-import { runStartScreen } from './start-screen.tsx';
+import { clearScreen, runStartScreen } from './start-screen.tsx';
 import { runUpdate } from './update.ts';
 import { shouldAnimate } from './ticker.ts';
 import { attachRepl, connectResident, daemonStatus, runDaemon, startDaemon, stopDaemon } from './daemon.ts';
@@ -201,9 +201,11 @@ async function main(argv: string[]): Promise<number> {
   // PHASE-19: "Onde vamos trabalhar?" — a pasta escolhida vira projeto sozinha (sem `ases init`)
   let root = findProjectRoot(process.cwd());
   if (ui.tui) {
+    clearScreen(); // PHASE-20: tela limpa, só a pergunta da pasta
     const picked = await runStartScreen({ color: ui.color, colorDepth: ui.colorDepth, unicode: ui.unicode, theme: ui.theme, logo: ui.logo }, { cwd: root ?? process.cwd(), desktop: desktopDir(), recent: recentProjects().filter((p) => findProjectRoot(p) === p) });
     if (!picked) return 0;
     root = findProjectRoot(picked) === picked ? picked : (initProject(picked, adapter), picked);
+    clearScreen(); // depois da escolha: logo e o resto, numa tela limpa
   }
   if (!root) {
     console.error('Este diretório não é um projeto ASES. Abra o `ases` num terminal para escolher a pasta (ou rode `ases init`).');
