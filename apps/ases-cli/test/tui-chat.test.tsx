@@ -195,6 +195,7 @@ describe('ases chat TUI (PHASE-18, TAR-0087)', () => {
     await type(r, '/modelo');
     await r.press(KEYS.enter);
     await until(r, (s) => /\[ claude \]/.test(s) && s.includes('Espaço escolhe'), 60_000);
+    await new Promise((x) => setTimeout(x, 150)); // o teclado do seletor liga num efeito, logo depois do 1º desenho
     await r.press(KEYS.down);
     await r.press(KEYS.down); // fable → opus
     await r.press(' ');

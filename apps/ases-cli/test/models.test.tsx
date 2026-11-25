@@ -17,6 +17,7 @@ describe('model lists per AI (PHASE-20)', () => {
     expect(o.note).toMatch(/opencode\.json/);
     expect(await listModels('codex', r)).toMatchObject({ canSet: true, models: [] });
     expect((await listModels('google', run({}))).note).toMatch(/não consegui listar/);
+    expect((await listModels('opencode', run({}))).note).toMatch(/não troca de modelo.*não consegui listar/); // sem opencode instalado (CI)
   });
 });
 

@@ -33,7 +33,8 @@ export async function listModels(provider: string, run: Run): Promise<ModelList>
         : [];
       const base = { provider, source: `${cmd} models`, models, ...(r.exitCode === 0 ? {} : { note: `não consegui listar (\`${cmd} models\` falhou): digite o nome` }) };
       // opencode 2.4.1: o ACP não expõe troca de modelo (session/new sem models); a escolha fica no opencode.json dele
-      return provider === 'opencode' ? { ...base, canSet: false, note: base.note ?? 'o OpenCode não troca de modelo pelo AER: edite `model` no opencode.json dele (o AER não mexe nesse arquivo)' } : { ...base, canSet: true };
+      const why = 'o OpenCode não troca de modelo pelo AER: edite `model` no opencode.json dele (o AER não mexe nesse arquivo)';
+      return provider === 'opencode' ? { ...base, canSet: false, note: base.note ? `${why}; ${base.note}` : why } : { ...base, canSet: true };
     }
     default:
       return { provider, canSet: false, source: '—', models: [], note: 'IA sem escolha de modelo' };
