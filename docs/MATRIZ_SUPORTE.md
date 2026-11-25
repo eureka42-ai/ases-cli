@@ -1,4 +1,4 @@
-# Matriz de suporte (run 45519453101, commit a916319)
+# Matriz de suporte (run 45529392214, commit b57bc53)
 
 Gerada por `scripts/support-matrix.mjs` a partir dos jobs reais do CI. NOT_RUN não é PASS.
 

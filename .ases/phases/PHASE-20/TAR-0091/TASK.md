@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0091 |
 | phase_id | PHASE-20 |
-| estado | PLANNED (v1) |
+| estado | COMPLETED (v9) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |
@@ -25,7 +25,7 @@ Tela limpa ao abrir, pergunta da pasta antes do logo, modo do assistente explica
 - nenhum (validação NÃO concluída)
 
 ## Evidências, revisões e handoffs
-- nenhuma
+- EVIDENCE .ases/evidence/PHASE-20-verify.md (sha256 ebceefd0b595…)
 
 ## Critério de saída
 COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

@@ -4,12 +4,17 @@
   "taskId": "TAR-0091",
   "phaseId": "PHASE-20",
   "title": "Tela limpa ao abrir, pergunta da pasta antes do logo, modo do assistente explicado",
-  "state": "PLANNED",
-  "version": 1,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-088"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-20-verify.md",
+      "sha256": "ebceefd0b595d71f2c2299a6b762d8dae49a0c998a75157ed3aa496f211bee6b"
+    }
+  ],
   "lastTest": null
 }

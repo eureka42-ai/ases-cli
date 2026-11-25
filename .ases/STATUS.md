@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 845 (TaskCreated, 2026-11-25T00:57:07.898Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 857 (PhaseUpdated, 2026-11-25T02:05:48.561Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -24,7 +24,7 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | PHASE-17 | Manutenção 1.0.x | COMPLETED |
 | PHASE-18 | Chat com IA principal e orquestração em paralelo (1.1.0) | COMPLETED |
 | PHASE-19 | Manutenção 1.1.x: conversa no estilo do Claude Code e ases-tar com quem faz o quê | COMPLETED |
-| PHASE-20 | Manutenção 1.1.2: abertura limpa e modo explicado | PLANNED |
+| PHASE-20 | Manutenção 1.1.2: abertura limpa e modo explicado | COMPLETED |
 
 ## Tarefas
 | Tarefa | Fase | Título | Estado | Último teste | Evidência |
@@ -119,6 +119,6 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0088 | PHASE-18 | ases update e /atualizar | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
 | TAR-0089 | PHASE-18 | Bins, documentação, e2e do chat e release 1.1.0 | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
 | TAR-0090 | PHASE-19 | Conversa legível, atividades ao vivo, diff do que mudou, pensando com tempo, ases-tar com IA e ação por tarefa, assistente com híbrido e teste digitado | COMPLETED | — | .ases/evidence/PHASE-19-verify.md |
-| TAR-0091 | PHASE-20 | Tela limpa ao abrir, pergunta da pasta antes do logo, modo do assistente explicado | PLANNED | — | — |
+| TAR-0091 | PHASE-20 | Tela limpa ao abrir, pergunta da pasta antes do logo, modo do assistente explicado | COMPLETED | — | .ases/evidence/PHASE-20-verify.md |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.
