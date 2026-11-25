@@ -71,3 +71,18 @@ describe('CursorProvider.probe (fake cursor-agent)', () => {
 
 const _types: AgentStreamEvent[] = [];
 void _types;
+
+describe('real cursor-agent 2026.11.22 output (smoke with consent, 25/11/2026)', () => {
+  it('maps the real stream: messages, the edit as a file change, and the shell attempt as a violation', async () => {
+    const { readFileSync } = await import('node:fs');
+    const lines = readFileSync(new URL('./fixtures/real-cursor-2026.11.22-write-and-shell.jsonl', import.meta.url), 'utf8').trim().split('\n').map((l) => JSON.parse(l));
+    const st: CursorStreamState = {};
+    const out = lines.flatMap((l) => mapCursorEvent(l, st, '/WORKTREE'));
+    expect(out.filter((e) => e.type === 'message').map((e) => (e as { text: string }).text)[0]).toBe('Vou criar `NOTA.md` e em seguida rodar `ls`.');
+    expect(out).toContainEqual({ type: 'file_change', relativePath: 'NOTA.md', kind: 'modify' });
+    expect(out.find((e) => e.type === 'error')).toMatchObject({ code: 'SECURITY_VIOLATION' }); // o shellToolCall real
+    expect(st.done).toBe('success');
+    // a leitura fora da pasta do projeto (uma skill em ~/.claude) também é violação
+    expect(out.filter((e) => e.type === 'error' && /fora da pasta/.test((e as { userMessage: string }).userMessage))).toHaveLength(1);
+  });
+});

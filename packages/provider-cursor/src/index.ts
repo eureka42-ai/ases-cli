@@ -61,6 +61,10 @@ const toolName = (key: string) => {
   const base = key.replace(/ToolCall$/, '');
   return base.charAt(0).toUpperCase() + base.slice(1);
 };
+const insideDir = (dir: string, p: string) => {
+  const r = path.relative(dir, p);
+  return r === '' || (!r.startsWith('..') && !path.isAbsolute(r));
+};
 const rel = (cwd: string, p: string) => {
   const r = path.isAbsolute(p) ? path.relative(cwd, p) : p;
   return r.split(path.sep).join('/');
@@ -88,7 +92,11 @@ export function mapCursorEvent(v: unknown, state: CursorStreamState, cwd: string
       const name = key === 'function' ? fnName : toolName(key);
       const args = obj(b.args) ?? {};
       const p = str(args.path);
-      if (e.subtype === 'started') return [{ type: 'tool_call', name, safeArguments: p ? { path: p } : {} }];
+      // smoke real (25/11/2026): o Cursor leu sozinho uma "skill" em ~/.claude. Nada fora da pasta do projeto.
+      if (e.subtype === 'started' && p && path.isAbsolute(p) && !insideDir(cwd, p)) {
+        return [{ type: 'error', code: 'SECURITY_VIOLATION', userMessage: `o cursor tentou acessar um arquivo fora da pasta do projeto (${redactText(p, 200).text})` }];
+      }
+      if (e.subtype === 'started') return [{ type: 'tool_call', name, safeArguments: p ? { path: rel(cwd, p) } : {} }];
       if (e.subtype === 'completed') {
         const success = obj(obj(b.result)?.success);
         if (!success) return [{ type: 'tool_result', name, success: false, safeSummary: redactText(JSON.stringify(obj(b.result)?.error ?? 'falhou'), 300).text }];
