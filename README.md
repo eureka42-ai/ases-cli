@@ -20,7 +20,7 @@
 
 ## ✨ O que é
 
-O **AER (ASES Engineering Runtime)** é o motor de engenharia de software orientada a agentes da **Eureka42**. Você conversa em texto livre, como num chat. Uma **IA principal**, escolhida por você, responde, lê e edita o projeto. Quando o pedido é grande, o **ASES** divide o trabalho em tarefas e distribui entre as **outras IAs instaladas** (Claude Code, Codex, Kimi, OpenCode, Antigravity), que trabalham **em paralelo**, cada uma na sua cópia isolada do projeto.
+O **AER (ASES Engineering Runtime)** é o motor de engenharia de software orientada a agentes da **Eureka42**. Você conversa em texto livre, como num chat. Uma **IA principal**, escolhida por você, responde, lê e edita o projeto. Quando o pedido é grande, o **ASES** divide o trabalho em tarefas e distribui entre as **outras IAs instaladas** (Claude Code, Codex, Kimi, OpenCode, Antigravity, Cursor), que trabalham **em paralelo**, cada uma na sua cópia isolada do projeto.
 
 Tudo segue a metodologia **ASES-300**: requisitos rastreáveis, fases, tarefas, evidências e gates verificáveis.
 
@@ -111,6 +111,7 @@ Digite `/` no `ases` para abrir o menu. Cada comando em português tem o equival
 | **Kimi** | ACP (stdio) | VERIFIED 1.50.0 |
 | **OpenCode** | ACP (stdio) | VERIFIED 2.4.1 |
 | **Google (Antigravity CLI)** | ACP (stdio) | VERIFIED 1.5.13 |
+| **Cursor** | `cursor-agent -p` com saída `stream-json`, sandbox ligado e shell bloqueado | UNVERIFIED (2026.11) |
 | **Simulador** | determinístico, sem IA nem custo | para testes |
 
 Cada IA usa a **sua** sessão oficial, conta e cota. No Windows, os atalhos `.cmd` do npm são abertos sem shell.

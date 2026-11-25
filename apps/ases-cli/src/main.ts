@@ -9,6 +9,7 @@ import { SUPPORTED_TARGETS, defaultDeps, syncedFolderHint, targetStatus } from '
 import { brandConfigLayers, chatConfig, desktopDir, findProjectRoot, recentProjects, rememberProject, initProject, isInterimProject, loadPlatformAdapter, paths, readInterimProject, readManifest } from '@aer/project-store';
 import { ClaudeCodeProvider } from '@aer/provider-claude';
 import { CodexProvider } from '@aer/provider-codex';
+import { CursorProvider } from '@aer/provider-cursor';
 import { createAntigravityProvider, createKimiProvider, createOpenCodeProvider } from '@aer/provider-acp';
 import { SimulatorProvider } from '@aer/provider-simulator';
 import { writeReports } from './reports.ts';
@@ -249,7 +250,7 @@ async function readSecretFromStdin(): Promise<string> {
 
 /** AER-REQ-116/119: cada provider é sondado isoladamente; a falha de um não impede os outros. */
 async function probeProviders(adapter: Awaited<ReturnType<typeof loadPlatformAdapter>>) {
-  const providers = [new SimulatorProvider(adapter), new ClaudeCodeProvider(adapter), new CodexProvider(adapter), createKimiProvider(adapter), createOpenCodeProvider(adapter), createAntigravityProvider(adapter)];
+  const providers = [new SimulatorProvider(adapter), new ClaudeCodeProvider(adapter), new CodexProvider(adapter), createKimiProvider(adapter), createOpenCodeProvider(adapter), createAntigravityProvider(adapter), new CursorProvider(adapter)];
   return Promise.all(providers.map(async (p) => {
     try {
       const r = await p.probe();

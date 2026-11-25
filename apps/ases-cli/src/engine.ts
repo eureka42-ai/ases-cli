@@ -7,6 +7,7 @@ import type { PlatformAdapter } from '@aer/platform-core';
 import type { AgentProvider } from '@aer/provider-sdk';
 import { ClaudeCodeProvider } from '@aer/provider-claude';
 import { CodexProvider } from '@aer/provider-codex';
+import { CursorProvider } from '@aer/provider-cursor';
 import { createAntigravityProvider, createKimiProvider, createOpenCodeProvider } from '@aer/provider-acp';
 import { SimulatorProvider } from '@aer/provider-simulator';
 import { runQueue, type AttemptOutcome, type WorkerDeps } from '@aer/scheduler';
@@ -57,6 +58,7 @@ export class Engine {
     this.providers = {
       simulator: new SimulatorProvider(adapter), claude: new ClaudeCodeProvider(adapter), codex: new CodexProvider(adapter),
       kimi: createKimiProvider(adapter), opencode: createOpenCodeProvider(adapter), google: createAntigravityProvider(adapter),
+      cursor: new CursorProvider(adapter),
     };
     // simuladores extras (só testes): exercitam a distribuição entre IAs sem conta nenhuma
     for (let i = 2; i <= simulators; i++) this.providers[`simulator-${i}`] = new SimulatorProvider(adapter, { id: `simulator-${i}` });

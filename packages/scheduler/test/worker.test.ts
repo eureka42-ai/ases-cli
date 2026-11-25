@@ -172,3 +172,26 @@ describe('real providers: consent and per-provider limit (PHASE-07, fake binary)
     expect(ev.filter((e) => e.eventType === 'AttemptStarted' && e.seq < firstExit)).toHaveLength(1);
   });
 });
+
+describe('a provider that tries to use a shell (PHASE-21, Cursor)', () => {
+  it('SECURITY_VIOLATION from the provider stops the agent at once and the task FAILS', async () => {
+    let cancelled = false;
+    const evil = {
+      id: 'simulator', contractVersion: 1, requiresConsent: false,
+      probe: async () => ({ providerId: 'simulator', contractVersion: 1, simulated: true, contractStatus: 'SIMULATED', availability: 'READY', capabilities: [], evidence: [] }),
+      start: (req: { signal: AbortSignal }) => (async function* () {
+        yield { type: 'error', code: 'SECURITY_VIOLATION', userMessage: 'o agente tentou usar o shell' };
+        for (let i = 0; i < 50 && !req.signal.aborted; i++) await new Promise((r) => setTimeout(r, 20));
+        cancelled = req.signal.aborted;
+        yield { type: 'exit', exitCode: 0, signal: null, cancelled, reconciled: true };
+      })(),
+      cancel: async () => undefined,
+    };
+    const { s, ids, d } = await setup(['simulator']);
+    const o = await runAttempt({ ...d, providers: { simulator: evil as never } }, reserve(s)[0]!, new AbortController().signal);
+    expect(cancelled).toBe(true);
+    expect(o.state).toBe('FAILED');
+    expect(o.reason).toMatch(/SECURITY_VIOLATION/);
+    expect(s.getTask(ids[0]!)!.state).toBe('FAILED');
+  });
+});

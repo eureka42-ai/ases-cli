@@ -52,7 +52,7 @@ export function parseMainReply(text: string): { reply: string; plan?: RawPlan; e
   return typeof v === 'string' ? { reply, error: v } : { reply, plan: v };
 }
 
-const ORDER = ['claude', 'codex', 'kimi', 'opencode', 'google', 'simulator'];
+const ORDER = ['claude', 'codex', 'kimi', 'opencode', 'google', 'cursor', 'simulator'];
 const rank = (id: string) => {
   const i = ORDER.indexOf(id);
   if (i >= 0) return i;

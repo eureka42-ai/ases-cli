@@ -1,5 +1,17 @@
 # AER 1.x: notas de versão
 
+## 1.2.0 (25/11/2026): Cursor
+- **Nova IA: Cursor** (`cursor-agent`), pelo modo oficial sem tela (`-p --output-format stream-json`).
+  - **Usos:** principal, executora de tarefas e revisora (`--mode ask`, só leitura).
+  - **Modelo:** `/modelo` lista os modelos com `cursor-agent models` e aplica com `--model`.
+  - **Login:** o AER confere com `cursor-agent status` e nunca faz login por você.
+  - **Segurança:**
+    - no modo `-p` o Cursor tem acesso ao shell, então o AER liga `--sandbox enabled`;
+    - o AER nunca passa `--force`/`--yolo`;
+    - **qualquer tentativa de usar o shell interrompe o agente na hora** e a tarefa falha com `SECURITY_VIOLATION`.
+  - **Contrato UNVERIFIED:** o formato dos eventos veio da documentação oficial e ainda não de uma saída real capturada.
+- **Segurança geral:** qualquer IA cujo adaptador relate uma violação é interrompida na hora (antes só falhava no fim).
+
 ## 1.1.2 (24/11/2026)
 - **Abertura limpa:** ao rodar `ases`, a tela é limpa e aparece só a pergunta **"Onde vamos trabalhar?"**. Depois da escolha, a tela é limpa de novo e entram o logo e o chat.
 - **`/modelo`:** escolhe o modelo de cada IA num seletor: `←` `→` escolhe a IA, `↑` `↓` o modelo, Espaço seleciona, Esc fecha. Também dá para usar `/modelo <ia> <modelo>`. O modelo escolhido vale para a principal e para as tarefas daquela IA, e fica na sua config pessoal.

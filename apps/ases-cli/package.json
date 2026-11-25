@@ -24,6 +24,7 @@
     "@aer/tui-shared": "0.0.0",
     "ink": "8.0.0",
     "react": "19.3.1",
-    "@aer/git-bridge": "0.0.0"
+    "@aer/git-bridge": "0.0.0",
+    "@aer/provider-cursor": "0.0.0"
   }
 }

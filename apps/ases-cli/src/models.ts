@@ -22,8 +22,9 @@ export async function listModels(provider: string, run: Run): Promise<ModelList>
     case 'kimi':
       return { provider, canSet: true, source: 'kimi -m', models: [], note: 'o kimi informa os modelos só dentro da sessão: digite o nome (ex.: o de `kimi -m`)' };
     case 'google':
+    case 'cursor':
     case 'opencode': {
-      const cmd = provider === 'google' ? 'agy' : 'opencode';
+      const cmd = provider === 'google' ? 'agy' : provider === 'cursor' ? 'cursor-agent' : 'opencode';
       const r = await run(cmd, ['models']).catch(() => ({ exitCode: 1, stdout: '' }));
       const models = r.exitCode === 0
         ? r.stdout.split('\n').map((l) => l.trim()).filter((l) => l && !/^fetching/i.test(l)).map((l) => {

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0092",
+  "phaseId": "PHASE-21",
+  "title": "Adaptador do Cursor CLI (stream-json, sandbox, shell bloqueado, modelos, login)",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-101",
+    "AER-REQ-109",
+    "AER-REQ-123"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

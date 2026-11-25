@@ -127,7 +127,7 @@ describe('chat engine and simple commands (PHASE-18, TAR-0086)', () => {
   });
 
   it('/sobre prints the literal about text', async () => {
-    expect(await say('/sobre')).toBe('⌘ Eureka42 · ASES Engineering Runtime (AER) 1.1.2\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\neureka42.org · Licença CC BY-NC-ND 4.0');
+    expect(await say('/sobre')).toBe('⌘ Eureka42 · ASES Engineering Runtime (AER) 1.2.0\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\neureka42.org · Licença CC BY-NC-ND 4.0');
   });
 
   it('/ajuda avançado still lists /phase, /task, /run, /gate', async () => {

@@ -38,6 +38,9 @@
       "path": "packages/provider-codex/tsconfig.build.json"
     },
     {
+      "path": "packages/provider-cursor/tsconfig.build.json"
+    },
+    {
       "path": "packages/provider-acp/tsconfig.build.json"
     },
     {

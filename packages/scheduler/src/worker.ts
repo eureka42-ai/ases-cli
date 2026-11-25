@@ -199,6 +199,13 @@ export async function runAttempt(d: WorkerDeps, r: { taskId: string; fencingToke
           ac.abort();
           break;
         case 'error':
+          if (e.code === 'SECURITY_VIOLATION') {
+            // o próprio adapter detectou algo proibido (ex.: o Cursor tentando usar o shell): para o agente na hora
+            violation = e.userMessage;
+            ev('SecurityViolationBlocked', { rule: 'PROVIDER_REPORTED', detail: redactText(e.userMessage, 500).text });
+            ac.abort();
+            break;
+          }
           if (e.code === 'PARSE_ERROR') parseError = true;
           else if (!lastError || isBlocking(e.code)) lastError = e.code;
           ev('ProviderOutputChunk', { kind: 'error', code: e.code, text: redactText(e.userMessage, 1000).text, redacted: false, truncated: false, visibleToUser: true });

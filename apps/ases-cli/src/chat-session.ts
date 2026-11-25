@@ -8,7 +8,7 @@ import type { Engine } from './engine.ts';
 // PHASE-18: a sessão de chat do `ases`. Guarda o consentimento por IA desta sessão, a fila de turnos da principal
 // e liga os planos aprovados à execução em paralelo (executePlan) e ao resumo final.
 
-const ORDER = ['claude', 'codex', 'kimi', 'opencode', 'google', 'simulator'];
+const ORDER = ['claude', 'codex', 'kimi', 'opencode', 'google', 'cursor', 'simulator'];
 
 /** IA + modelo escolhido em /modelo (`claude` → `claude:opus`); uma escolha explícita (`claude:sonnet`) vence; simuladores não têm modelo. */
 export function withModel(spec: string, chosen: Readonly<Record<string, string>>): string {

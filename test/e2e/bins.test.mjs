@@ -13,7 +13,7 @@ describe('built bins (TAR-0011, AER-REQ-004, AER-REQ-245, AER-REQ-247)', () => {
     for (const bin of [BIN.ases, BIN.tar]) {
       const v = runSync(bin, ['--version'], p.dir);
       expect(v.status).toBe(0);
-      expect(v.stdout).toMatch(/^ases(-tar)? 1\.1\.2 \(protocol 1\) · eureka42\.org\n$/);
+      expect(v.stdout).toMatch(/^ases(-tar)? 1\.2\.0 \(protocol 1\) · eureka42\.org\n$/);
       const h = runSync(bin, ['--help'], p.dir);
       expect(h.status).toBe(0);
       expect(h.stdout).toMatch(/Eureka42/);
@@ -24,12 +24,12 @@ describe('built bins (TAR-0011, AER-REQ-004, AER-REQ-245, AER-REQ-247)', () => {
 
   it('--json output is pure JSON (no banner, no ANSI)', () => {
     const v = runSync(BIN.ases, ['--version', '--json'], p.dir);
-    expect(JSON.parse(v.stdout)).toEqual({ app: '1.1.2', protocol: 1 });
+    expect(JSON.parse(v.stdout)).toEqual({ app: '1.2.0', protocol: 1 });
     const d = runSync(BIN.ases, ['doctor', '--json'], p.dir);
     expect(d.status).toBe(0);
     const report = JSON.parse(d.stdout);
     expect(report.platform).toBe(process.platform);
-    expect(report.providers.map((x) => x.id)).toEqual(['simulator', 'claude', 'codex', 'kimi', 'opencode', 'google']);
+    expect(report.providers.map((x) => x.id)).toEqual(['simulator', 'claude', 'codex', 'kimi', 'opencode', 'google', 'cursor']);
     expect(report.providers.every((x) => ['SIMULATED', 'UNVERIFIED', 'VERIFIED'].includes(x.contract))).toBe(true);
     // macOS: Keychain; Windows: Credential Manager pelo PowerShell do sistema (PHASE-15); Linux: depende de D-Bus/secret-tool
     const backend = { darwin: 'macos-keychain', win32: 'windows-credential-manager', linux: 'linux-secret-service' }[process.platform];
@@ -39,7 +39,7 @@ describe('built bins (TAR-0011, AER-REQ-004, AER-REQ-245, AER-REQ-247)', () => {
   });
 
   it('ases about and ases-tar --about print the literal about text (PHASE-18)', () => {
-    const about = '⌘ Eureka42 · ASES Engineering Runtime (AER) 1.1.2\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\neureka42.org · Licença CC BY-NC-ND 4.0\n';
+    const about = '⌘ Eureka42 · ASES Engineering Runtime (AER) 1.2.0\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\neureka42.org · Licença CC BY-NC-ND 4.0\n';
     for (const [bin, args] of [[BIN.ases, ['about']], [BIN.tar, ['--about']]]) {
       const r = runSync(bin, args, p.dir);
       expect(r.status).toBe(0);

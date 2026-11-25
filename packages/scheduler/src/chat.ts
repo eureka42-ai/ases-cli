@@ -152,6 +152,11 @@ export async function runChatTurn(d: WorkerDeps, o: { conversationId: string; me
       } else if (e.type === 'error') {
         error = e.userMessage;
         errorCode = e.code;
+        if (e.code === 'SECURITY_VIOLATION') {
+          violation = e.userMessage;
+          d.mutate((s) => s.appendEvent({ eventType: 'SecurityViolationBlocked', payload: { rule: 'PROVIDER_REPORTED', detail: redactText(e.userMessage, 500).text } }));
+          ac.abort();
+        }
       }
       else if (e.type === 'exit') exit = e;
     }

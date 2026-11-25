@@ -133,6 +133,7 @@ const CREDENTIAL_PREFIXES: Record<string, readonly string[]> = {
   google: ['GEMINI_', 'GOOGLE_API_KEY', 'GOOGLE_GENAI_', 'GOOGLE_APPLICATION_CREDENTIALS'],
   kimi: ['MOONSHOT_', 'KIMI_'],
   opencode: ['OPENCODE_'],
+  cursor: ['CURSOR_'],
 };
 
 /** Ambiente do subprocesso sem as credenciais dos OUTROS providers (nem do próprio AER). */

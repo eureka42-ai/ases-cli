@@ -1,7 +1,7 @@
 // §7.2 do MD mestre: contrato que todo adapter de agente implementa (AER-REQ-101). Versão incrementa em mudança incompatível.
 export const PROVIDER_CONTRACT_VERSION = 1;
 
-export const PROVIDER_IDS = ['claude', 'codex', 'kimi', 'google', 'opencode', 'simulator'] as const;
+export const PROVIDER_IDS = ['claude', 'codex', 'kimi', 'google', 'opencode', 'cursor', 'simulator'] as const;
 /** `simulator-N`: simuladores extras para testar a distribuição entre IAs (PHASE-18; AER_SIMULATORS) */
 export type ProviderId = (typeof PROVIDER_IDS)[number] | `simulator-${number}`;
 

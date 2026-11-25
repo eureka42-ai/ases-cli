@@ -10,13 +10,14 @@ import type { Engine } from './engine.ts';
 
 // PHASE-18 §5.6: assistente de primeiro uso. Não usa IA nenhuma: detecta as IAs, pergunta e grava a config.
 
-const ORDER = ['claude', 'codex', 'kimi', 'opencode', 'google'];
+const ORDER = ['claude', 'codex', 'kimi', 'opencode', 'google', 'cursor'];
 const HOW_TO_INSTALL: Record<string, string> = {
   claude: 'npm install -g @anthropic-ai/claude-code, depois rode `claude` e faça o login',
   codex: 'npm install -g @openai/codex, depois `codex login`',
   kimi: 'veja o site oficial do Kimi Code CLI e rode `kimi login`',
   opencode: 'veja o site oficial do OpenCode',
   google: 'veja o site oficial do Antigravity CLI (comando `agy`)',
+  cursor: 'instale o Cursor CLI pelo site oficial e rode `cursor-agent login`',
 };
 
 /** Comando de teste detectado no projeto (sem shell): npm test, pytest… ou nenhum. */

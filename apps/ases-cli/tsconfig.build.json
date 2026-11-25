@@ -57,6 +57,9 @@
     },
     {
       "path": "../../packages/git-bridge/tsconfig.build.json"
+    },
+    {
+      "path": "../../packages/provider-cursor/tsconfig.build.json"
     }
   ]
 }
