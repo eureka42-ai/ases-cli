@@ -51,7 +51,8 @@ export async function runUpdate(o: { current: string; check: boolean; running: n
   if (o.check) return { status: 'AVAILABLE', from, to, message: `instalada ${from} → disponível ${to}; rode \`ases update\`` };
   const npm = o.npm ?? { cli: npmCli(), node: process.execPath };
   try {
-    const r = await promisify(execFile)(npm.node, [npm.cli, 'install', '-g', `${PACKAGE}@${to}`], { encoding: 'utf8', timeout: 10 * 60_000, windowsHide: true, maxBuffer: 8 * 1024 * 1024 });
+    // --prefer-online: logo após publicar, o cache local do npm ainda não conhece a versão (ETARGET)
+    const r = await promisify(execFile)(npm.node, [npm.cli, 'install', '-g', `${PACKAGE}@${to}`, '--prefer-online'], { encoding: 'utf8', timeout: 10 * 60_000, windowsHide: true, maxBuffer: 8 * 1024 * 1024 });
     return { status: 'UPDATED', from, to, message: `atualizado: ${from} → ${to}. Feche e abra o ases de novo (o banco do projeto migra com backup).${r.stdout.trim() ? `\n${r.stdout.trim().split('\n').slice(-3).join('\n')}` : ''}` };
   } catch (err) {
     const e = err as { stderr?: string; message: string };
