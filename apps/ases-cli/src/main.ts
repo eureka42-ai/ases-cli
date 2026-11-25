@@ -6,7 +6,7 @@ import { copyFileSync, mkdirSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { ProjectStore, exportHistory, importLegacy, sqliteVersion } from '@aer/persistence';
 import { SUPPORTED_TARGETS, defaultDeps, syncedFolderHint, targetStatus } from '@aer/platform-core';
-import { brandConfigLayers, chatConfig, findProjectRoot, initProject, isInterimProject, loadPlatformAdapter, paths, readInterimProject, readManifest } from '@aer/project-store';
+import { brandConfigLayers, chatConfig, desktopDir, findProjectRoot, recentProjects, rememberProject, initProject, isInterimProject, loadPlatformAdapter, paths, readInterimProject, readManifest } from '@aer/project-store';
 import { ClaudeCodeProvider } from '@aer/provider-claude';
 import { CodexProvider } from '@aer/provider-codex';
 import { createAntigravityProvider, createKimiProvider, createOpenCodeProvider } from '@aer/provider-acp';
@@ -16,6 +16,7 @@ import { Engine } from './engine.ts';
 import { handleLine } from './commands.ts';
 import { runTui } from './tui.tsx';
 import { runWizard } from './wizard.tsx';
+import { runStartScreen } from './start-screen.tsx';
 import { runUpdate } from './update.ts';
 import { shouldAnimate } from './ticker.ts';
 import { attachRepl, connectResident, daemonStatus, runDaemon, startDaemon, stopDaemon } from './daemon.ts';
@@ -197,11 +198,18 @@ async function main(argv: string[]): Promise<number> {
   }
   if (cmd) throw new UsageError(`unknown command: ${cmd}`);
 
-  const root = findProjectRoot(process.cwd());
+  // PHASE-19: "Onde vamos trabalhar?" — a pasta escolhida vira projeto sozinha (sem `ases init`)
+  let root = findProjectRoot(process.cwd());
+  if (ui.tui) {
+    const picked = await runStartScreen({ color: ui.color, colorDepth: ui.colorDepth, unicode: ui.unicode, theme: ui.theme, logo: ui.logo }, { cwd: root ?? process.cwd(), desktop: desktopDir(), recent: recentProjects().filter((p) => findProjectRoot(p) === p) });
+    if (!picked) return 0;
+    root = findProjectRoot(picked) === picked ? picked : (initProject(picked, adapter), picked);
+  }
   if (!root) {
-    console.error('Este diretório não é um projeto ASES. Rode `ases init` primeiro.');
+    console.error('Este diretório não é um projeto ASES. Abra o `ases` num terminal para escolher a pasta (ou rode `ases init`).');
     return 2;
   }
+  rememberProject(root);
   return interactive(root, adapter, ui);
 }
 

@@ -67,6 +67,24 @@ describe('final review fixes (PHASE-18)', () => {
     await e3.stop();
   }, 120_000);
 
+  it('PHASE-19: one-time consent in the personal config authorizes every installed AI; revogar todas turns it off', async () => {
+    const { setConsentAll, globalConfigFile } = await import('@aer/project-store');
+    const { root, e } = await project({ main: 'simulator', crossReview: false });
+    await e.stop();
+    setConsentAll(true, globalConfigFile());
+    const e2 = await Engine.start(root, adapter, { simulators: 3 });
+    try {
+      for (const id of ['claude', 'codex', 'kimi', 'opencode', 'google']) expect(chatSession(e2).consent.has(id)).toBe(true);
+      expect(await say(e2, '/config revogar todas')).toMatch(/todas as IAs revogadas/);
+      expect(chatSession(e2).consent.has('claude')).toBe(false);
+    } finally {
+      await e2.stop();
+    }
+    const e3 = await Engine.start(root, adapter, { simulators: 3 });
+    expect(chatSession(e3).consent.has('claude')).toBe(false);
+    await e3.stop();
+  }, 60_000);
+
   it('I3: /parar and engine stop interrupt a running main turn', async () => {
     const { e } = await project({ main: 'simulator', crossReview: false });
     try {

@@ -13,7 +13,7 @@ describe('no animation in the TUIs (TAR-0074)', () => {
   it('UI sources have no setInterval, spinner or animation frame outside the guarded ticker', () => {
     expect(uiSources.length).toBeGreaterThan(5);
     const hits = uiSources.filter((f) => /setInterval\(|ink-spinner|requestAnimationFrame|<Spinner/.test(readFileSync(path.join(repo, f), 'utf8')));
-    expect(hits).toEqual(['apps/ases-cli/src/ticker.ts']);
+    expect(hits.map((f) => f.split(path.sep).join('/'))).toEqual(['apps/ases-cli/src/ticker.ts']); // Windows usa \
     const ticker = readFileSync(path.join(repo, 'apps/ases-cli/src/ticker.ts'), 'utf8');
     expect(ticker).toMatch(/if \(!active \|\| !animation\) return/);
   });

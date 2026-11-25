@@ -65,8 +65,12 @@ describe('built bins (TAR-0011, AER-REQ-004, AER-REQ-245, AER-REQ-247)', () => {
   it('outside a project both bins exit 2 with guidance', () => {
     const outside = tempProject('fora');
     try {
-      expect(runSync(BIN.ases, [], outside.dir).status).toBe(2);
-      expect(runSync(BIN.tar, ['--json'], outside.dir).stderr).toMatch(/não é um projeto ASES/);
+      const a = runSync(BIN.ases, [], outside.dir);
+      expect(a.status).toBe(2); // fora de TTY não há tela para escolher a pasta
+      expect(a.stderr).toMatch(/escolher a pasta/);
+      const t = runSync(BIN.tar, ['--json'], outside.dir, { XDG_CONFIG_HOME: outside.dir, APPDATA: outside.dir });
+      expect(t.status).toBe(2);
+      expect(t.stderr).toMatch(/abra o `ases` primeiro/);
     } finally {
       outside.cleanup();
     }

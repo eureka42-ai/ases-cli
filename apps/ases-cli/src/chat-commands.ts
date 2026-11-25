@@ -226,12 +226,20 @@ function config(engine: Engine, chat: ChatSession, a: string, b: string, rest: s
         `comando de teste: ${cfg.testCommand ? `${cfg.testCommand.join(' ')} (${chat.testApproved(cfg.testCommand) ? 'autorizado' : `não autorizado; confirme com /config teste ${cfg.testCommand.join(' ')}`})` : 'nenhum'} [${cfg.sources.testCommand}]`, `autorizadas: ${[...chat.consent].join(', ') || 'nenhuma'}`,
         'mude com: /config consentir|revogar <ia> · limite <ia> <n> · revisão on|off · teste <comando…> · modo manual|auto|hybrid · principal <ia> · tema <t> · logo <l>'].join('\n');
     case 'consentir': {
+      if (b === 'todas' || b === 'all') {
+        chat.setConsentAll(true);
+        return 'todas as IAs instaladas autorizadas neste computador: elas usam a SUA conta e cota (desligue com /config revogar todas)';
+      }
       if (!(b in engine.providers)) return `IA desconhecida: ${b}`;
       if (!engine.providers[b]!.requiresConsent) return `${b} é simulada e não precisa de autorização`;
       chat.grantConsent(b, rest.includes('--save'));
       return `${b} autorizada nesta sessão${rest.includes('--save') ? ' e lembrada neste computador' : ''}: ela usa a SUA conta e a sua cota de ${b}`;
     }
     case 'revogar':
+      if (b === 'todas' || b === 'all') {
+        chat.setConsentAll(false);
+        return 'todas as IAs revogadas: cada uma volta a pedir autorização (a sua conta e cota)';
+      }
       chat.revokeConsent(b);
       return `${b} revogada: não roda mais sem nova autorização`;
     case 'limite': {

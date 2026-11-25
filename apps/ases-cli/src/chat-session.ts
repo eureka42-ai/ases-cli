@@ -1,6 +1,6 @@
 import { currentBranch, restoreFromPoint } from '@aer/git-bridge';
 import type { ConversationRow, PlanRow, PlannedTask } from '@aer/persistence';
-import { chatConfig, type ChatConfig, type ChatMode } from '@aer/project-store';
+import { chatConfig, consentAllGranted, setConsentAll, type ChatConfig, type ChatMode } from '@aer/project-store';
 import type { AgentStreamEvent, ProviderProbeResult } from '@aer/provider-sdk';
 import { ChatQueue, executePlan, mergeTask, runChatTurn, summaryMessage, type ChatTurnResult, type PlanProgress, type PlanResult, type WorkerDeps } from '@aer/scheduler';
 import type { Engine } from './engine.ts';
@@ -40,6 +40,11 @@ export class ChatSession {
       if (e.payload.persist !== true) continue;
       if (e.eventType === 'ApprovalGranted') this.consent.add(String(e.payload.providerId));
       else this.consent.delete(String(e.payload.providerId));
+    }
+    // PHASE-19: autorização única, dada no primeiro uso e guardada só na config PESSOAL (não no projeto)
+    if (consentAllGranted()) {
+      for (const [id, p] of Object.entries(engine.providers)) if (p.requiresConsent) this.consent.add(id);
+      engine.mutate((s) => s.appendEvent({ eventType: 'ApprovalGranted', payload: { scope: 'provider-all', providerIds: [...this.consent], grantedBy: 'user (autorização única na config pessoal)', note: 'usa as sessões dos clientes oficiais; pode consumir cota/cobrança' } }));
     }
     this.queue = new ChatQueue((m) => this.turn(m));
     engine.addStopHook(() => this.stopTurn());
@@ -124,6 +129,13 @@ export class ChatSession {
   grantConsent(id: string, save: boolean): void {
     this.consent.add(id);
     this.engine.mutate((s) => s.appendEvent({ eventType: 'ApprovalGranted', payload: { scope: 'provider-session', providerId: id, persist: save, grantedBy: 'user (/config consentir)', note: 'usa a sessão do cliente oficial; pode consumir cota/cobrança da conta' } }));
+  }
+
+  /** Autoriza (ou revoga) de uma vez todas as IAs instaladas, nesta e nas próximas sessões deste computador. */
+  setConsentAll(on: boolean): void {
+    setConsentAll(on);
+    for (const [id, p] of Object.entries(this.engine.providers)) if (p.requiresConsent) (on ? this.consent.add(id) : this.consent.delete(id));
+    this.engine.mutate((s) => s.appendEvent({ eventType: on ? 'ApprovalGranted' : 'ApprovalDenied', payload: { scope: 'provider-all', persist: true, by: 'user' } }));
   }
 
   revokeConsent(id: string): void {

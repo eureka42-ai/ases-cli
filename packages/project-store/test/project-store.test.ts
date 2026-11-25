@@ -142,3 +142,38 @@ describe('chat config by layers (PHASE-18, TAR-0079)', () => {
     rmSync(d, { recursive: true, force: true });
   });
 });
+
+describe('desktop, recent projects and one-time AI consent (PHASE-19)', () => {
+  it('desktopDir: OneDrive Desktop on Windows when it exists, else ~/Desktop', async () => {
+    const { desktopDir } = await import('../src/index.ts');
+    const d = mkdtempSync(path.join(os.tmpdir(), 'aer desk '));
+    mkdirSync(path.join(d, 'OneDrive', 'Desktop'), { recursive: true });
+    expect(desktopDir('win32', { OneDrive: path.join(d, 'OneDrive') }, d)).toBe(path.join(d, 'OneDrive', 'Desktop'));
+    expect(desktopDir('darwin', {}, '/Users/u')).toBe(path.join('/Users/u', 'Desktop'));
+    rmSync(d, { recursive: true, force: true });
+  });
+  it('recent projects: newest first, no duplicates, at most 5', async () => {
+    const { rememberProject, recentProjects } = await import('../src/index.ts');
+    const d = mkdtempSync(path.join(os.tmpdir(), 'aer recent '));
+    const g = path.join(d, 'global.json');
+    writeFileSync(g, JSON.stringify({ ui: { theme: 'gold' } }));
+    for (const p of ['a', 'b', 'c', 'a', 'd', 'e', 'f']) rememberProject(path.join(d, p), g);
+    expect(recentProjects(g)).toEqual(['f', 'e', 'd', 'a', 'c'].map((p) => path.join(d, p)));
+    expect(JSON.parse(readFileSync(g, 'utf8')).ui.theme).toBe('gold');
+    rmSync(d, { recursive: true, force: true });
+  });
+  it('consent for all AIs lives only in the personal (global) config, never in the project', async () => {
+    const { consentAllGranted, setConsentAll, chatConfig } = await import('../src/index.ts');
+    const d = mkdtempSync(path.join(os.tmpdir(), 'aer consent '));
+    const g = path.join(d, 'global.json');
+    mkdirSync(path.join(d, '.ases'));
+    writeFileSync(path.join(d, '.ases', 'CONFIG.json'), JSON.stringify({ chat: { consentAll: true } }));
+    expect(consentAllGranted(g)).toBe(false); // o arquivo do projeto não liga isso
+    setConsentAll(true, g);
+    expect(consentAllGranted(g)).toBe(true);
+    setConsentAll(false, g);
+    expect(consentAllGranted(g)).toBe(false);
+    expect(() => chatConfig(d, g)).not.toThrow();
+    rmSync(d, { recursive: true, force: true });
+  });
+});

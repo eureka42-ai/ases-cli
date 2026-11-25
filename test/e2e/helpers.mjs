@@ -22,7 +22,10 @@ export function tempProject(name = 'e2e proj ç') {
   return { dir, cleanup: () => rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }) };
 }
 
-const env = { ...process.env, NO_COLOR: undefined, FORCE_COLOR: undefined };
+// config pessoal isolada: os e2e nunca escrevem na ~/.config/ases (ou %APPDATA%\\ases) de quem roda os testes
+const configHome = mkdtempSync(path.join(os.tmpdir(), 'aer-e2e-config-'));
+export const isolatedConfigEnv = { XDG_CONFIG_HOME: configHome, APPDATA: configHome };
+const env = { ...process.env, NO_COLOR: undefined, FORCE_COLOR: undefined, ...isolatedConfigEnv };
 export const runSync = (bin, args, cwd, extraEnv = {}, timeout = 15_000) => spawnSync(process.execPath, [bin, ...args], { cwd, encoding: 'utf8', env: { ...env, ...extraEnv }, timeout, input: '' });
 
 /** Processo real com captura de stdout/stderr e espera por texto. */

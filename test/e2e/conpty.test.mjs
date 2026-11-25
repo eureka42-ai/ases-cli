@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { BIN, requireBuild, runSync, start, tempProject, useSimulatedMain } from './helpers.mjs';
+import { BIN, isolatedConfigEnv, requireBuild, runSync, start, tempProject, useSimulatedMain } from './helpers.mjs';
 
 // TAR-0070 (AER-REQ-234): TUIs num ConPTY real do Windows via node-pty. O node-pty NÃO é dependência do projeto:
 // o CI do Windows instala só para este teste (`npm install --no-save node-pty@1.1.0`) e liga AER_REQUIRE_CONPTY=1,
@@ -17,7 +17,7 @@ if (process.platform === 'win32') {
 const ANSI = /\u001b\[[0-9;?]*[A-Za-z]|\u001b\][^\u0007]*\u0007|\u001b[()][A-Z0-9]|\r/g;
 
 function conpty(bin, args, cwd, extraEnv = {}, cols = 80) {
-  const env = { ...process.env, TERM: 'xterm-256color', CI: 'false', ...extraEnv };
+  const env = { ...process.env, ...isolatedConfigEnv, TERM: 'xterm-256color', CI: 'false', ...extraEnv };
   if (!('NO_COLOR' in extraEnv)) delete env.NO_COLOR;
   const term = pty.spawn(process.execPath, [bin, ...args], { name: 'xterm-256color', cols, rows: 30, cwd, env, useConpty: true });
   let raw = '';
@@ -33,6 +33,14 @@ function conpty(bin, args, cwd, extraEnv = {}, cols = 80) {
       for (const ch of s) {
         term.write(ch);
         await new Promise((r) => setTimeout(r, 20));
+      }
+    },
+    /** PHASE-19: passa pela tela "Onde vamos trabalhar?" (Enter = esta pasta); insiste até o raw mode pegar */
+    async pastStart() {
+      await this.waitFor((s) => s.includes('Onde vamos trabalhar?'), 30_000);
+      for (let i = 0; i < 8 && !/\? ajuda/.test(raw.replace(ANSI, '').split('Onde vamos trabalhar?').at(-1)); i++) {
+        term.write('\r');
+        await new Promise((r) => setTimeout(r, 500));
       }
     },
     async waitFor(test, ms = 15_000) {
@@ -83,6 +91,7 @@ describe.runIf(pty)('TUIs in a real Windows ConPTY (TAR-0070)', () => {
   it('ases: logo, help with ? and Esc, a typed command, resize to 40 columns, Ctrl+C twice exits 0', async () => {
     const t = conpty(BIN.ases, [], p.dir, { WT_SESSION: 'aer-e2e' }); // como o Windows Terminal se anuncia
     procs.push(t);
+    await t.pastStart();
     await t.waitFor((s) => (s.includes('Eureka42') || s.includes('eureka42.org')) && s.includes('? ajuda'), 30_000);
     expect(t.raw()).toMatch(/\u001b\[38;2;34;197;94m/); // verde truecolor no Windows Terminal
     expect(t.text()).toContain('⌘'); // logo Unicode, não o fallback E42
@@ -120,6 +129,7 @@ describe.runIf(pty)('TUIs in a real Windows ConPTY (TAR-0070)', () => {
   it('NO_COLOR in ConPTY: no color codes, text complete', async () => {
     const t = conpty(BIN.ases, [], p.dir, { NO_COLOR: '1' });
     procs.push(t);
+    await t.pastStart();
     await t.waitFor((s) => (s.includes('Eureka42') || s.includes('eureka42.org')) && s.includes('? ajuda'), 30_000);
     await t.openHelp();
     expect(t.raw()).not.toMatch(/\u001b\[(3[0-9]|9[0-7]|38;)/);
@@ -135,6 +145,7 @@ describe.runIf(pty)('TUIs in a real Windows ConPTY (TAR-0070)', () => {
   it('chat in ConPTY: banner, a request becomes a plan and Enter runs it (PHASE-18)', async () => {
     const t = conpty(BIN.ases, [], p.dir, { WT_SESSION: 'aer-e2e', AER_SIMULATORS: '3' }, 100);
     procs.push(t);
+    await t.pastStart();
     await t.waitFor((s) => s.includes('eureka42.org') && s.includes('? ajuda'), 30_000);
     await t.openHelp();
     await t.keys('\u001b');

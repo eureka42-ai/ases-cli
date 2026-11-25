@@ -283,3 +283,52 @@ export function saveUiConfig(target: 'project' | 'global', root: string | undefi
   writeFileSync(tmp, `${JSON.stringify({ ...current, ui: { ...((current.ui as Record<string, unknown> | undefined) ?? {}), ...patch } }, null, 2)}\n`);
   renameSync(tmp, file);
 }
+
+// ---- PHASE-19: Mesa, projetos recentes e autorização única das IAs (só na config PESSOAL, nunca no projeto) ----
+
+/** Mesa/Área de Trabalho: no Windows a do OneDrive quando existe (é para onde o Windows a move), senão ~/Desktop. */
+export function desktopDir(platform: string = process.platform, env: Readonly<Record<string, string | undefined>> = process.env, home: string = homedir()): string {
+  if (platform === 'win32') {
+    for (const base of [env.OneDrive, env.OneDriveConsumer, env.OneDriveCommercial]) {
+      if (!base) continue;
+      for (const name of ['Desktop', 'Área de Trabalho']) if (existsSync(path.join(base, name))) return path.join(base, name);
+    }
+  }
+  return path.join(home, 'Desktop');
+}
+
+function readGlobal(file: string): Record<string, unknown> {
+  if (!existsSync(file)) return {};
+  try {
+    return JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>;
+  } catch (err) {
+    throw new ProjectError('CONFIG_INVALID', `${file}: ${(err as Error).message}`);
+  }
+}
+function writeGlobal(file: string, patch: Record<string, unknown>): void {
+  const cur = readGlobal(file);
+  mkdirSync(path.dirname(file), { recursive: true });
+  const tmp = `${file}.${process.pid}.tmp`;
+  writeFileSync(tmp, `${JSON.stringify({ ...cur, ...patch }, null, 2)}\n`);
+  renameSync(tmp, file);
+}
+
+/** Lembra um projeto aberto pelo `ases` (o mais novo primeiro, até 5); o `ases-tar` usa o último. */
+export function rememberProject(root: string, globalFile: string = globalConfigFile()): void {
+  const list = recentProjects(globalFile).filter((p) => p !== root);
+  writeGlobal(globalFile, { recentProjects: [root, ...list].slice(0, 5) });
+}
+
+export function recentProjects(globalFile: string = globalConfigFile()): string[] {
+  const v = readGlobal(globalFile).recentProjects;
+  return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+}
+
+/** O usuário autorizou, uma vez, o uso das IAs instaladas (conta/cota dele) sem perguntar de novo. Só a config pessoal vale. */
+export function consentAllGranted(globalFile: string = globalConfigFile()): boolean {
+  return readGlobal(globalFile).aiConsentAll === true;
+}
+
+export function setConsentAll(on: boolean, globalFile: string = globalConfigFile()): void {
+  writeGlobal(globalFile, { aiConsentAll: on, aiConsentAt: new Date().toISOString() });
+}

@@ -2,7 +2,7 @@ import { parseArgs } from 'node:util';
 import { VERSIONS, type EventEnvelope } from '@aer/contracts';
 import { LOGO_MODES, SITE, THEME_CHOICES, aboutText, pickLogoMode, renderBrand, resolveBrandPrefs, resolveTheme } from '@aer/branding';
 import type { Snapshot } from '@aer/persistence';
-import { brandConfigLayers, findProjectRoot, loadPlatformAdapter, readManifest } from '@aer/project-store';
+import { brandConfigLayers, findProjectRoot, loadPlatformAdapter, readManifest, recentProjects } from '@aer/project-store';
 import { formatEvent, isError } from './format.ts';
 import { Monitor, type LinkStatus, type MonitorHandlers } from './monitor.ts';
 import { runTui } from './tui.tsx';
@@ -57,9 +57,14 @@ async function main(argv: string[]): Promise<number> {
   const fromSeq = values['from-seq'] === undefined ? undefined : Number(values['from-seq']);
   if (fromSeq !== undefined && (!Number.isInteger(fromSeq) || fromSeq < 0)) throw new UsageError('--from-seq must be an integer >= 0');
 
-  const root = findProjectRoot(process.cwd());
+  // PHASE-19: fora de um projeto, acompanha o último projeto aberto pelo `ases` (sem init)
+  let root = findProjectRoot(process.cwd());
   if (!root) {
-    console.error('Este diretório não é um projeto ASES. Rode `ases init` e depois `ases`.');
+    root = recentProjects().find((p) => findProjectRoot(p) === p);
+    if (root) console.error(`acompanhando o último projeto aberto no ases: ${root}`);
+  }
+  if (!root) {
+    console.error('Nenhum projeto ainda: abra o `ases` primeiro e escolha a pasta; depois rode `ases-tar`.');
     return 2;
   }
   const adapter = await loadPlatformAdapter();

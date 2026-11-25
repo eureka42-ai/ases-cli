@@ -195,6 +195,9 @@ describe('ases chat TUI (PHASE-18, TAR-0087)', () => {
     const r = await renderForTest(<UiContext.Provider value={ui()}><Wizard engine={e} onDone={() => { done = true; }} /></UiContext.Provider>, 100, 30);
     await until(r, (s) => s.includes('Qual será a principal?'));
     await r.press(KEYS.enter);
+    await until(r, (s) => s.includes('sem perguntar de novo'));
+    await r.press(KEYS.down);
+    await r.press(KEYS.enter); // perguntar a cada sessão
     await until(r, (s) => s.includes('Modo de execução'));
     expect(txt(r)).toMatch(/híbrido/);
     await r.press(KEYS.down);
@@ -213,6 +216,8 @@ describe('ases chat TUI (PHASE-18, TAR-0087)', () => {
     await r.press(KEYS.enter);
     for (let i = 0; i < 100 && !done; i++) await new Promise((x) => setTimeout(x, 50));
     expect(chatConfig(root)).toMatchObject({ mode: 'hybrid', testCommand: ['make', 'check'] });
+    const { consentAllGranted } = await import('@aer/project-store');
+    expect(consentAllGranted()).toBe(false);
     r.unmount();
     await e.stop();
   });
@@ -227,6 +232,8 @@ describe('ases chat TUI (PHASE-18, TAR-0087)', () => {
     // escolhe simulator-2 (a lista começa na primeira IA pronta)
     for (let i = 0; i < 12 && !/› simulator-2/.test(txt(r)); i++) await r.press(KEYS.down);
     await r.press(KEYS.enter);
+    await until(r, (s) => s.includes('sem perguntar de novo'));
+    await r.press(KEYS.enter); // autorização única: sim
     await until(r, (s) => s.includes('Modo de execução'));
     await r.press(KEYS.down); // automático
     await r.press(KEYS.enter);
@@ -240,6 +247,9 @@ describe('ases chat TUI (PHASE-18, TAR-0087)', () => {
     expect(done).toBe(true);
     const c = chatConfig(root);
     expect(c).toMatchObject({ main: 'simulator-2', mode: 'auto', testCommand: ['npm', 'test'] });
+    const { consentAllGranted } = await import('@aer/project-store');
+    expect(consentAllGranted()).toBe(true); // ficou na config pessoal, não no projeto
+    expect(JSON.parse(readFileSync(path.join(root, '.ases', 'CONFIG.json'), 'utf8')).aiConsentAll).toBeUndefined();
     expect(c.sources.main).toBe('.ases/CONFIG.json');
     r.unmount();
     await e.stop();

@@ -16,6 +16,11 @@
   - cada ação aparece em português e na hora: qual IA, qual tarefa e o que está fazendo;
   - a lista de tarefas mostra quem está fazendo cada uma e a última ação dela;
   - uma linha mostra o que a principal do chat está fazendo agora.
+- **Sem `ases init`:** ao abrir, o `ases` pergunta **"Onde vamos trabalhar?"**, com as opções Esta pasta, **Mesa**, Escolher uma pasta… ou um projeto recente. A pasta escolhida vira projeto sozinha. O `ases-tar` aberto fora de um projeto acompanha o último projeto aberto.
+- **Autorização das IAs uma vez só:**
+  - o assistente pergunta uma vez se o AER pode usar as IAs instaladas, com a sua conta e cota;
+  - a resposta fica **só na sua config pessoal**, e um projeto baixado nunca liga isso;
+  - `/config revogar todas` desliga.
 - **Assistente:** ganhou o modo **híbrido** e a opção de **digitar o seu comando de teste**, e explica por que algumas IAs não aparecem na escolha.
 
 ## 1.1.0 (24/11/2026): console de conversa com IA principal e orquestração em paralelo

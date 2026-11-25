@@ -1,6 +1,6 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { BIN, requireBuild, runSync, start, tempProject, useSimulatedMain } from './helpers.mjs';
+import { BIN, isolatedConfigEnv, requireBuild, runSync, start, tempProject, useSimulatedMain } from './helpers.mjs';
 
 // Pseudo-terminal real via `script` (macOS/Linux). No Windows: NOT_RUN (ConPTY exige outro harness, PHASE-15).
 const hasScript = process.platform !== 'win32' && spawnSync('sh', ['-c', 'command -v script'], { stdio: 'ignore' }).status === 0;
@@ -15,7 +15,7 @@ function pty(bin, args, cwd, extraEnv = {}) {
   const q = (s) => `'${s.replaceAll("'", "'\\''")}'`;
   const inner = [node, bin, ...args].map(q).join(' ');
   const script = process.platform === 'darwin' ? `script -q /dev/null ${inner}` : `script -qfec ${q(inner)} /dev/null`;
-  const child = spawn('/bin/sh', ['-c', `cat | ${script}`], { cwd, env: { ...process.env, LANG: 'pt_BR.UTF-8', TERM: 'xterm-256color', NO_COLOR: undefined, CI: 'false', ...extraEnv }, stdio: ['pipe', 'pipe', 'pipe'], detached: true });
+  const child = spawn('/bin/sh', ['-c', `cat | ${script}`], { cwd, env: { ...process.env, ...isolatedConfigEnv, LANG: 'pt_BR.UTF-8', TERM: 'xterm-256color', NO_COLOR: undefined, CI: 'false', ...extraEnv }, stdio: ['pipe', 'pipe', 'pipe'], detached: true });
   let raw = '';
   child.stdout.setEncoding('utf8').on('data', (d) => (raw += d));
   child.stderr.setEncoding('utf8').on('data', (d) => (raw += d));
@@ -38,6 +38,14 @@ function pty(bin, args, cwd, extraEnv = {}) {
       for (const ch of s) {
         child.stdin.write(ch);
         await new Promise((r) => setTimeout(r, 15));
+      }
+    },
+    /** PHASE-19: passa pela tela "Onde vamos trabalhar?" (Enter = esta pasta); insiste até o raw mode pegar */
+    async pastStart() {
+      await this.waitFor((s) => s.includes('Onde vamos trabalhar?'), 20_000);
+      for (let i = 0; i < 8 && !/você|> █|\? ajuda/.test(raw.replace(ANSI, '').split('Onde vamos trabalhar?').at(-1)); i++) {
+        child.stdin.write('\r');
+        await new Promise((r) => setTimeout(r, 400));
       }
     },
     async waitFor(test, ms = 10_000) {
@@ -73,6 +81,7 @@ describe.runIf(hasScript)('TUIs in a real pseudo-terminal (TAR-0020)', () => {
   it('ases: TUI starts, a typed command creates a phase, Ctrl+C twice exits cleanly', async () => {
     const t = pty(BIN.ases, [], p.dir);
     procs.push(t);
+    await t.pastStart();
     await t.waitFor((s) => (s.includes('Eureka42') || s.includes('eureka42.org')) && s.includes('? ajuda'));
     expect(t.raw()).toMatch(/\u001b\[38;2;34;197;94m/); // verde truecolor no TTY (padrão desde a 1.1.0)
     await t.keys('/phase new Pela TUI\r');
@@ -106,6 +115,7 @@ describe.runIf(hasScript)('TUIs in a real pseudo-terminal (TAR-0020)', () => {
   it('NO_COLOR in a TTY: the ases TUI emits no color codes', async () => {
     const t = pty(BIN.ases, [], p.dir, { NO_COLOR: '1' });
     procs.push(t);
+    await t.pastStart();
     await t.waitFor((s) => (s.includes('Eureka42') || s.includes('eureka42.org')) && s.includes('? ajuda'));
     expect(t.raw()).not.toMatch(/\u001b\[(3[0-9]|9[0-7]|38;)/);
     // um Ctrl+C por vez: enviados juntos chegam num único bloco (\x03\x03) em runners lentos e não são Ctrl+C
@@ -134,6 +144,7 @@ describe.runIf(hasScript)('TUIs in a real pseudo-terminal (TAR-0020)', () => {
   it('chat in a real TTY: banner, / menu, a request becomes a plan and Enter runs it (PHASE-18)', async () => {
     const t = pty(BIN.ases, [], p.dir, { AER_SIMULATORS: '3' });
     procs.push(t);
+    await t.pastStart();
     await t.waitFor((s) => s.includes('eureka42.org') && s.includes('? ajuda'), 20_000);
     for (let i = 0; ; i++) {
       // raw mode só depois do 1º desenho (ver o teste de NO_COLOR): insiste no "/" até o menu abrir

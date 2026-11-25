@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { Box, Text, render, useInput } from 'ink';
 import { useEffect, useState, type ReactElement } from 'react';
-import { saveChatConfig, type ChatMode } from '@aer/project-store';
+import { saveChatConfig, setConsentAll, type ChatMode } from '@aer/project-store';
 import type { ProviderProbeResult } from '@aer/provider-sdk';
 import { BrandHeader, UiContext, useTerminalSize, useUi, type Ui } from '@aer/tui-shared';
 import { chatSession } from './chat-commands.ts';
@@ -33,7 +33,7 @@ export function suggestTestCommand(root: string): string[] | undefined {
   return undefined;
 }
 
-type Step = 'main' | 'mode' | 'limit' | 'test' | 'testInput' | 'save';
+type Step = 'main' | 'consent' | 'mode' | 'limit' | 'test' | 'testInput' | 'save';
 
 function Choice({ title, options, sel }: { title: string; options: string[]; sel: number }): ReactElement {
   const ui = useUi();
@@ -64,6 +64,7 @@ export function Wizard({ engine, onDone }: { engine: Engine; onDone: () => void 
   const readyIds = ids.filter((id) => probes![id]!.availability === 'READY').sort((a, b) => (ORDER.indexOf(a) + 1 || 99) - (ORDER.indexOf(b) + 1 || 99));
   const options: Record<Step, string[]> = {
     main: readyIds,
+    consent: ['Sim, sempre neste computador (recomendado)', 'Perguntar a cada sessão'],
     mode: ['perguntar antes de cada plano (manual)', 'automático', 'híbrido (planos pequenos e já autorizados rodam direto; os outros perguntam)'],
     limit: ['1 (padrão, conforme os termos de uso individual)', '2', '3'],
     test: [...(suggested ? [`${suggested.join(' ')} (detectado)`] : []), 'digitar outro comando', 'nenhum por enquanto'],
@@ -95,6 +96,10 @@ export function Wizard({ engine, onDone }: { engine: Engine; onDone: () => void 
     };
     if (step === 'main') {
       setAnswers((a) => ({ ...a, main: readyIds[sel]! }));
+      next('consent');
+    } else if (step === 'consent') {
+      // autorização única, só na config PESSOAL (um projeto baixado nunca liga isso)
+      setConsentAll(sel === 0);
       next('mode');
     } else if (step === 'mode') {
       setAnswers((a) => ({ ...a, mode: sel === 2 ? 'hybrid' : sel === 1 ? 'auto' : 'manual' }));
@@ -118,6 +123,7 @@ export function Wizard({ engine, onDone }: { engine: Engine; onDone: () => void 
 
   const titles: Record<Step, string> = {
     main: 'Qual será a principal? (↑↓ e Enter)',
+    consent: 'Usar as suas IAs (sua conta e cota) sem perguntar de novo?',
     mode: 'Modo de execução dos planos?',
     limit: 'Tarefas em paralelo por IA?',
     test: 'Comando de teste do projeto (roda em cada tarefa antes de ela ficar pronta)?',

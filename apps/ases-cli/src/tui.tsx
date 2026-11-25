@@ -116,8 +116,9 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
     if (consentAsk) {
       // a conta (cota/cobrança) é do usuário: nada roda antes do "s" (AER-REQ-123)
       if (ch === 's' || ch === 'a') {
-        chat.grantConsent(consentAsk.provider, ch === 'a');
-        push(`${consentAsk.provider} autorizada${ch === 'a' ? ' e lembrada neste computador' : ' nesta sessão'}`);
+        if (ch === 'a') chat.setConsentAll(true);
+        else chat.grantConsent(consentAsk.provider, false);
+        push(ch === 'a' ? 'todas as IAs instaladas autorizadas neste computador (desligue com /config revogar todas)' : `${consentAsk.provider} autorizada nesta sessão`);
         const again = consentAsk.message;
         setConsentAsk(undefined);
         run(again);
@@ -256,7 +257,7 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
       {header}
       {body}
       {menuItems.map((m, i) => <Text key={m.cmd} wrap="truncate-end" inverse={i === Math.min(menuSel, menuItems.length - 1)}>{`  ${m.cmd.padEnd(11)} ${m.desc}`}</Text>)}
-      {consentAsk ? <Text wrap="truncate-end" bold>{`Autorizar o uso da sua conta ${consentAsk.provider}? Ela usa a SUA cota. [s] nesta sessão  [a] sempre neste computador  [n] não`}</Text> : null}
+      {consentAsk ? <Text wrap="truncate-end" bold>{`Autorizar o uso da sua conta ${consentAsk.provider}? Ela usa a SUA cota. [s] só nesta sessão  [a] sempre, todas as IAs  [n] não`}</Text> : null}
       {thinking ? (() => {
         const t = thinkingParts(thinking, now, ui.unicode);
         return <Text wrap="truncate-end"><Text {...tint('orange')}>{`${t.glyph} `}</Text><Text bold {...tint('orange')}>{t.word}</Text><Text dimColor>{` ${t.rest}`}</Text></Text>;
