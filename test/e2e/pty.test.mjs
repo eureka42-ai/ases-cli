@@ -65,6 +65,8 @@ describe.runIf(hasScript)('TUIs in a real pseudo-terminal (TAR-0020)', () => {
   beforeAll(() => {
     expect(runSync(BIN.ases, ['init', '--name', 'pty'], p.dir).status).toBe(0);
     useSimulatedMain(p.dir); // sem isso o assistente de primeiro uso abre antes do chat
+    // planos em paralelo precisam de Git (worktrees): a pasta do teste é um repositório com um commit
+    for (const a of [['init', '-q', '-b', 'main'], ['config', 'user.name', 'E2E'], ['config', 'user.email', 'e2e@example.invalid'], ['config', 'commit.gpgsign', 'false'], ['add', '-A'], ['commit', '-q', '-m', 'base']]) spawnSync('git', a, { cwd: p.dir });
   });
   afterEach(async () => {
     // nenhum processo de um teste sobrevive para o próximo (o engine é escritor único)

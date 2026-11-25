@@ -85,6 +85,23 @@ describe('final review fixes (PHASE-18)', () => {
     await e3.stop();
   }, 60_000);
 
+  it('PHASE-20: a plan in a folder without Git says so before running anything', async () => {
+    const root = mkdtempSync(path.join(os.tmpdir(), 'aer sem git ç '));
+    dirs.push(root);
+    initProject(root, adapter, 'semgit');
+    const f = path.join(root, '.ases', 'CONFIG.json');
+    writeFileSync(f, JSON.stringify({ ...JSON.parse(readFileSync(f, 'utf8')), chat: { main: 'simulator', crossReview: false } }, null, 2));
+    const e = await Engine.start(root, adapter, { simulators: 3 });
+    try {
+      expect(await say(e, 'olá')).toMatch(/entendi/); // a conversa funciona sem Git
+      await say(e, 'divida em tarefas o cadastro');
+      expect(await say(e, '/plano executar')).toMatch(/planos em paralelo precisam de Git/);
+      expect(e.store.listTasks()).toHaveLength(0); // nada foi criado
+    } finally {
+      await e.stop();
+    }
+  }, 60_000);
+
   it('I3: /parar and engine stop interrupt a running main turn', async () => {
     const { e } = await project({ main: 'simulator', crossReview: false });
     try {

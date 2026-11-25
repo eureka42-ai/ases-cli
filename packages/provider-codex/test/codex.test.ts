@@ -30,9 +30,20 @@ const calls = () => readFileSync(log, 'utf8').trim().split('\n').map((l) => JSON
 describe('codex args (TAR-0034)', () => {
   it('uses exec --json in the worktree sandbox and never the dangerous flags', () => {
     const a = codexArgs({ mode: 'WORKTREE_WRITE', workingDirectory: '/w' }, 'faça X');
-    expect(a).toEqual(['exec', '--json', '--ephemeral', '-C', '/w', '-s', 'workspace-write', '-c', 'approval_policy="never"', '--', 'faça X']);
+    // --skip-git-repo-check: a pasta escolhida pode não ser Git (ex.: a Mesa); o sandbox continua sendo o -s do AER (PHASE-20)
+    expect(a).toEqual(['exec', '--json', '--ephemeral', '--skip-git-repo-check', '-C', '/w', '-s', 'workspace-write', '-c', 'approval_policy="never"', '--', 'faça X']);
     expect(a.join(' ')).not.toMatch(/dangerously|danger-full-access|--trust/);
     expect(codexArgs({ mode: 'READ_ONLY', workingDirectory: '/w', modelPreference: 'gpt-5' }, 'x')).toEqual(expect.arrayContaining(['-s', 'read-only', '-m', 'gpt-5']));
+  });
+});
+
+describe('codex error message (PHASE-20)', () => {
+  it('a failure without turn events says what codex wrote on stderr', async () => {
+    const { codexFinishError } = await import('../src/index.ts');
+    expect(codexFinishError(1, 'Not inside a trusted directory and --skip-git-repo-check was not specified.\n')).toEqual({
+      type: 'error', code: 'TASK_FAILED', userMessage: 'codex terminou sem responder (código 1): Not inside a trusted directory and --skip-git-repo-check was not specified.',
+    });
+    expect(codexFinishError(0, '')).toMatchObject({ code: 'NO_RESULT' });
   });
 });
 

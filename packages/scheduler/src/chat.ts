@@ -119,6 +119,7 @@ export async function runChatTurn(d: WorkerDeps, o: { conversationId: string; me
   }));
   const texts: string[] = [];
   let error: string | undefined;
+  let errorCode = 'PROVIDER_ERROR';
   let violation: string | undefined;
   let exit: Extract<AgentStreamEvent, { type: 'exit' }> | undefined;
   const ac = new AbortController();
@@ -148,12 +149,16 @@ export async function runChatTurn(d: WorkerDeps, o: { conversationId: string; me
           d.mutate((s) => s.appendEvent({ eventType: 'SecurityViolationBlocked', payload: { rule: 'CHAT_PATH_DENIED', path: redactText(e.relativePath, 300).text, detail: bad } }));
           ac.abort();
         }
-      } else if (e.type === 'error') error = `${e.code}: ${e.userMessage}`;
+      } else if (e.type === 'error') {
+        error = e.userMessage;
+        errorCode = e.code;
+      }
       else if (e.type === 'exit') exit = e;
     }
   } catch (err) {
     // adapter/processo quebrou no meio: ainda assim o que já foi editado ganha ponto de restauração (abaixo)
-    error = `PROVIDER_ERROR: ${(err as Error).message}`;
+    error = (err as Error).message;
+    errorCode = 'PROVIDER_ERROR';
   } finally {
     o.signal.removeEventListener('abort', onAbort);
     rmSync(tmp, { recursive: true, force: true });
@@ -163,7 +168,7 @@ export async function runChatTurn(d: WorkerDeps, o: { conversationId: string; me
     ? { n: d.mutate((s) => s.addRestorePoint(cnv, { ref, commit: point.commit, files: touched })), files: touched, changes: await turnDiff(d.root, ref).catch(() => []) }
     : undefined;
   if (violation) return fail('SECURITY_VIOLATION', `${violation}${restore ? ' (use /desfazer para voltar as edições)' : ''}`);
-  if (error) return fail(error.split(':')[0]!, error);
+  if (error) return fail(errorCode, error); // a mensagem já é a do provider: sem repetir o código
   if (exit?.exitCode !== 0) return fail('NONZERO_EXIT', `a principal terminou com código ${exit?.exitCode ?? exit?.signal ?? '?'}`);
   const text = texts.join('\n').trim();
   if (!text) return fail('NO_REPLY', 'a principal não respondeu nada');

@@ -1,3 +1,4 @@
+import { spawnSync as spawnSyncGit } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { BIN, isolatedConfigEnv, requireBuild, runSync, start, tempProject, useSimulatedMain } from './helpers.mjs';
@@ -90,6 +91,8 @@ describe.runIf(pty)('TUIs in a real Windows ConPTY (TAR-0070)', () => {
   beforeAll(() => {
     expect(runSync(BIN.ases, ['init', '--name', 'conpty'], p.dir, {}, 60_000).status).toBe(0);
     useSimulatedMain(p.dir); // sem isso o assistente de primeiro uso abre antes do chat
+    // planos em paralelo precisam de Git (worktrees): a pasta do teste é um repositório com um commit
+    for (const a of [['init', '-q', '-b', 'main'], ['config', 'user.name', 'E2E'], ['config', 'user.email', 'e2e@example.invalid'], ['config', 'commit.gpgsign', 'false'], ['add', '-A'], ['commit', '-q', '-m', 'base']]) spawnSyncGit('git', a, { cwd: p.dir });
   });
   afterEach(async () => {
     for (const x of procs.splice(0)) {

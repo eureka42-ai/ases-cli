@@ -68,6 +68,7 @@ describe('chat turn of the main IA (PHASE-18, TAR-0084)', () => {
     const { s, d, cnv } = await setup();
     const r = await turn(d, cnv, 'olá', { preference: 'fail' });
     expect(r.ok).toBe(false);
+    expect(!r.ok && r.message.startsWith(`${r.code}:`)).toBe(false); // sem "TASK_FAILED: TASK_FAILED:" (PHASE-20)
     expect(s.listChatMessages(cnv).map((m) => m.role)).toEqual(['user']);
     expect(s.eventsSince(0).some((e) => e.eventType === 'ChatTurnFailed')).toBe(true);
   });

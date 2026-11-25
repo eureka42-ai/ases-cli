@@ -28,7 +28,8 @@ export interface CodexOptions {
  * projeto do usuário). `approval_policy="never"`: sem canal de aprovação, falhas voltam ao modelo em vez de pedir ao humano.
  */
 export function codexArgs(req: Pick<AgentRunRequest, 'mode' | 'modelPreference' | 'workingDirectory'>, prompt: string): string[] {
-  const args = ['exec', '--json', '--ephemeral', '-C', req.workingDirectory, '-s', req.mode === 'READ_ONLY' ? 'read-only' : 'workspace-write', '-c', 'approval_policy="never"'];
+  // a pasta do chat pode não ser Git (ex.: a Mesa): sem esta opção o codex sai com 1 sem dizer nada no stream
+  const args = ['exec', '--json', '--ephemeral', '--skip-git-repo-check', '-C', req.workingDirectory, '-s', req.mode === 'READ_ONLY' ? 'read-only' : 'workspace-write', '-c', 'approval_policy="never"'];
   if (req.modelPreference) args.push('-m', req.modelPreference);
   args.push('--', prompt);
   return args;
@@ -45,6 +46,12 @@ export function classifyCodexError(text: string): string {
   if (/(token|session|login).{0,40}expired|expired.{0,40}(token|session|login)|refresh token/i.test(text)) return 'AUTH_EXPIRED';
   if (/not logged in|codex login|unauthori[sz]ed|\b401\b|invalid api key/i.test(text)) return 'NOT_AUTHENTICATED';
   return 'TASK_FAILED';
+}
+
+/** Erro de quando o codex termina sem turn.completed/turn.failed: o motivo é o que ele escreveu no stderr. */
+export function codexFinishError(exitCode: number | null, stderrTail: string): { type: 'error'; code: string; userMessage: string } {
+  const why = redactText(stderrTail.trim().split('\n').filter(Boolean).slice(-3).join(' '), 400).text;
+  return { type: 'error', code: exitCode === 0 ? 'NO_RESULT' : classifyCodexError(stderrTail), userMessage: `codex terminou sem responder (código ${exitCode ?? '?'})${why ? `: ${why}` : ''}` };
 }
 
 export interface CodexStreamState {
@@ -185,7 +192,7 @@ export class CodexProvider implements AgentProvider {
         timeoutMs: req.timeoutMs, signal: req.signal, ...(this.o.graceMs === undefined ? {} : { graceMs: this.o.graceMs }),
         map: (v) => mapCodexEvent(v, state, req.workingDirectory),
         onSpawn: (pid) => this.running.set(req.attemptId, pid),
-        finish: ({ exitCode, stderrTail }) => (state.turnEnded ? [] : [{ type: 'error', code: exitCode === 0 ? 'NO_RESULT' : classifyCodexError(stderrTail), userMessage: `codex ended without turn.completed/turn.failed (exit ${exitCode})` }]),
+        finish: ({ exitCode, stderrTail }) => (state.turnEnded ? [] : [codexFinishError(exitCode, stderrTail)]),
       });
     } finally {
       this.running.delete(req.attemptId);

@@ -20,7 +20,9 @@ const npm = (...a) => execFileSync(process.execPath, [npmCli(), ...a, '--prefix'
 // os comandos são chamados PELO NOME, com o prefixo no PATH, como o usuário roda (no Windows, via cmd.exe → ases.cmd);
 // os argumentos são fixos deste script, nunca entrada externa
 const PATHV = `${binDir}${path.delimiter}${process.env.PATH ?? process.env.Path ?? ''}`;
-const env = { ...process.env, PATH: PATHV, Path: PATHV, NO_COLOR: '1' };
+// config pessoal isolada: o smoke nunca grava projetos recentes/autorização na config de quem roda
+const cfgHome = mkdtempSync(path.join(os.tmpdir(), 'aer-smoke-config-'));
+const env = { ...process.env, PATH: PATHV, Path: PATHV, NO_COLOR: '1', XDG_CONFIG_HOME: cfgHome, APPDATA: cfgHome };
 const run = (bin, args, input) => {
   const r = win
     ? spawnSync(process.env.ComSpec ?? 'cmd.exe', ['/d', '/c', [bin, ...args].join(' ')], { cwd: proj, encoding: 'utf8', input: input ?? '', env })

@@ -1,4 +1,4 @@
-import { currentBranch, restoreFromPoint } from '@aer/git-bridge';
+import { currentBranch, repoRoot, restoreFromPoint } from '@aer/git-bridge';
 import type { ConversationRow, PlanRow, PlannedTask } from '@aer/persistence';
 import { chatConfig, consentAllGranted, setConsentAll, type ChatConfig, type ChatMode } from '@aer/project-store';
 import type { AgentStreamEvent, ProviderProbeResult } from '@aer/provider-sdk';
@@ -171,6 +171,10 @@ export class ChatSession {
 
   /** Roda um plano já aprovado e, no fim, pede o resumo à principal (pela mesma fila). */
   async runPlan(planId: string): Promise<{ result: PlanResult; summary: ChatTurnResult }> {
+    // cada IA trabalha numa worktree Git: sem Git na pasta, avisa antes de criar qualquer tarefa
+    if (!(await repoRoot(this.engine.projectRoot).then(() => true, () => false))) {
+      throw Object.assign(new Error('planos em paralelo precisam de Git nesta pasta (cada IA trabalha numa cópia). Rode `git init` e faça um primeiro commit, ou escolha uma pasta de projeto com Git. A conversa com a principal continua funcionando.'), { code: 'NOT_A_REPO' });
+    }
     const c = await this.conversation();
     const cfg = this.config();
     const ready = await this.workers();

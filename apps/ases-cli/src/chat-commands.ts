@@ -1,4 +1,5 @@
 import { VERSIONS } from '@aer/contracts';
+import { repoRoot } from '@aer/git-bridge';
 import { aboutText, LOGO_MODES, THEME_CHOICES } from '@aer/branding';
 import type { PlanRow, PlannedTask } from '@aer/persistence';
 import { saveChatConfig, saveUiConfig, type ChatMode } from '@aer/project-store';
@@ -132,6 +133,7 @@ export async function handleChat(engine: Engine, cmd: string, args: string[], ad
       if (!a) return p ? formatPlan(p) : 'nenhum plano pendente (peça algo grande no chat)';
       if (!p) return 'nenhum plano pendente';
       if (a === 'executar' || a === 'go') {
+        if (!(await repoRoot(engine.projectRoot).then(() => true, () => false))) return 'erro NOT_A_REPO: planos em paralelo precisam de Git nesta pasta (cada IA trabalha numa cópia). Rode `git init` e faça um primeiro commit, ou escolha uma pasta de projeto com Git. A conversa com a principal continua funcionando.';
         engine.mutate((s) => s.decidePlan(p.id, 'approved', 'user'));
         return runPlanText(engine, p.id);
       }

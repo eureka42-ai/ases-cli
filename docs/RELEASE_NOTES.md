@@ -2,6 +2,8 @@
 
 ## 1.1.2 (24/11/2026)
 - **Abertura limpa:** ao rodar `ases`, a tela é limpa e aparece só a pergunta **"Onde vamos trabalhar?"**. Depois da escolha, a tela é limpa de novo e entram o logo e o chat.
+- **Codex numa pasta sem Git (por exemplo, a Mesa):** o Codex se recusava a rodar e o chat só mostrava "exit 1". O AER passa a enviar `--skip-git-repo-check`; o isolamento continua sendo o sandbox `-s` do AER. Quando uma IA falha, a mensagem agora traz o motivo que ela deu, sem repetir o código.
+- **Planos sem Git:** numa pasta sem Git, o plano avisa antes de começar que as tarefas em paralelo precisam de Git (`git init` e um primeiro commit). A conversa com a principal continua funcionando.
 - **Assistente:** a pergunta do modo diz "(escolha uma)" e explica cada opção (manual, automático, híbrido).
 
 ## 1.1.1 (24/11/2026): conversa no estilo do Claude Code e ases-tar mostrando quem faz o quê
