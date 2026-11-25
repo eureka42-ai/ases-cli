@@ -18,6 +18,7 @@ export const CHAT_ALIASES: Record<string, string> = {
 
 export const SLASH_MENU: { cmd: string; desc: string }[] = [
   { cmd: '/ajuda', desc: 'o que dá para fazer' },
+  { cmd: '/iniciar-projeto', desc: 'metodologia guiada: ASES-500 → requisitos → ASES-300 → GitHub' },
   { cmd: '/ia', desc: 'mostra ou troca a IA principal' },
   { cmd: '/ias', desc: 'IAs instaladas, logadas, livres ou ocupadas' },
   { cmd: '/plano', desc: 'mostra o plano; Enter executa' },

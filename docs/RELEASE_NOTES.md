@@ -1,5 +1,14 @@
 # AER 1.x: notas de versão
 
+## 1.3.0 (25/11/2026): /iniciar-projeto
+- **`/iniciar-projeto`:** a metodologia guiada, do zero, no próprio chat.
+  1. **Preparação:** cria o Git, se faltar, e importa e confere as fontes (G0).
+  2. **Entrevista ASES-500:** uma pergunta por vez, com progresso. Resposta livre = confirmada; também `/proposta`, `/na motivo` e `/pular`.
+  3. **Requisitos do sistema:** `título :: critério de aceite`, que viram REQ-301+, aprovados com o seu nome.
+  4. **ASES-300:** os 300 requisitos gerais, um por vez. `Enter` = se aplica, `/na motivo` = não se aplica, `/aplicar-resto` aceita os que faltam.
+  5. **Fechamento:** roda o **G1** e oferece criar o repositório no **GitHub** pelo `gh`. Ele é **privado por padrão** e só é criado com `/github sim`.
+  - **Retomada:** `/sair-entrevista` pausa, e `/iniciar-projeto` continua de onde parou.
+
 ## 1.2.1 (25/11/2026): Cursor seguro e verificado
 - **Shell barrado antes de executar:** num teste real, o Cursor rodou `ls` mesmo com `--sandbox enabled`. Agora o AER coloca `deny: Shell(*)` no `.cursor/cli.json` só durante a execução. No teste real com a regra, o Cursor **recusou** o comando ("Command blocked by permissions configuration").
   - **O arquivo do usuário:** um `.cursor/cli.json` que já exista volta intacto, byte a byte, mesmo com erro, e antes de o trabalho ser salvo.

@@ -101,6 +101,7 @@ Digite `/` no `ases` para abrir o menu. Cada comando em português tem o equival
 | `/parar` · `Esc` | para tudo / interrompe a IA | `/nova` | nova conversa |
 | `/config` | tema, logo, modo, limites, teste, autorizações | `/atualizar` | atualiza o AER |
 | `/sobre` | quem faz o Eureka42 | `/ajuda avançado` | fases, tarefas, gates, requisitos |
+| `/iniciar-projeto` | metodologia guiada do zero (ASES-500 → ASES-300 → GitHub) | `/modelo` | modelo de cada IA |
 
 ## 🤖 IAs suportadas
 

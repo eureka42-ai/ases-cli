@@ -5,6 +5,7 @@ import { handleLine } from './commands.ts';
 import { chatSession, filterMenu } from './chat-commands.ts';
 import { activityText, parseOutput, renderEntries, thinkingParts, type Color, type Entry, type Thinking } from './chat-format.ts';
 import { useNow } from './ticker.ts';
+import { onboarding } from './onboarding.ts';
 import { ModelPicker } from './model-picker.tsx';
 import type { ModelList } from './models.ts';
 import { chosenModels, setChosenModel } from '@aer/project-store';
@@ -176,7 +177,10 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
       const line = input.trim();
       setInput('');
       setHIdx(-1);
-      if (!line) return;
+      if (!line) {
+        if (onboarding(engine as Engine).active) run(''); // modo guiado: Enter vazio = "se aplica"
+        return;
+      }
       setHistory((h) => [...h.filter((x) => x !== line), line].slice(-200));
       run(line);
       return;

@@ -8,6 +8,7 @@ import { METHODOLOGY_COMMANDS, METHODOLOGY_HELP, handleMethodology } from './met
 import { SECURITY_COMMANDS, SECURITY_HELP, handleSecurity } from './security-commands.ts';
 import { CONTINUITY_COMMANDS, CONTINUITY_HELP, handleContinuity } from './continuity-commands.ts';
 import { CHAT_ALIASES, CHAT_COMMANDS, chatMessage, chatSession, handleChat, resolveTaskRef } from './chat-commands.ts';
+import { onboarding } from './onboarding.ts';
 
 export const PLANNED_SLASH: Record<string, string> = {
   '/parallel': 'use /run --parallel N ou /config limite <ia> <n>', '/skills': 'use /ext', '/plugins': 'use /ext', '/mcp': 'use /ext',
@@ -41,6 +42,14 @@ ${CONTINUITY_HELP}`;
 
 /** Executa um comando da sessão; mesmo código no modo linha e na TUI. 'EXIT' pede encerramento; /run devolve Promise. */
 export function handleLine(engine: Engine, line: string, unicode = true): string | Promise<string> | undefined {
+  // PHASE-23: /iniciar-projeto guia a metodologia; enquanto ativo, as respostas vão para ele (Enter vazio inclusive)
+  const ob = onboarding(engine);
+  if (/^\/(iniciar-projeto|iniciar)\s*$/i.test(line.trim())) return ob.start();
+  if (ob.active) return ob.handle(line).then((r) => r ?? String(handleLineCore(engine, line, unicode) ?? ''));
+  return handleLineCore(engine, line, unicode);
+}
+
+function handleLineCore(engine: Engine, line: string, unicode = true): string | Promise<string> | undefined {
   const arrow = unicode ? '→' : '->';
   if (!line) return undefined;
   // PHASE-18: texto livre vai para a IA principal

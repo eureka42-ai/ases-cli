@@ -209,6 +209,18 @@ describe('ases chat TUI (PHASE-18, TAR-0087)', () => {
     await e.stop();
   }, 90_000);
 
+  it('/iniciar-projeto in the TUI: the question shows up and an empty Enter goes to the guided mode (PHASE-23)', async () => {
+    const { e } = await project({ main: 'simulator', crossReview: false });
+    const r = await renderForTest(<UiContext.Provider value={ui()}><AsesApp engine={e} onExit={() => {}} /></UiContext.Provider>, 100, 40);
+    await type(r, '/iniciar-projeto');
+    await r.press(KEYS.enter);
+    await until(r, (s) => s.includes('Pergunta A.1'), 30_000);
+    await r.press(KEYS.enter); // Enter vazio
+    await until(r, (s) => s.includes('Responda à pergunta A.1'));
+    r.unmount();
+    await e.stop();
+  }, 60_000);
+
   it('wizard offers the hybrid mode and lets you type your own test command (PHASE-19)', async () => {
     const { root, e } = await project(null);
     let done = false;

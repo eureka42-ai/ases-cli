@@ -1,6 +1,16 @@
 # Usando a metodologia ASES-300/500 no AER
 
-Fluxo mínimo, dentro de `ases` (ou `ases --no-tui`):
+**Jeito mais fácil (1.3.0):** `/iniciar-projeto`. Ele guia o fluxo abaixo inteiro no chat:
+- Git e fontes;
+- a entrevista ASES-500, uma pergunta por vez;
+- os requisitos do sistema;
+- os 300 requisitos gerais;
+- o G1;
+- o repositório no GitHub, privado e só com confirmação.
+
+`/sair-entrevista` pausa, e `/iniciar-projeto` retoma.
+
+Fluxo manual, dentro de `ases` (ou `ases --no-tui`):
 
 1. **`/ases import`**:
    - copia as fontes ASES para `.ases/sources/` (SHA-256 conferido);

@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 885 (PhaseUpdated, 2026-11-25T02:44:22.348Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 886 (ApprovalGranted, 2026-11-25T02:53:35.106Z)
 
 ## Fases
 | Fase | Título | Estado |

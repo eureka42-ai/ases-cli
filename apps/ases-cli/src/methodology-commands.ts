@@ -41,7 +41,7 @@ function evidenceFile(root: string, file: string): { path: string; sha256: strin
   return { path: path.relative(real, resolved).split(path.sep).join('/'), sha256: sha256(readFileSync(resolved)) };
 }
 
-function questions(engine: Engine): DiscoveryQuestion[] {
+export function discoveryQuestions(engine: Engine): DiscoveryQuestion[] {
   const f = path.join(engine.projectRoot, SOURCES_DIR, KNOWN_SOURCES.ASES500_SPECIFIER.file);
   if (!existsSync(f)) throw Object.assign(new Error('fontes ASES não importadas: rode /ases import'), { code: 'NOT_FOUND' });
   return parseDiscoveryTracks(readFileSync(f, 'utf8'));
@@ -77,7 +77,7 @@ export function handleMethodology(engine: Engine, cmd: string, sub: string | und
       return out.join('\n');
     }
     case '/spec': {
-      const qs = questions(engine);
+      const qs = discoveryQuestions(engine);
       const decisions = s.listDecisions();
       if (!sub) {
         const cur = [...currentDecisions(decisions).values()];
