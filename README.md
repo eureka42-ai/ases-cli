@@ -194,6 +194,20 @@ Professor · Eureka42
 
 </div>
 
+## 🗓️ Histórico de versões
+
+| Versão | Data | Destaques |
+|---|---|---|
+| **1.2.1** | 25/11/2026 | Cursor seguro: shell barrado pela regra `deny` antes de executar e acesso fora do projeto interrompido; Cursor **VERIFIED** 2026.11.22 |
+| 1.2.0 | 25/11/2026 | Cursor como nova IA (não use: o shell não era barrado; use a 1.2.1) |
+| 1.1.2 | 24/11/2026 | Abertura limpa; `/modelo` com seletor (← → ↑ ↓ e Espaço); Codex em pasta sem Git; plano avisa quando falta Git |
+| 1.1.1 | 24/11/2026 | Visual no estilo do Claude Code (`>`, `●`, ações ao vivo, diff +/−, ✻ pensando com o tempo, `Esc`); tela "Onde vamos trabalhar?" sem `ases init`; autorização única das IAs; `ases-tar` mostra quem faz o quê |
+| 1.1.0 | 24/11/2026 | Chat com a IA principal, planos em paralelo entre IAs, revisão cruzada, troca automática, testes obrigatórios, comandos em português, banner verde, `ases update` |
+| 1.0.1 | 24/11/2026 | Windows: IAs instaladas pelo npm (`.cmd`) passam a ser detectadas |
+| 1.0.0 | 24/11/2026 | Primeiro release: `ases` + `ases-tar`, motor local, 5 IAs, ASES-300/500, segurança, macOS/Windows/Linux |
+
+Detalhes de cada versão em [`docs/RELEASE_NOTES.md`](docs/RELEASE_NOTES.md).
+
 ## 📄 Licença
 
 **CC BY-NC-ND 4.0** (Atribuição, Não Comercial, Sem Derivações). Veja [`LICENSE`](LICENSE).
