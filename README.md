@@ -12,7 +12,7 @@
 
 **Um chat no terminal com a sua IA principal, que divide o trabalho entre várias IAs ao mesmo tempo, com testes, revisão e tudo rastreável.**
 
-[Instalar](#-instalação) · [Primeiros passos](#-primeiros-passos) · [Como funciona](#-como-funciona) · [Comandos](#-comandos) · [Autores](#-autores) · [eureka42.org](https://eureka42.org)
+[Instalar](#-instalação) · [Primeiros passos](#-primeiros-passos) · [Metodologia](#-projeto-novo-com-a-metodologia-ases-300500) · [Como funciona](#-como-funciona) · [Comandos](#-comandos) · [Autores](#-autores) · [Versões](#️-histórico-de-versões) · [eureka42.org](https://eureka42.org)
 
 </div>
 
@@ -75,6 +75,35 @@ ases update --check  # só mostra se há versão nova
 4. **Converse.** Para trabalho grande, peça e confira o plano: `Enter` executa, `Ctrl+E` edita, `Ctrl+N` descarta.
 5. Em outro terminal, rode **`ases-tar`** para acompanhar tudo ao vivo.
 6. Confira com `/ver 12` e traga para o projeto com `/aceitar`.
+
+## 🧭 Projeto novo com a metodologia ASES-300/500
+
+O `/iniciar-projeto` (desde a 1.3.0) guia tudo no próprio chat, do zero ao repositório no GitHub:
+
+```sh
+mkdir ~/Projetos/meu-sistema && cd ~/Projetos/meu-sistema
+ases                       # escolha "Esta pasta"
+```
+
+```
+> /iniciar-projeto
+```
+
+| Etapa | O que acontece | Você faz |
+|---|---|---|
+| **1. Preparação** | Cria o Git, se faltar, e importa e confere as fontes ASES (SHA-256); roda o **G0** | nada |
+| **2. Entrevista ASES-500** | As perguntas das trilhas A–J, **uma por vez**, com progresso (`Pergunta A.1 (1/24)`) | responde em texto livre, ou `/proposta <texto>`, `/na <motivo>`, `/pular` |
+| **3. Requisitos do sistema** | Cada linha vira um **REQ-301+**, aprovado com o seu nome | `título :: critério de aceite`, e `/pronto` no fim |
+| **4. ASES-300** | Os **300 requisitos gerais**, um por vez | `Enter` = se aplica, `/na <motivo>` = não se aplica, `/aplicar-resto` |
+| **5. Fechamento** | Roda o **G1** e oferece criar o repositório no GitHub (**privado** por padrão, pelo `gh`) | `/github sim`, `/github sim nome publico` ou `/github nao` |
+
+- **Pausar e retomar:** `/sair-entrevista` pausa. `/iniciar-projeto` continua de onde parou, porque tudo fica salvo no `.ases/`.
+- **Construir:** depois, peça no chat citando os requisitos, por exemplo `crie o agendamento de consultas (REQ-301)`. A principal planeja, as IAs executam em paralelo, e `/aceitar` traz o trabalho para o projeto.
+- **Comprovar:** `/req set REQ-301 PASS --evidence <arquivo>`.
+- **Mudar algo aprovado:** `/change new --approved-by <nome> --targets REQ-301 <motivo>`.
+- **O que fica registrado:** a matriz de requisitos, as decisões e a rastreabilidade (requisito → fase → tarefa → teste) em `.ases/`. O fluxo manual, comando a comando, está em [`docs/METODOLOGIA.md`](docs/METODOLOGIA.md).
+
+> A ASES-500 é uma consolidação **para validação** (não é um original homologado). A entrevista usa as perguntas literais da fonte e não é gerada por IA.
 
 ## 🧠 Como funciona
 
@@ -195,6 +224,11 @@ Professor · Eureka42
 
 </div>
 
+## 📄 Licença
+
+**CC BY-NC-ND 4.0** (Atribuição, Não Comercial, Sem Derivações). Veja [`LICENSE`](LICENSE).
+Os avisos das bibliotecas de terceiros embutidas acompanham o pacote em `THIRD_PARTY_LICENSES.md`.
+
 ## 🗓️ Histórico de versões
 
 | Versão | Data | Destaques |
@@ -209,10 +243,5 @@ Professor · Eureka42
 | 1.0.0 | 24/11/2026 | Primeiro release: `ases` + `ases-tar`, motor local, 5 IAs, ASES-300/500, segurança, macOS/Windows/Linux |
 
 Detalhes de cada versão em [`docs/RELEASE_NOTES.md`](docs/RELEASE_NOTES.md).
-
-## 📄 Licença
-
-**CC BY-NC-ND 4.0** (Atribuição, Não Comercial, Sem Derivações). Veja [`LICENSE`](LICENSE).
-Os avisos das bibliotecas de terceiros embutidas acompanham o pacote em `THIRD_PARTY_LICENSES.md`.
 
 <div align="center"><sub>⌘ Eureka42 · ASES Engineering Runtime</sub></div>
