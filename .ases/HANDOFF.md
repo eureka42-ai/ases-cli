@@ -1,9 +1,9 @@
 # Handoff AER
 
 <!-- AUTO:BEGIN (gerado pelo engine do AER; não editar) -->
-- Último evento válido: seq 886 em 2026-11-25T02:53:35.106Z
-- Git: branch `docs/historico`, HEAD `b9006ab`
-- Concluídas: 92 de 93
+- Último evento válido: seq 900 em 2026-11-25T03:12:56.340Z
+- Git: branch `main`, HEAD `9e4ef7f`
+- Concluídas: 93 de 94
 - Abertas: nenhuma
 - Comando para retomar: `ases` nesta pasta (ou `ases --no-tui` em scripts); monitor: `ases-tar`
 <!-- AUTO:END -->

@@ -280,3 +280,6 @@ req_id,phase_id,task_id,last_test,evidence,state
 "AER-REQ-123","PHASE-21","TAR-0092","",".ases/evidence/PHASE-21-verify.md#7455c36f0c08","COMPLETED"
 "AER-REQ-101","PHASE-22","TAR-0093","",".ases/evidence/PHASE-22-verify.md#581bba6a2f72","COMPLETED"
 "AER-REQ-109","PHASE-22","TAR-0093","",".ases/evidence/PHASE-22-verify.md#581bba6a2f72","COMPLETED"
+"AER-REQ-151","PHASE-23","TAR-0094","",".ases/evidence/PHASE-23-verify.md#4895a6197360","COMPLETED"
+"AER-REQ-154","PHASE-23","TAR-0094","",".ases/evidence/PHASE-23-verify.md#4895a6197360","COMPLETED"
+"AER-REQ-160","PHASE-23","TAR-0094","",".ases/evidence/PHASE-23-verify.md#4895a6197360","COMPLETED"

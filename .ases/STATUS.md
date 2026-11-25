@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 886 (ApprovalGranted, 2026-11-25T02:53:35.106Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 900 (PhaseUpdated, 2026-11-25T03:12:56.340Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -27,6 +27,7 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | PHASE-20 | Manutenção 1.1.2: abertura limpa e modo explicado | COMPLETED |
 | PHASE-21 | Cursor como IA do AER (1.2.0) | COMPLETED |
 | PHASE-22 | Cursor seguro e verificado (1.2.1) | COMPLETED |
+| PHASE-23 | /iniciar-projeto: metodologia guiada (1.3.0) | COMPLETED |
 
 ## Tarefas
 | Tarefa | Fase | Título | Estado | Último teste | Evidência |
@@ -124,5 +125,6 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0091 | PHASE-20 | Tela limpa ao abrir, pergunta da pasta antes do logo, modo do assistente explicado | COMPLETED | — | .ases/evidence/PHASE-20-verify.md |
 | TAR-0092 | PHASE-21 | Adaptador do Cursor CLI (stream-json, sandbox, shell bloqueado, modelos, login) | COMPLETED | — | .ases/evidence/PHASE-21-verify.md |
 | TAR-0093 | PHASE-22 | Regra deny Shell(*) durante a execução do Cursor, acesso fora do projeto como violação, smoke real e VERIFIED | COMPLETED | — | .ases/evidence/PHASE-22-verify.md |
+| TAR-0094 | PHASE-23 | /iniciar-projeto: Git, fontes, ASES-500 guiada, requisitos, ASES-300, G1 e GitHub privado | COMPLETED | — | .ases/evidence/PHASE-23-verify.md |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

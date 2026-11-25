@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0094",
+  "phaseId": "PHASE-23",
+  "title": "/iniciar-projeto: Git, fontes, ASES-500 guiada, requisitos, ASES-300, G1 e GitHub privado",
+  "state": "COMPLETED",
+  "version": 9,
+  "reqs": [
+    "AER-REQ-151",
+    "AER-REQ-154",
+    "AER-REQ-160"
+  ],
+  "dependsOn": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-23-verify.md",
+      "sha256": "4895a6197360c742c6f028126b9f1d21be9f3fad2fdbcca5441f2c7f53f9c622"
+    }
+  ],
+  "lastTest": null
+}
