@@ -4,13 +4,18 @@
   "taskId": "TAR-0090",
   "phaseId": "PHASE-19",
   "title": "Conversa legível, atividades ao vivo, diff do que mudou, pensando com tempo, ases-tar com IA e ação por tarefa, assistente com híbrido e teste digitado",
-  "state": "PLANNED",
-  "version": 1,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-088",
     "AER-REQ-246"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-19-verify.md",
+      "sha256": "32fa7d791a038071afe6791866d8ff940ce6bda9d1b780feec557bda7c2cf125"
+    }
+  ],
   "lastTest": null
 }

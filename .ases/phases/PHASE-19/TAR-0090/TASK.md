@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0090 |
 | phase_id | PHASE-19 |
-| estado | PLANNED (v1) |
+| estado | COMPLETED (v9) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |
@@ -26,7 +26,7 @@ Conversa legível, atividades ao vivo, diff do que mudou, pensando com tempo, as
 - nenhum (validação NÃO concluída)
 
 ## Evidências, revisões e handoffs
-- nenhuma
+- EVIDENCE .ases/evidence/PHASE-19-verify.md (sha256 32fa7d791a03…)
 
 ## Critério de saída
 COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).
