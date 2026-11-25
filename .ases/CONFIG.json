@@ -33,5 +33,14 @@
   "branding": {
     "theme": "teal",
     "logo": "auto"
+  },
+  "chat": {
+    "main": "claude",
+    "mode": "manual",
+    "limits": {},
+    "testCommand": [
+      "npm",
+      "test"
+    ]
   }
 }

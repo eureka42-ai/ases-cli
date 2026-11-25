@@ -15,6 +15,7 @@
     "@aer/project-store": "0.0.0",
     "@aer/tui-shared": "0.0.0",
     "ink": "8.0.0",
-    "react": "19.3.1"
+    "react": "19.3.1",
+    "@aer/provider-sdk": "0.0.0"
   }
 }

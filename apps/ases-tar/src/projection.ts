@@ -26,6 +26,13 @@ export function applyEvent(snap: Snapshot, e: EventEnvelope): Snapshot {
         next.tasks = [...snap.tasks, t].sort((a, b) => a.id.localeCompare(b.id));
       }
       break;
+    case 'AttemptStarted':
+    case 'HandoffCreated': {
+      // quem está fazendo a tarefa (PHASE-19)
+      const provider = String(e.eventType === 'AttemptStarted' ? p.providerId : p.to);
+      next.tasks = snap.tasks.map((t) => (t.id === e.taskId ? { ...t, provider } : t));
+      break;
+    }
     case 'TaskUpdated':
       next.tasks = snap.tasks.map((t) => (t.id === e.taskId ? { ...t, state: p.to as TaskState, version: t.version + 1 } : t));
       break;

@@ -30,6 +30,9 @@
     },
     {
       "path": "../../packages/tui-shared/tsconfig.build.json"
+    },
+    {
+      "path": "../../packages/provider-sdk/tsconfig.build.json"
     }
   ]
 }

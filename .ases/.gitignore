@@ -1,0 +1,7 @@
+# estado privado (MD mestre §4.3)
+db/
+ipc/
+runtime/
+locks/
+worktrees/
+backups/

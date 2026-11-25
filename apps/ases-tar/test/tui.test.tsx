@@ -168,3 +168,26 @@ describe('ases-tar TUI (TAR-0018, TAR-0019)', () => {
 
 // garante que o tipo usado no detalhe é o do store
 export type _T = TaskRow | Snapshot;
+
+describe('who is doing each task (PHASE-19)', () => {
+  it('a running task shows its IA and its last action; the main shows what it is doing', async () => {
+    const store = fixture();
+    const f = fakeMonitor(store);
+    const r = await renderForTest(app(f), 140, 24);
+    f.snapshot();
+    f.status('LIVE');
+    await tick();
+    const base = { schemaVersion: 1, eventId: '00000000-0000-4000-8000-000000000000', projectId: 'prj', phaseId: 'PHASE-01', attemptId: 'ATT-0001', observedAt: new Date().toISOString(), occurredAt: new Date().toISOString(), actor: 'ases', redactionLevel: 'SAFE', payloadSha256: '0'.repeat(64) };
+    let seq = 100;
+    const send = (eventType: string, payload: Record<string, unknown>, taskId: string | null = 'TAR-0001') => f.event({ ...base, seq: ++seq, eventType, taskId, payload } as unknown as EventEnvelope);
+    send('TaskUpdated', { from: 'READY', to: 'RUNNING', reason: 'codex ATT-0001' });
+    send('AttemptStarted', { providerId: 'codex', fencingToken: 1, branch: 'b', baseCommit: 'c' });
+    send('ProviderToolCallObserved', { providerId: 'codex', name: 'Read', arguments: '{"file_path":"src/app.ts"}' });
+    send('ProviderToolCallObserved', { providerId: 'claude', conversationId: 'CNV-0001', name: 'Edit', arguments: '{"file_path":"x.ts"}' }, null);
+    await tick();
+    const t = txt(r);
+    expect(t).toMatch(/TAR-0001 RUNNING\s+.*codex · Lendo src\/app\.ts/);
+    expect(t).toContain('principal claude · Editando x.ts');
+    r.unmount();
+  });
+});

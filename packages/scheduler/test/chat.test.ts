@@ -38,6 +38,11 @@ describe('chat turn of the main IA (PHASE-18, TAR-0084)', () => {
     expect(r).toMatchObject({ ok: true, restore: { n: 1, files: ['SIMULATED/CHAT.md'] } });
     expect(existsSync(path.join(root, 'SIMULATED', 'CHAT.md'))).toBe(true);
     expect(s.lastRestorePoint(cnv)).toMatchObject({ n: 1, ref: `refs/ases/restore/${cnv}/1`, files: ['SIMULATED/CHAT.md'] });
+    // PHASE-19: a ação da principal vira evento (o ases-tar mostra "simulator (principal) · Editou …")
+    expect(s.eventsSince(0, 1000).find((e) => e.eventType === 'ProviderToolResultObserved' && e.payload.conversationId === cnv)?.payload).toMatchObject({ providerId: 'simulator', name: 'file_change', summary: 'modify SIMULATED/CHAT.md' });
+    // PHASE-19: o que mudou, para mostrar no chat
+    expect(r.ok && r.restore?.changes?.[0]).toMatchObject({ file: 'SIMULATED/CHAT.md', removed: 0 });
+    expect(r.ok && r.restore!.changes![0]!.added).toBeGreaterThan(0);
   });
 
   it('engine files under .ases never count as edits of the turn', async () => {

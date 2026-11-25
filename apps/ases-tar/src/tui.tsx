@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState, type ReactElement } from 'react';
 import type { EventEnvelope } from '@aer/contracts';
 import type { Snapshot, TaskRow } from '@aer/persistence';
 import { BrandHeader, HelpOverlay, KeyHints, Pane, StateText, StatusBadge, UiContext, symbols, useTerminalSize, useUi, type Ui } from '@aer/tui-shared';
-import { formatEvent, isError } from './format.ts';
+import { actionText, formatEvent, isError } from './format.ts';
 import type { LinkStatus, Monitor, MonitorHandlers } from './monitor.ts';
 import { applyEvent } from './projection.ts';
 
@@ -95,7 +95,8 @@ export function TarApp({ monitor, projectName, filter }: { monitor: MonitorLike;
     }
   });
 
-  const bodyRows = Math.max(3, rows - 3); // cabeçalho + rodapé
+  const hasMain = events.some((e) => !e.taskId && (e.eventType === 'ProviderToolCallObserved' || e.eventType === 'ProviderToolResultObserved'));
+  const bodyRows = Math.max(3, rows - 3 - (hasMain ? 1 : 0)); // cabeçalho + rodapé (+ linha da principal)
   const listRows = Math.max(1, bodyRows - 3); // bordas + título do painel
   const wide = columns >= 100;
   const leftWidth = Math.floor(columns * 0.45); // larguras numéricas: com flex, linhas longas de eventos espremiam as tarefas
@@ -108,6 +109,16 @@ export function TarApp({ monitor, projectName, filter }: { monitor: MonitorLike;
     </BrandHeader>
   );
 
+  // PHASE-19: quem está fazendo cada tarefa e a última ação dela; o que a principal do chat está fazendo agora
+  const lastAction = new Map<string, string>();
+  let mainAction: string | undefined;
+  for (const e of events) {
+    if (e.eventType !== 'ProviderToolCallObserved' && e.eventType !== 'ProviderToolResultObserved') continue;
+    const a = actionText(e);
+    if (!a) continue;
+    if (e.taskId) lastAction.set(e.taskId, a.split(' · ').slice(2).join(' · '));
+    else mainAction = a.replace(' (principal) · ', ' · ');
+  }
   const taskLines: ReactElement[] = [];
   for (const phase of snap?.phases ?? []) {
     const own = tasks.filter((t) => t.phaseId === phase.id);
@@ -119,7 +130,9 @@ export function TarApp({ monitor, projectName, filter }: { monitor: MonitorLike;
       const isSel = selected?.id === t.id && focus === 'tasks';
       taskLines.push(
         <Text key={t.id} wrap="truncate-end" inverse={isSel}>
-          {`${isSel ? y.select : ' '} ${t.id} `}<StateText state={t.state} width={16} />{` ${t.title}`}
+          {`${isSel ? y.select : ' '} ${t.id} `}<StateText state={t.state} width={16} />
+          {t.provider ? <Text bold>{` ${t.provider.split(':')[0]}${t.state === 'RUNNING' && lastAction.get(t.id) ? ` · ${lastAction.get(t.id)}` : ''} ${y.sep.trim()}`}</Text> : null}
+          {` ${t.title}`}
         </Text>,
       );
     }
@@ -162,6 +175,7 @@ export function TarApp({ monitor, projectName, filter }: { monitor: MonitorLike;
   return (
     <Box flexDirection="column" width={columns}>
       {header}
+      {mainAction ? <Text wrap="truncate-end" bold>{`principal ${mainAction}`}</Text> : null}
       {body}
       <KeyHints hints={hints} />
     </Box>

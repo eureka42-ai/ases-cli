@@ -4,6 +4,7 @@ import type { PlanRow, PlannedTask } from '@aer/persistence';
 import { saveChatConfig, saveUiConfig, type ChatMode } from '@aer/project-store';
 import type { ChatTurnResult, PlanResult } from '@aer/scheduler';
 import { ChatSession, decidePlanMode } from './chat-session.ts';
+import { changesText } from './chat-format.ts';
 import type { Engine } from './engine.ts';
 
 // PHASE-18: comandos simples em português (aprovados pelo responsável), com alias em inglês e número curto de tarefa.
@@ -74,7 +75,12 @@ async function replyText(engine: Engine, r: ChatTurnResult): Promise<string> {
   if (!r.ok) return `erro ${r.code}: ${r.message}`;
   const c = await chat.conversation();
   const lines = [`${c.main}> ${r.reply}`];
-  if (r.restore) lines.push(`  (editou ${r.restore.files.join(', ')} · /desfazer volta)`);
+  if (r.restore) {
+    // o que mudou, arquivo por arquivo, com as linhas (+ verde / − vermelho na TUI)
+    if (r.restore.changes?.length) lines.push(changesText(r.restore.changes));
+    else lines.push(`● Editou ${r.restore.files.join(', ')}`);
+    lines.push('    /desfazer volta estas mudanças');
+  }
   if (r.planError) lines.push(`plano recusado: ${r.planError}. Nada foi executado.`);
   if (r.planId) {
     const plan = engine.store.getPlan(r.planId)!;

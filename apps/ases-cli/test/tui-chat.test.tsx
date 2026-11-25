@@ -79,7 +79,7 @@ describe('ases chat TUI (PHASE-18, TAR-0087)', () => {
     expect(f).not.toContain('/desfazer');
     await r.press(KEYS.down);
     await r.press(KEYS.tab); // completa com o item selecionado
-    expect(txt(r)).toMatch(/você> \/auto ?█/);
+    expect(txt(r)).toMatch(/> \/auto ?█/);
     r.unmount();
     await e.stop();
   });
@@ -105,11 +105,11 @@ describe('ases chat TUI (PHASE-18, TAR-0087)', () => {
     await r.press(KEYS.enter);
     await until(r, (s) => s.includes('Plano PLN-0001'));
     await type(r, 'não gostei');
-    expect(txt(r)).toMatch(/você> não gostei█/); // n e e começam mensagens normais
+    expect(txt(r)).toMatch(/> não gostei█/); // n e e começam mensagens normais
     for (let i = 0; i < 10; i++) await r.press(KEYS.backspace);
     expect(e.store.getPlan('PLN-0001')!.state).toBe('PENDING');
     await r.press('\u0005'); // Ctrl+E
-    expect(txt(r)).toMatch(/você> \/plano editar 1 provider=█/);
+    expect(txt(r)).toMatch(/> \/plano editar 1 provider=█/);
     await type(r, 'simulator-3');
     await r.press(KEYS.enter);
     await until(r, (s) => /1\. Parte 1 → simulator-3/.test(s));
@@ -146,9 +146,76 @@ describe('ases chat TUI (PHASE-18, TAR-0087)', () => {
     await type(r, 'segunda');
     await r.press(KEYS.enter);
     expect(txt(r)).toContain('na fila: segunda');
+    expect(txt(r)).toMatch(/✻ \S+… \(simulator:hang · \d+ s · Esc para interromper\)/); // palavra criativa + tempo (PHASE-19)
     r.unmount();
     await e.stop(); // o stop interrompe o turno pendurado
   }, 60_000);
+
+  it('your message starts with >, the reply with ●, a blank line between; Esc interrupts a thinking main (PHASE-19)', async () => {
+    const { e } = await project({ main: 'simulator', crossReview: false });
+    const r = await renderForTest(<UiContext.Provider value={ui()}><AsesApp engine={e} onExit={() => {}} /></UiContext.Provider>, 80, 40);
+    await type(r, 'olá');
+    await r.press(KEYS.enter);
+    const f = await until(r, (s) => s.includes('● SIMULATED: entendi — olá'));
+    const lines = f.split('\n').map((l) => l.trim());
+    const you = lines.indexOf('> olá');
+    const ia = lines.indexOf('● SIMULATED: entendi — olá');
+    expect(you).toBeGreaterThanOrEqual(0);
+    expect(ia).toBe(you + 2);
+    expect(lines[you + 1]).toBe('');
+    // Esc com a principal pensando interrompe o turno
+    const { chatSession } = await import('../src/chat-commands.ts');
+    const c = await chatSession(e).conversation();
+    e.mutate((s) => s.setMainProvider(c.id, 'simulator:hang'));
+    await type(r, 'demora');
+    await r.press(KEYS.enter);
+    await until(r, (s) => s.includes('Esc para interromper'));
+    await r.press(KEYS.esc);
+    await until(r, (s) => s.includes('interrompido pelo usuário') && !s.includes('Esc para interromper'), 15_000);
+    r.unmount();
+    await e.stop();
+  }, 60_000);
+
+  it('an edit by the main shows live activity and what changed in green/red (PHASE-19)', async () => {
+    const { e } = await project({ main: 'simulator', crossReview: false });
+    const r = await renderForTest(<UiContext.Provider value={ui()}><AsesApp engine={e} onExit={() => {}} /></UiContext.Provider>, 100, 40);
+    await type(r, 'edite o readme');
+    await r.press(KEYS.enter);
+    const f = await until(r, (s) => s.includes('Editou SIMULATED/CHAT.md (+'));
+    expect(f).toContain('● Editando SIMULATED/CHAT.md'); // atividade ao vivo
+    expect(f).toMatch(/\+# editado pela principal SIMULADA/); // linha adicionada
+    expect(f).toContain('/desfazer volta estas mudanças');
+    r.unmount();
+    await e.stop();
+  });
+
+  it('wizard offers the hybrid mode and lets you type your own test command (PHASE-19)', async () => {
+    const { root, e } = await project(null);
+    let done = false;
+    const r = await renderForTest(<UiContext.Provider value={ui()}><Wizard engine={e} onDone={() => { done = true; }} /></UiContext.Provider>, 100, 30);
+    await until(r, (s) => s.includes('Qual será a principal?'));
+    await r.press(KEYS.enter);
+    await until(r, (s) => s.includes('Modo de execução'));
+    expect(txt(r)).toMatch(/híbrido/);
+    await r.press(KEYS.down);
+    await r.press(KEYS.down);
+    await r.press(KEYS.enter); // híbrido
+    await until(r, (s) => s.includes('Tarefas em paralelo por IA'));
+    await r.press(KEYS.enter);
+    await until(r, (s) => s.includes('Comando de teste'));
+    expect(txt(r)).toMatch(/digitar outro comando/);
+    for (let i = 0; i < 5 && !/› digitar outro comando/.test(txt(r)); i++) await r.press(KEYS.down);
+    await r.press(KEYS.enter);
+    await until(r, (s) => s.includes('Digite o comando'));
+    await type(r, 'make check');
+    await r.press(KEYS.enter);
+    await until(r, (s) => s.includes('Salvar para'));
+    await r.press(KEYS.enter);
+    for (let i = 0; i < 100 && !done; i++) await new Promise((x) => setTimeout(x, 50));
+    expect(chatConfig(root)).toMatchObject({ mode: 'hybrid', testCommand: ['make', 'check'] });
+    r.unmount();
+    await e.stop();
+  });
 
   it('wizard lists IAs, saves main/mode/limit/test to the chosen config', async () => {
     const { root, e } = await project(null);

@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 811 (PhaseUpdated, 2026-11-24T23:30:02.986Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 831 (TaskCreated, 2026-11-25T00:06:06.128Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -23,6 +23,7 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | PHASE-14 | Time Machine, Digital Twin e Learning Engine | PLANNED |
 | PHASE-17 | Manutenção 1.0.x | COMPLETED |
 | PHASE-18 | Chat com IA principal e orquestração em paralelo (1.1.0) | COMPLETED |
+| PHASE-19 | Manutenção 1.1.x: conversa no estilo do Claude Code e ases-tar com quem faz o quê | PLANNED |
 
 ## Tarefas
 | Tarefa | Fase | Título | Estado | Último teste | Evidência |
@@ -116,5 +117,6 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0087 | PHASE-18 | TUI de chat, menu /, plano, autorização e assistente | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
 | TAR-0088 | PHASE-18 | ases update e /atualizar | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
 | TAR-0089 | PHASE-18 | Bins, documentação, e2e do chat e release 1.1.0 | COMPLETED | — | .ases/evidence/PHASE-18-verify.md |
+| TAR-0090 | PHASE-19 | Conversa legível, atividades ao vivo, diff do que mudou, pensando com tempo, ases-tar com IA e ação por tarefa, assistente com híbrido e teste digitado | PLANNED | — | — |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

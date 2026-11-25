@@ -83,7 +83,7 @@ describe.runIf(pty)('TUIs in a real Windows ConPTY (TAR-0070)', () => {
   it('ases: logo, help with ? and Esc, a typed command, resize to 40 columns, Ctrl+C twice exits 0', async () => {
     const t = conpty(BIN.ases, [], p.dir, { WT_SESSION: 'aer-e2e' }); // como o Windows Terminal se anuncia
     procs.push(t);
-    await t.waitFor((s) => (s.includes('Eureka42') || s.includes('eureka42.org')) && s.includes('você>'), 30_000);
+    await t.waitFor((s) => (s.includes('Eureka42') || s.includes('eureka42.org')) && s.includes('? ajuda'), 30_000);
     expect(t.raw()).toMatch(/\u001b\[38;2;34;197;94m/); // verde truecolor no Windows Terminal
     expect(t.text()).toContain('⌘'); // logo Unicode, não o fallback E42
     await t.openHelp();
@@ -120,7 +120,7 @@ describe.runIf(pty)('TUIs in a real Windows ConPTY (TAR-0070)', () => {
   it('NO_COLOR in ConPTY: no color codes, text complete', async () => {
     const t = conpty(BIN.ases, [], p.dir, { NO_COLOR: '1' });
     procs.push(t);
-    await t.waitFor((s) => (s.includes('Eureka42') || s.includes('eureka42.org')) && s.includes('você>'), 30_000);
+    await t.waitFor((s) => (s.includes('Eureka42') || s.includes('eureka42.org')) && s.includes('? ajuda'), 30_000);
     await t.openHelp();
     expect(t.raw()).not.toMatch(/\u001b\[(3[0-9]|9[0-7]|38;)/);
     await t.keys('\u001b');
@@ -135,7 +135,7 @@ describe.runIf(pty)('TUIs in a real Windows ConPTY (TAR-0070)', () => {
   it('chat in ConPTY: banner, a request becomes a plan and Enter runs it (PHASE-18)', async () => {
     const t = conpty(BIN.ases, [], p.dir, { WT_SESSION: 'aer-e2e', AER_SIMULATORS: '3' }, 100);
     procs.push(t);
-    await t.waitFor((s) => s.includes('eureka42.org') && s.includes('você>'), 30_000);
+    await t.waitFor((s) => s.includes('eureka42.org') && s.includes('? ajuda'), 30_000);
     await t.openHelp();
     await t.keys('\u001b');
     await new Promise((r) => setTimeout(r, 300));

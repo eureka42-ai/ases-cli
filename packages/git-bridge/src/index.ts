@@ -233,3 +233,20 @@ export async function restoreFromPoint(root: string, ref: string, touchedByTurn:
     }
   });
 }
+
+/** O que um turno da principal mudou (`ref` → `ref-after`): por arquivo, linhas +/− e o patch (sem o cabeçalho do git). */
+export async function turnDiff(root: string, ref: string): Promise<{ file: string; added: number; removed: number; patch: string }[]> {
+  const after = `${ref}-after`;
+  const spec = ['--', '.', ':(exclude).ases'];
+  const stat = (await git(root, ['diff', '--numstat', '--no-renames', ref, after, ...spec])).split('\n').filter(Boolean);
+  const out: { file: string; added: number; removed: number; patch: string }[] = [];
+  for (const row of stat) {
+    const [a, r, ...f] = row.split('\t');
+    const file = f.join('\t');
+    const raw = await git(root, ['diff', '--no-color', '--no-ext-diff', '-U1', ref, after, '--', file]);
+    // só as linhas do conteúdo: tira diff --git, index, ---/+++ e os @@
+    const patch = raw.split('\n').filter((l) => !/^(diff --git|index |--- |\+\+\+ |@@|new file mode|deleted file mode|\\ No newline)/.test(l)).join('\n');
+    out.push({ file, added: a === '-' ? 0 : Number(a), removed: r === '-' ? 0 : Number(r), patch });
+  }
+  return out;
+}

@@ -17,6 +17,7 @@ import { handleLine } from './commands.ts';
 import { runTui } from './tui.tsx';
 import { runWizard } from './wizard.tsx';
 import { runUpdate } from './update.ts';
+import { shouldAnimate } from './ticker.ts';
 import { attachRepl, connectResident, daemonStatus, runDaemon, startDaemon, stopDaemon } from './daemon.ts';
 
 const HELP = `Eureka42 · ASES Engineering Runtime — ases ${VERSIONS.app} · eureka42.org
@@ -32,7 +33,7 @@ Uso:
   ases update [--check]      atualiza o AER para a versão mais nova do npm (--check só mostra; consulta o npm só quando pedido)
 
 Opções:
-  --no-color   --no-banner   --no-tui   --no-animation (aceito; as TUIs não animam)   --theme auto|green|teal|blue|purple|gold|mono|contrast   --logo banner|full|compact|minimal|ascii
+  --no-color   --no-banner   --no-tui   --no-animation (para o relógio de "pensando")   --theme auto|green|teal|blue|purple|gold|mono|contrast   --logo banner|full|compact|minimal|ascii
   tema e logo: --theme/--logo > .ases/CONFIG.json (ui.theme, ui.logo) > config global do usuário > auto
   --json       saída estritamente JSON (sem banner/ANSI)   --version   --help
 
@@ -80,6 +81,7 @@ async function main(argv: string[]): Promise<number> {
     unicode: caps.unicode,
     logo: prefs.logo,
     tui: !values['no-tui'] && !values.json && caps.isTTY && process.stdin.isTTY === true && process.env.TERM !== 'dumb' && !caps.ci,
+    animation: shouldAnimate({ noAnimation: values['no-animation'] === true, ci: caps.ci }),
   };
   const [cmd] = positionals;
 
@@ -250,7 +252,7 @@ async function probeProviders(adapter: Awaited<ReturnType<typeof loadPlatformAda
 
 const exitNote = (n: number) => (n ? `${n} tarefa(s) em execução cancelada(s), árvore de processos encerrada` : 'Nenhuma tarefa estava em execução');
 
-async function interactive(root: string, adapter: Awaited<ReturnType<typeof loadPlatformAdapter>>, ui: { color: boolean; colorDepth: 0 | 4 | 8 | 24; banner: boolean; theme: ThemeName; mode: LogoMode; unicode: boolean; logo: LogoMode | undefined; tui: boolean }): Promise<number> {
+async function interactive(root: string, adapter: Awaited<ReturnType<typeof loadPlatformAdapter>>, ui: { color: boolean; colorDepth: 0 | 4 | 8 | 24; banner: boolean; theme: ThemeName; mode: LogoMode; unicode: boolean; logo: LogoMode | undefined; tui: boolean; animation: boolean }): Promise<number> {
   const synced = syncedFolderHint(adapter.id, defaultDeps(), root);
   if (synced) console.error(`AVISO: o projeto está numa pasta sincronizada (${synced}). O sync pode copiar o banco SQLite no meio de uma escrita e corrompê-lo; mova o projeto para uma pasta não sincronizada.`);
   // há um motor residente neste projeto? então este `ases` é só um cliente dele (PHASE-12)
@@ -267,7 +269,7 @@ async function interactive(root: string, adapter: Awaited<ReturnType<typeof load
   if (ui.tui) {
     // PHASE-18: primeiro uso sem principal configurada → assistente (sem IA) antes do chat
     if (!chatConfig(root).main) await runWizard(engine, { color: ui.color, colorDepth: ui.colorDepth, unicode: ui.unicode, theme: ui.theme, logo: ui.logo });
-    const reason = await runTui(engine, { color: ui.color, colorDepth: ui.colorDepth, unicode: ui.unicode, theme: ui.theme, logo: ui.logo });
+    const reason = await runTui(engine, { color: ui.color, colorDepth: ui.colorDepth, unicode: ui.unicode, theme: ui.theme, logo: ui.logo, animation: ui.animation });
     const r = await engine.stop();
     // §6.4/AER-REQ-090: impresso depois que o Ink devolveu o terminal
     console.log(`${reason}: engine encerrado. ${exitNote(r.cancelled)}; estado salvo até seq ${r.lastSeq}.`);

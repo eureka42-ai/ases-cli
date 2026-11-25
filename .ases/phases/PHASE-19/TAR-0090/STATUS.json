@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0090",
+  "phaseId": "PHASE-19",
+  "title": "Conversa legível, atividades ao vivo, diff do que mudou, pensando com tempo, ases-tar com IA e ação por tarefa, assistente com híbrido e teste digitado",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-088",
+    "AER-REQ-246"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

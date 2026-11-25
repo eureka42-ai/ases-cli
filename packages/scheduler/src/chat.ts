@@ -1,7 +1,7 @@
 import { mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { createRestorePoint, markTurnEnd, repoRoot, resolveInside } from '@aer/git-bridge';
+import { createRestorePoint, markTurnEnd, repoRoot, resolveInside, turnDiff } from '@aer/git-bridge';
 import type { ChatMessageRow, PhaseRow, TaskRow } from '@aer/persistence';
 import { redactText, type AgentStreamEvent } from '@aer/provider-sdk';
 import { assignProviders, parseMainReply } from './chat-plan.ts';
@@ -11,7 +11,7 @@ import { parseProviderSpec, type WorkerDeps } from './worker.ts';
 // trabalho grande, devolve um bloco aer-plan que o ASES distribui entre as outras IAs.
 
 export type ChatTurnResult =
-  | { ok: true; reply: string; planId?: string; planError?: string; restore?: { n: number; files: string[] } }
+  | { ok: true; reply: string; planId?: string; planError?: string; restore?: { n: number; files: string[]; changes?: { file: string; added: number; removed: number; patch: string }[] } }
   | { ok: false; code: string; message: string };
 
 const DENIED_PATHS = ['.git', '.ases', '.env', '.env.*', '*.pem', '*.key'];
@@ -132,6 +132,9 @@ export async function runChatTurn(d: WorkerDeps, o: { conversationId: string; me
       approvedToolPolicyId: 'chat-main', timeoutMs: d.timeoutMs, signal: ac.signal, ...(preference ? { modelPreference: preference } : {}),
     })) {
       o.onEvent?.(e);
+      // a ação da principal fica no histórico: o ases-tar mostra quem está fazendo o quê (PHASE-19)
+      if (e.type === 'tool_call') d.mutate((s) => s.appendEvent({ eventType: 'ProviderToolCallObserved', payload: { providerId: provider.id, conversationId: cnv, name: e.name, arguments: redactText(JSON.stringify(e.safeArguments ?? null), 1000).text } }));
+      if (e.type === 'file_change') d.mutate((s) => s.appendEvent({ eventType: 'ProviderToolResultObserved', payload: { providerId: provider.id, conversationId: cnv, name: 'file_change', success: true, summary: `${e.kind} ${redactText(e.relativePath, 300).text}` } }));
       if (e.type === 'message' && e.visibleToUser) texts.push(e.text);
       else if (e.type === 'file_change') {
         let bad: string | undefined;
@@ -156,7 +159,9 @@ export async function runChatTurn(d: WorkerDeps, o: { conversationId: string; me
     rmSync(tmp, { recursive: true, force: true });
   }
   const touched = point ? (await markTurnEnd(d.root, ref)).touched : [];
-  const restore = point && touched.length ? { n: d.mutate((s) => s.addRestorePoint(cnv, { ref, commit: point.commit, files: touched })), files: touched } : undefined;
+  const restore = point && touched.length
+    ? { n: d.mutate((s) => s.addRestorePoint(cnv, { ref, commit: point.commit, files: touched })), files: touched, changes: await turnDiff(d.root, ref).catch(() => []) }
+    : undefined;
   if (violation) return fail('SECURITY_VIOLATION', `${violation}${restore ? ' (use /desfazer para voltar as edições)' : ''}`);
   if (error) return fail(error.split(':')[0]!, error);
   if (exit?.exitCode !== 0) return fail('NONZERO_EXIT', `a principal terminou com código ${exit?.exitCode ?? exit?.signal ?? '?'}`);

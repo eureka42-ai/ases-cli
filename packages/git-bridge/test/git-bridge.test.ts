@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, 
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { GitError, createRestorePoint, createWorktree, currentBranch, markTurnEnd, restoreFromPoint, git, isClean, mergeBranch, removeWorktree, resolveInside } from '../src/index.ts';
+import { GitError, createRestorePoint, createWorktree, currentBranch, markTurnEnd, restoreFromPoint, turnDiff, git, isClean, mergeBranch, removeWorktree, resolveInside } from '../src/index.ts';
 import { dirs, tempRepo } from './helpers.ts';
 
 async function commitIn(wt: string, file: string, content: string) {
@@ -175,5 +175,19 @@ describe('merge with engine files pending (PHASE-18)', () => {
     await git(root, ['checkout', '--', 'app.txt']);
     expect(await mergeBranch(root, wt.branch, 'main', 'm')).toMatchObject({ status: 'MERGED' });
     expect(existsSync(path.join(root, '.ases', 'HISTORY.jsonl'))).toBe(true);
+  });
+});
+
+describe('what the main changed in a turn (PHASE-19)', () => {
+  it('turnDiff lists each file with +added −removed and its patch', async () => {
+    const root = await tempRepo();
+    const ref = 'refs/ases/restore/CNV-0001/1';
+    await createRestorePoint(root, ref);
+    writeFileSync(path.join(root, 'app.txt'), 'linha 1 mudada\nlinha 2\n');
+    writeFileSync(path.join(root, 'novo.txt'), 'a\nb\nc\n');
+    await markTurnEnd(root, ref);
+    const d = await turnDiff(root, ref);
+    expect(d.map((x) => [x.file, x.added, x.removed])).toEqual([['app.txt', 2, 1], ['novo.txt', 3, 0]]);
+    expect(d[0]!.patch.split('\n')).toEqual(expect.arrayContaining(['-linha 1', '+linha 1 mudada', '+linha 2']));
   });
 });

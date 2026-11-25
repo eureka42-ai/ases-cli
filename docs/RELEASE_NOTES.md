@@ -1,5 +1,23 @@
 # AER 1.x: notas de versão
 
+## 1.1.1 (24/11/2026): conversa no estilo do Claude Code e ases-tar mostrando quem faz o quê
+- **Conversa:**
+  - sua mensagem aparece com `>` em cinza, e a resposta da IA com `●` verde;
+  - uma linha em branco separa as mensagens;
+  - listas, **negrito** e blocos de código aparecem formatados, e as linhas longas quebram por palavra.
+- **Enquanto a IA trabalha:**
+  - cada ação aparece na hora, com `●` laranja ("Lendo src/app.ts", "Editando README.md");
+  - a linha de "pensando" mostra uma palavra criativa em laranja e o tempo correndo, por exemplo `✻ Matutando… (claude · 18 s · Esc para interromper)`;
+  - `Esc` interrompe a IA.
+  - **Quando o relógio não corre:** ele é opcional (AER-REQ-246) e fica parado com `--no-animation`, em CI, com `TERM=dumb` e com `ASES_REDUCED_MOTION=1`.
+- **O que mudou:** depois de cada edição da principal, cada arquivo aparece com `+N −M` e as linhas alteradas, em verde (+) e vermelho (−). `/desfazer` volta tudo.
+- **Prompt:** fica numa caixa arredondada embaixo.
+- **`ases-tar`:**
+  - cada ação aparece em português e na hora: qual IA, qual tarefa e o que está fazendo;
+  - a lista de tarefas mostra quem está fazendo cada uma e a última ação dela;
+  - uma linha mostra o que a principal do chat está fazendo agora.
+- **Assistente:** ganhou o modo **híbrido** e a opção de **digitar o seu comando de teste**, e explica por que algumas IAs não aparecem na escolha.
+
 ## 1.1.0 (24/11/2026): console de conversa com IA principal e orquestração em paralelo
 - **Chat:** o `ases` abre num chat com a **IA principal** escolhida por você (`/ia`). Ela conversa, lê, planeja e edita o projeto.
   - **Restauração:** antes de cada turno o AER grava um ponto de restauração, e `/desfazer` volta.

@@ -37,7 +37,7 @@ describe('ases TUI (TAR-0017)', () => {
     await type(r, '/task new PHASE-01 Auditar');
     await r.press(KEYS.enter);
     const f = txt(r);
-    expect(f).toContain('você> /phase new Fundação');
+    expect(f).toContain('> /phase new Fundação'); // sua mensagem com > (PHASE-19)
     expect(f).toContain('criada PHASE-01');
     expect(f).toContain('criada TAR-0001');
     expect(f).toMatch(/PHASE-01 PLANNED Fundação/);
@@ -54,16 +54,16 @@ describe('ases TUI (TAR-0017)', () => {
     await type(r, '/status');
     await r.press(KEYS.enter);
     await r.press(KEYS.up);
-    expect(txt(r)).toMatch(/você> \/status█/);
+    expect(txt(r)).toMatch(/> \/status█/);
     await r.press(KEYS.backspace);
-    expect(txt(r)).toMatch(/você> \/statu█/);
+    expect(txt(r)).toMatch(/> \/statu█/);
     await r.press(KEYS.enter);
     expect(txt(r)).toContain('comando desconhecido: /statu');
     await type(r, 'olá agente');
     await r.press(KEYS.enter);
     expect(txt(r)).not.toContain('ainda não implementado'); // PHASE-18: texto livre vai para a IA principal
     for (let i = 0; i < 200 && !txt(r).includes('entendi — olá agente'); i++) await new Promise((x) => setTimeout(x, 50));
-    expect(txt(r)).toContain('simulator> SIMULATED: entendi — olá agente');
+    expect(txt(r)).toContain('● SIMULATED: entendi — olá agente'); // resposta da IA com ● (PHASE-19)
     await r.press(KEYS.tab);
     await r.press(KEYS.enter);
     expect(txt(r)).toMatch(/TAR-0001 — Uma/);

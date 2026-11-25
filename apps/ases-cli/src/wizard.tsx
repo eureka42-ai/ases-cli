@@ -33,7 +33,7 @@ export function suggestTestCommand(root: string): string[] | undefined {
   return undefined;
 }
 
-type Step = 'main' | 'mode' | 'limit' | 'test' | 'save';
+type Step = 'main' | 'mode' | 'limit' | 'test' | 'testInput' | 'save';
 
 function Choice({ title, options, sel }: { title: string; options: string[]; sel: number }): ReactElement {
   const ui = useUi();
@@ -53,6 +53,7 @@ export function Wizard({ engine, onDone }: { engine: Engine; onDone: () => void 
   const [step, setStep] = useState<Step>('main');
   const [sel, setSel] = useState(0);
   const [answers, setAnswers] = useState<{ main?: string; mode?: ChatMode; limit?: number; test?: string[] | null }>({});
+  const [typed, setTyped] = useState('');
   const suggested = suggestTestCommand(engine.projectRoot);
 
   useEffect(() => {
@@ -63,14 +64,27 @@ export function Wizard({ engine, onDone }: { engine: Engine; onDone: () => void 
   const readyIds = ids.filter((id) => probes![id]!.availability === 'READY').sort((a, b) => (ORDER.indexOf(a) + 1 || 99) - (ORDER.indexOf(b) + 1 || 99));
   const options: Record<Step, string[]> = {
     main: readyIds,
-    mode: ['perguntar antes de cada plano (manual)', 'automático'],
+    mode: ['perguntar antes de cada plano (manual)', 'automático', 'híbrido (planos pequenos e já autorizados rodam direto; os outros perguntam)'],
     limit: ['1 (padrão, conforme os termos de uso individual)', '2', '3'],
-    test: suggested ? [`${suggested.join(' ')} (detectado)`, 'nenhum por enquanto'] : ['nenhum por enquanto'],
+    test: [...(suggested ? [`${suggested.join(' ')} (detectado)`] : []), 'digitar outro comando', 'nenhum por enquanto'],
+    testInput: [],
     save: ['este projeto', 'todos os projetos (config global)'],
   };
 
-  useInput((_ch, key) => {
+  useInput((ch, key) => {
     if (!probes) return;
+    if (step === 'testInput') {
+      // comando sem shell: separado por espaços (sem aspas)
+      if (key.return) {
+        const argv = typed.trim().split(/\s+/).filter(Boolean);
+        setAnswers((a) => ({ ...a, test: argv.length ? argv : null }));
+        setStep('save');
+        setSel(0);
+      } else if (key.backspace || key.delete) setTyped((t) => [...t].slice(0, -1).join(''));
+      else if (key.escape) setStep('test');
+      else if (ch && !key.ctrl && !key.meta) setTyped((t) => t + ch.replace(/[\u0000-\u001f\u007f]/g, ''));
+      return;
+    }
     const opts = options[step];
     if (key.upArrow) return setSel((i) => Math.max(0, i - 1));
     if (key.downArrow) return setSel((i) => Math.min(opts.length - 1, i + 1));
@@ -83,12 +97,14 @@ export function Wizard({ engine, onDone }: { engine: Engine; onDone: () => void 
       setAnswers((a) => ({ ...a, main: readyIds[sel]! }));
       next('mode');
     } else if (step === 'mode') {
-      setAnswers((a) => ({ ...a, mode: sel === 1 ? 'auto' : 'manual' }));
+      setAnswers((a) => ({ ...a, mode: sel === 2 ? 'hybrid' : sel === 1 ? 'auto' : 'manual' }));
       next('limit');
     } else if (step === 'limit') {
       setAnswers((a) => ({ ...a, limit: sel + 1 }));
       next('test');
     } else if (step === 'test') {
+      const choice = options.test[sel]!;
+      if (choice === 'digitar outro comando') return next('testInput');
       setAnswers((a) => ({ ...a, test: suggested && sel === 0 ? suggested : null }));
       next('save');
     } else {
@@ -105,6 +121,7 @@ export function Wizard({ engine, onDone }: { engine: Engine; onDone: () => void 
     mode: 'Modo de execução dos planos?',
     limit: 'Tarefas em paralelo por IA?',
     test: 'Comando de teste do projeto (roda em cada tarefa antes de ela ficar pronta)?',
+    testInput: 'Digite o comando de teste (sem shell, ex.: make check) e Enter; Esc volta:',
     save: 'Salvar para:',
   };
   return (
@@ -121,7 +138,11 @@ export function Wizard({ engine, onDone }: { engine: Engine; onDone: () => void 
               return <Text key={id} wrap="truncate-end">{`  ${ok ? (ui.unicode ? '✓' : '+') : (ui.unicode ? '✗' : 'x')} ${id.padEnd(12)} ${ok ? `${p.version ?? ''} ${p.simulated ? '(SIMULADA)' : ''}` : `${p.availability}${HOW_TO_INSTALL[id] ? ` → ${HOW_TO_INSTALL[id]}` : ''}`}`}</Text>;
             })}
           </Box>
-          {readyIds.length ? <Choice title={titles[step]} options={options[step]} sel={sel} /> : <Text>Nenhuma IA pronta. Instale e faça login numa delas e abra o ases de novo.</Text>}
+          {!readyIds.length ? <Text>Nenhuma IA pronta. Instale e faça login numa delas e abra o ases de novo.</Text>
+            : step === 'testInput' ? (
+              <Box flexDirection="column" marginTop={1}><Text bold>{titles.testInput}</Text><Text>{`  > ${typed}${ui.unicode ? '█' : '_'}`}</Text></Box>
+            ) : <Choice title={titles[step]} options={options[step]} sel={sel} />}
+          {step === 'main' && ids.some((id) => probes[id]!.availability !== 'READY') ? <Text dimColor>As IAs com {ui.unicode ? '✗' : 'x'} não aparecem na escolha: instale e faça login nelas e rode /config para trocar depois.</Text> : null}
         </>
       )}
     </Box>

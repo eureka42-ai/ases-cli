@@ -11,6 +11,8 @@ export interface Ui {
   theme: ThemeName;
   logo?: LogoMode | undefined;
   colorDepth?: 0 | 4 | 8 | 24 | undefined;
+  /** relógio de "pensando" correndo (AER-REQ-246: opcional; desligado em CI, TERM=dumb, --no-animation) */
+  animation?: boolean | undefined;
 }
 export const UiContext = createContext<Ui>({ color: false, unicode: false, theme: 'teal' });
 export const useUi = (): Ui => useContext(UiContext);
