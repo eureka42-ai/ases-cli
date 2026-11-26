@@ -84,6 +84,20 @@ describe('ases chat TUI (PHASE-18, TAR-0087)', () => {
     await e.stop();
   });
 
+  it('Enter on the slash menu runs the highlighted item, not the half-typed text (1.4.0)', async () => {
+    const { e } = await project({ main: 'simulator', crossReview: false });
+    const r = await renderForTest(<UiContext.Provider value={ui()}><AsesApp engine={e} onExit={() => {}} /></UiContext.Provider>, 100, 30);
+    await type(r, '/sob');
+    await r.press(KEYS.enter);
+    await until(r, (s) => s.includes('Raul el Greco')); // /sobre rodou (antes: "/sob" ia como comando desconhecido)
+    await type(r, '/a');
+    await r.press(KEYS.down);
+    await r.press(KEYS.enter); // /auto, o segundo da lista
+    await until(r, (s) => /modo (automático|manual)|auto/i.test(s.split('Raul el Greco').at(-1) ?? ''));
+    r.unmount();
+    await e.stop();
+  });
+
   it('a split request shows the plan box; Enter runs it; progress lines appear', async () => {
     const { e } = await project({ main: 'simulator', crossReview: false });
     const r = await renderForTest(<UiContext.Provider value={ui()}><AsesApp engine={e} onExit={() => {}} /></UiContext.Provider>, 120, 40);

@@ -8,7 +8,12 @@ export interface ModelList {
   canSet: boolean;
   source: string;
   note?: string;
+  /** a CLI da IA está instalada nesta máquina (sem ela, a lista aparece em cinza) */
+  installed?: boolean;
 }
+
+/** Executável de cada IA (para saber se está instalada). */
+export const PROVIDER_CLI: Record<string, string> = { claude: 'claude', codex: 'codex', kimi: 'kimi', opencode: 'opencode', google: 'agy', cursor: 'cursor-agent' };
 
 type Run = (cmd: string, args: string[]) => Promise<{ exitCode: number | null; stdout: string }>;
 

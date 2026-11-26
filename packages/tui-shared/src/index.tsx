@@ -43,13 +43,13 @@ export function useTerminalSize(): { columns: number; rows: number } {
   return size;
 }
 
-export function BrandHeader({ app, columns, children, banner }: { app: AppName; columns: number; children?: ReactNode; banner?: { main?: string; ready?: number } }): ReactElement {
+export function BrandHeader({ app, columns, children, banner }: { app: AppName; columns: number; children?: ReactNode; banner?: { main?: string; ready?: number; labels?: { main?: string; ready?: string } } }): ReactElement {
   const ui = useUi();
   const picked = pickLogoMode({ columns, unicode: ui.unicode }, ui.logo);
   // banner grande só onde foi pedido (o `ases`); sem Unicode, a versão ASCII, com a mesma largura mínima
   const wantsBanner = banner && columns >= 72 && (picked === 'banner' || (!ui.unicode && (!ui.logo || ui.logo === 'banner')));
   if (wantsBanner) {
-    const text = renderBanner({ color: ui.color, unicode: ui.unicode, theme: ui.theme, ...(ui.colorDepth !== undefined ? { colorDepth: ui.colorDepth } : {}), ...(banner.main ? { main: banner.main } : {}), ...(banner.ready !== undefined ? { ready: banner.ready } : {}) });
+    const text = renderBanner({ color: ui.color, unicode: ui.unicode, theme: ui.theme, ...(ui.colorDepth !== undefined ? { colorDepth: ui.colorDepth } : {}), ...(banner.main ? { main: banner.main } : {}), ...(banner.ready !== undefined ? { ready: banner.ready } : {}), ...(banner.labels ? { labels: banner.labels } : {}) });
     return (
       <Box flexDirection="column" width={columns} overflow="hidden">
         {text.split('\n').map((l, i) => <Text key={i} wrap="truncate-end">{l}</Text>)}

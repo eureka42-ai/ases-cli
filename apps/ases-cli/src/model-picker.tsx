@@ -2,6 +2,7 @@ import { Box, Text, useInput } from 'ink';
 import { useState, type ReactElement } from 'react';
 import { useUi } from '@aer/tui-shared';
 import type { ModelList } from './models.ts';
+import { t } from './i18n.ts';
 
 // PHASE-20: /modelo — ← → escolhe a IA, ↑ ↓ o modelo, Espaço seleciona, Esc fecha.
 export function ModelPicker({ lists, current, onChoose, onClose, onType }: { lists: ModelList[]; current: Record<string, string>; onChoose: (provider: string, model: string | null) => void; onClose: () => void; onType?: (provider: string) => void }): ReactElement {
@@ -9,7 +10,7 @@ export function ModelPicker({ lists, current, onChoose, onClose, onType }: { lis
   const [col, setCol] = useState(0);
   const [sel, setSel] = useState(0);
   const list = lists[col]!;
-  const rows = [{ id: null as string | null, label: 'padrão (o modelo configurado na própria IA)' }, ...list.models.map((m) => ({ id: m.id as string | null, label: m.name === m.id ? m.id : `${m.id}  ${m.name}` })), ...(list.canSet ? [{ id: '__type__', label: 'digitar outro…' }] : [])];
+  const rows = [{ id: null as string | null, label: t('picker.default') }, ...list.models.map((m) => ({ id: m.id as string | null, label: m.name === m.id ? m.id : `${m.id}  ${m.name}` })), ...(list.canSet ? [{ id: '__type__', label: t('picker.type') }] : [])];
   const visible = 14;
   const start = Math.max(0, Math.min(sel - Math.floor(visible / 2), rows.length - visible));
 
@@ -33,12 +34,13 @@ export function ModelPicker({ lists, current, onChoose, onClose, onType }: { lis
   const mark = (id: string | null) => (id === null ? !current[list.provider] : current[list.provider] === id);
   return (
     <Box flexDirection="column" borderStyle={ui.unicode ? 'round' : 'classic'} paddingX={1}>
-      <Text bold>{'Modelo de cada IA  ·  ← → IA  ·  ↑ ↓ modelo  ·  Espaço escolhe  ·  Esc fecha'}</Text>
-      <Text>{lists.map((l, i) => (i === col ? `[ ${l.provider} ]` : `  ${l.provider}  `)).join(' ')}</Text>
-      <Text dimColor={ui.color}>{`lista: ${list.source}${list.note ? ` · ${list.note}` : ''}`}</Text>
+      <Text bold>{t('picker.title')}</Text>
+      {/* IA não instalada: aparece, mas em cinza (a lista vale para quando ela for instalada) */}
+      <Text>{lists.map((l, i) => <Text key={l.provider} dimColor={ui.color && l.installed === false}>{`${i ? ' ' : ''}${i === col ? `[ ${l.provider} ]` : `  ${l.provider}  `}`}</Text>)}</Text>
+      <Text dimColor={ui.color}>{list.installed === false ? t('picker.notInstalled', { p: list.provider }) : `${t('picker.list')}: ${list.source}${list.note ? ` · ${list.note}` : ''}`}</Text>
       {rows.slice(start, start + visible).map((r, k) => {
         const i = start + k;
-        return <Text key={`${list.provider}-${i}`} inverse={ui.color && i === sel} wrap="truncate-end">{`${i === sel ? (ui.unicode ? '›' : '>') : ' '} ${mark(r.id) ? (ui.unicode ? '●' : '*') : ' '} ${r.label}`}</Text>;
+        return <Text key={`${list.provider}-${i}`} inverse={ui.color && i === sel} dimColor={ui.color && list.installed === false && i !== sel} wrap="truncate-end">{`${i === sel ? (ui.unicode ? '›' : '>') : ' '} ${mark(r.id) ? (ui.unicode ? '●' : '*') : ' '} ${r.label}${list.installed === false && r.id && r.id !== '__type__' ? `  ${t('picker.notInstalledTag')}` : ''}`}</Text>;
       })}
     </Box>
   );

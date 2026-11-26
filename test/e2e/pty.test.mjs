@@ -15,7 +15,7 @@ function pty(bin, args, cwd, extraEnv = {}) {
   const q = (s) => `'${s.replaceAll("'", "'\\''")}'`;
   const inner = [node, bin, ...args].map(q).join(' ');
   const script = process.platform === 'darwin' ? `script -q /dev/null ${inner}` : `script -qfec ${q(inner)} /dev/null`;
-  const child = spawn('/bin/sh', ['-c', `cat | ${script}`], { cwd, env: { ...process.env, ...isolatedConfigEnv, LANG: 'pt_BR.UTF-8', TERM: 'xterm-256color', NO_COLOR: undefined, CI: 'false', ...extraEnv }, stdio: ['pipe', 'pipe', 'pipe'], detached: true });
+  const child = spawn('/bin/sh', ['-c', `cat | ${script}`], { cwd, env: { ...process.env, ...isolatedConfigEnv, LANG: 'pt_BR.UTF-8', TERM: 'xterm-256color', COLORTERM: 'truecolor', NO_COLOR: undefined, CI: 'false', ...extraEnv }, stdio: ['pipe', 'pipe', 'pipe'], detached: true });
   let raw = '';
   child.stdout.setEncoding('utf8').on('data', (d) => (raw += d));
   child.stderr.setEncoding('utf8').on('data', (d) => (raw += d));

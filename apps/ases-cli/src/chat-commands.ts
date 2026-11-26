@@ -2,54 +2,49 @@ import { VERSIONS } from '@aer/contracts';
 import { repoRoot } from '@aer/git-bridge';
 import { aboutText, LOGO_MODES, THEME_CHOICES } from '@aer/branding';
 import type { PlanRow, PlannedTask } from '@aer/persistence';
-import { saveChatConfig, saveUiConfig, type ChatMode } from '@aer/project-store';
+import { saveChatConfig, saveUiConfig, setLanguagePreference, type ChatMode } from '@aer/project-store';
 import type { ChatTurnResult, PlanResult } from '@aer/scheduler';
 import { ChatSession, decidePlanMode } from './chat-session.ts';
 import { changesText } from './chat-format.ts';
 import type { Engine } from './engine.ts';
+import { LANGS, cmdName, lang, machineLang, parseLang, setLang, t, translatedAliases } from './i18n.ts';
 
 // PHASE-18: comandos simples em português (aprovados pelo responsável), com alias em inglês e número curto de tarefa.
 
 export const CHAT_ALIASES: Record<string, string> = {
-  '/help': '/ajuda', '/model': '/ia', '/agent': '/ia', '/agents': '/ias', '/plan': '/plano', '/diff': '/ver',
+  '/help': '/ajuda', '/agent': '/ia', '/agents': '/ias', '/plan': '/plano', '/diff': '/ver',
   '/accept': '/aceitar', '/redo': '/refazer', '/assign': '/trocar', '/undo': '/desfazer', '/stop': '/parar', '/new': '/nova',
   '/settings': '/config', '/about': '/sobre', '/exit': '/sair', '/update': '/atualizar', '/models': '/modelo',
+  // 1.4.0: /model é o seletor de modelos (como /modelo); a IA principal é /agent (/ia)
+  '/model': '/modelo', '/sync': '/sincronizar', '/connect': '/conectar',
+  // nomes do menu em inglês e espanhol (i18n.ts), aceitos em qualquer idioma
+  ...translatedAliases(),
 };
 
-export const SLASH_MENU: { cmd: string; desc: string }[] = [
-  { cmd: '/ajuda', desc: 'o que dá para fazer' },
-  { cmd: '/iniciar-projeto', desc: 'metodologia guiada: ASES-500 → requisitos → ASES-300 → GitHub' },
-  { cmd: '/ia', desc: 'mostra ou troca a IA principal' },
-  { cmd: '/ias', desc: 'IAs instaladas, logadas, livres ou ocupadas' },
-  { cmd: '/plano', desc: 'mostra o plano; Enter executa' },
-  { cmd: '/auto', desc: 'liga ou desliga o modo automático' },
-  { cmd: '/tarefas', desc: 'tarefas da conversa, ao vivo' },
-  { cmd: '/ver', desc: 'o que uma tarefa mudou (/ver 12)' },
-  { cmd: '/aceitar', desc: 'traz o trabalho pronto para o projeto' },
-  { cmd: '/refazer', desc: 'devolve a tarefa com o motivo' },
-  { cmd: '/trocar', desc: 'troca a IA de uma tarefa' },
-  { cmd: '/desfazer', desc: 'desfaz a última edição da principal' },
-  { cmd: '/parar', desc: 'para tudo' },
-  { cmd: '/nova', desc: 'começa uma conversa nova' },
-  { cmd: '/modelo', desc: 'escolhe o modelo de cada IA (← → ↑ ↓ e Espaço)' },
-  { cmd: '/config', desc: 'tema, logo, modo, limites, teste, autorizações' },
-  { cmd: '/atualizar', desc: 'atualiza o AER pelo npm' },
-  { cmd: '/sobre', desc: 'quem faz o Eureka42' },
-  { cmd: '/sair', desc: 'sai do ases' },
-];
+/** Comandos do menu do `/` (nome interno em português; o menu mostra o nome no idioma atual). */
+const MENU_CMDS = ['/ajuda', '/iniciar-projeto', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/modelo', '/config', '/sincronizar', '/conectar', '/atualizar', '/sobre', '/sair'];
 
-/** Filtra o menu do `/` pelo que foi digitado (`/a` → /ajuda /aceitar /atualizar /auto). */
-export const filterMenu = (prefix: string) => SLASH_MENU.filter((m) => m.cmd.startsWith(prefix.toLowerCase()));
+export interface MenuItem { cmd: string; name: string; desc: string }
+export const slashMenu = (): MenuItem[] => MENU_CMDS.map((cmd) => ({ cmd, name: cmdName(cmd), desc: t(`menu.${cmd}`) }));
+/** Compatibilidade: o menu no idioma atual. */
+export const SLASH_MENU = slashMenu();
 
-export const CHAT_HELP = `Converse em texto livre com a IA principal; ela lê, planeja e edita o projeto (/desfazer volta).
-Pedidos grandes viram um plano que o ASES divide entre as outras IAs, em paralelo.
+/** Filtra o menu do `/` pelo que foi digitado, no nome mostrado ou no nome em português (`/mod` → /model). */
+export const filterMenu = (prefix: string): MenuItem[] => {
+  const p = prefix.toLowerCase();
+  return slashMenu().filter((m) => m.name.startsWith(p) || m.cmd.startsWith(p));
+};
 
-${SLASH_MENU.map((m) => `  ${m.cmd.padEnd(11)} ${m.desc}`).join('\n')}
+export const chatHelp = (): string => [
+  t('help.intro', { undo: cmdName('/desfazer') }),
+  '',
+  ...slashMenu().map((m) => `  ${m.name.padEnd(16)} ${m.desc}`),
+  '',
+  t('help.other'),
+  t('help.advanced'),
+].join('\n');
 
-Equivalentes em inglês: ${Object.keys(CHAT_ALIASES).join(' ')}
-Comandos técnicos (fases, tarefas, gates): /ajuda avançado · eureka42.org`;
-
-export const CHAT_COMMANDS = new Set(['/modelo', '/ajuda', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/config', '/sobre', '/sair', '/atualizar']);
+export const CHAT_COMMANDS = new Set(['/modelo', '/ajuda', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/config', '/sobre', '/sair', '/atualizar', '/sincronizar', '/conectar']);
 
 /** `12` → `TAR-0012`; `TAR-0012` fica igual. */
 export function resolveTaskRef(ref: string): string {
@@ -110,9 +105,13 @@ export async function handleChat(engine: Engine, cmd: string, args: string[], ad
   const [a = '', b = '', ...rest] = args;
   switch (cmd) {
     case '/ajuda':
-      return a === 'avançado' || a === 'avancado' || a === 'advanced' ? advancedHelp() : CHAT_HELP;
+      return a === 'avançado' || a === 'avancado' || a === 'advanced' || a === 'avanzado' ? advancedHelp() : chatHelp();
     case '/sobre':
       return aboutText(VERSIONS.app);
+    case '/sincronizar':
+      return syncCommand(engine.projectRoot, a, b);
+    case '/conectar':
+      return connectCommand(a);
     case '/modelo': {
       const { chosenModels, setChosenModel } = await import('@aer/project-store');
       const real = Object.keys(engine.providers).filter((p) => !p.startsWith('simulator'));
@@ -297,11 +296,79 @@ function config(engine: Engine, chat: ChatSession, a: string, b: string, rest: s
       if (!(THEME_CHOICES as readonly string[]).includes(b)) return `tema inválido; use ${THEME_CHOICES.join('|')}`;
       saveUiConfig('project', root, { theme: b });
       return `tema ${b} gravado; vale na próxima abertura do ases`;
+    case 'idioma':
+    case 'language':
+    case 'lang': {
+      // 1.4.0: idioma da interface (config pessoal); "auto" volta ao da máquina
+      if (b === 'auto') {
+        setLanguagePreference(null);
+        setLang(undefined);
+        return t('lang.set', { l: `auto (${machineLang() ?? 'pt'})` });
+      }
+      const l = parseLang(b);
+      if (!l) return `idioma: ${lang()} · use /config idioma ${LANGS.join('|')}|auto`;
+      setLanguagePreference(l);
+      setLang(l);
+      return t('lang.set', { l });
+    }
     case 'logo':
       if (!(LOGO_MODES as readonly string[]).includes(b)) return `logo inválido; use ${LOGO_MODES.join('|')}`;
       saveUiConfig('project', root, { logo: b });
       return `logo ${b} gravado; vale na próxima abertura do ases`;
     default:
-      return 'uso: /config [consentir|revogar|limite|revisão|teste|modo|principal|tema|logo]';
+      return 'uso: /config [consentir|revogar|limite|revisão|teste|modo|principal|tema|logo|idioma]';
+  }
+}
+
+/** /sincronizar [github|nuvem [remoto]|ambos|desligar|status]: escolhe os destinos e envia o projeto (1.4.0). */
+export async function syncCommand(root: string, a: string, b: string, run?: import('./sync.ts').Run): Promise<string> {
+  const sync = await import('./sync.ts');
+  const { projectSync, setPreferredCloudRemote } = await import('@aer/project-store');
+  const cur = projectSync(root);
+  const status = () => {
+    const c = projectSync(root);
+    return [`sincronização: ${c.targets.length ? c.targets.map((t) => (t === 'github' ? `GitHub (${c.github ?? 'repositório criado no 1º envio'})` : `nuvem (${c.cloud ?? '?'})`)).join(' + ') : 'desligada'}`,
+      'escolha: /sincronizar github | nuvem [remoto:] | ambos | desligar · sem argumento envia agora (e o ases envia sozinho ao sair)'].join('\n');
+  };
+  const op = a.toLowerCase();
+  if (op === 'status') return status();
+  if (op === 'desligar' || op === 'off') {
+    sync.enableSync(root, [], undefined);
+    return 'sincronização desligada (nada foi apagado no GitHub nem na nuvem)';
+  }
+  if (!op) return cur.targets.length ? sync.syncProject(root, run).join('\n') : status();
+  const want: ('github' | 'cloud')[] = op === 'github' ? ['github'] : op === 'nuvem' || op === 'cloud' || op === 'nube' ? ['cloud'] : op === 'ambos' || op === 'both' ? ['github', 'cloud'] : [];
+  if (!want.length) return status();
+  const problems: string[] = [];
+  if (want.includes('github') && !sync.githubReady(run)) problems.push('GitHub: faça login com `gh auth login` no terminal');
+  let remote: string | undefined;
+  if (want.includes('cloud')) {
+    const remotes = sync.cloudRemotes(run);
+    if (remotes === undefined) problems.push('nuvem: instale o rclone (https://rclone.org/install) e rode `rclone config` para logar no Google Drive, OneDrive, Mega…');
+    else if (b && !remotes.includes(b.endsWith(':') ? b : `${b}:`)) problems.push(`nuvem: remoto ${b} não existe (tem: ${remotes.join(' ') || 'nenhum; rode `rclone config`'})`);
+    else {
+      remote = b ? (b.endsWith(':') ? b : `${b}:`) : sync.pickCloudRemote(remotes);
+      if (!remote) problems.push('nuvem: nenhum remoto; rode `rclone config` e faça login na sua nuvem');
+      else if (b) setPreferredCloudRemote(remote);
+    }
+  }
+  if (problems.length) return problems.join('\n');
+  sync.enableSync(root, want, remote);
+  return [status(), ...sync.syncProject(root, run)].join('\n');
+}
+
+/** /conectar [google|onedrive|dropbox]: login na nuvem pelo navegador; vira a nuvem padrão (1.4.0). */
+export async function connectCommand(which: string, connect?: typeof import('./sync.ts').connectCloud): Promise<string> {
+  const sync = await import('./sync.ts');
+  const { setPreferredCloudRemote } = await import('@aer/project-store');
+  const id = ({ google: 'google', drive: 'google', gdrive: 'google', 'google-drive': 'google', onedrive: 'onedrive', dropbox: 'dropbox' } as Record<string, 'google' | 'onedrive' | 'dropbox'>)[which.toLowerCase()];
+  if (!id) return [`uso: /conectar ${sync.CLOUD_PROVIDERS.map((c) => c.id).join(' | ')}  (abre o navegador para você entrar na sua conta)`,
+    'Mega e outras com senha: rode `rclone config` no terminal (o AER não digita senhas).'].join('\n');
+  try {
+    const r = await (connect ?? sync.connectCloud)(id);
+    setPreferredCloudRemote(r.remote);
+    return `${r.label} conectado (${r.remote}). Para enviar este projeto: /sincronizar nuvem (ou ambos, com o GitHub)`;
+  } catch (err) {
+    return `não conectei: ${(err as Error).message}`;
   }
 }

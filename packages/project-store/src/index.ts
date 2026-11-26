@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { ManifestSchema, VERSIONS, type EventEnvelope, type Manifest, type PhaseState, type TaskState } from '@aer/contracts';
@@ -344,4 +344,64 @@ export function setChosenModel(provider: string, model: string | null, globalFil
   if (model) cur[provider] = model;
   else delete cur[provider];
   writeGlobal(globalFile, { models: cur });
+}
+
+// ---- 1.4.0: levar o projeto para outra máquina (GitHub e/ou nuvem via rclone) ----
+
+export type SyncTarget = 'github' | 'cloud';
+export interface ProjectSync {
+  targets: SyncTarget[];
+  /** owner/nome do repositório no GitHub, quando já criado */
+  github?: string;
+  /** destino rclone da pasta do projeto, ex.: `gdrive:Projetos/meu-app` */
+  cloud?: string;
+}
+
+/** Cópia do banco que viaja com o projeto (fora do `.ases/db/`, que é local e não versionado). */
+export const snapshotFile = (root: string): string => path.join(root, ASES_DIR, 'snapshot', 'ases.sqlite');
+
+export function projectSync(root: string): ProjectSync {
+  const file = path.join(root, ASES_DIR, 'CONFIG.json');
+  const s = (readGlobal(file).sync ?? {}) as Partial<ProjectSync>;
+  const targets = Array.isArray(s.targets) ? s.targets.filter((t): t is SyncTarget => t === 'github' || t === 'cloud') : [];
+  return { targets, ...(typeof s.github === 'string' ? { github: s.github } : {}), ...(typeof s.cloud === 'string' ? { cloud: s.cloud } : {}) };
+}
+
+export function saveProjectSync(root: string, s: ProjectSync): void {
+  writeGlobal(path.join(root, ASES_DIR, 'CONFIG.json'), { sync: s });
+}
+
+/** Remoto rclone preferido (`gdrive:`, `onedrive:`, `mega:`…), na config pessoal. */
+export function preferredCloudRemote(globalFile: string = globalConfigFile()): string | undefined {
+  const v = readGlobal(globalFile).cloudRemote;
+  return typeof v === 'string' && v ? v : undefined;
+}
+
+export function setPreferredCloudRemote(remote: string, globalFile: string = globalConfigFile()): void {
+  writeGlobal(globalFile, { cloudRemote: remote });
+}
+
+/**
+ * Projeto trazido de outra máquina: sem `.ases/db/ases.sqlite`, mas com a cópia de `.ases/snapshot/`. Restaura a cópia
+ * (o banco local nunca é sobrescrito). Devolve true quando restaurou.
+ */
+export function restoreSnapshot(root: string): boolean {
+  const p = paths(root);
+  const snap = snapshotFile(root);
+  if (existsSync(p.db) || !existsSync(snap)) return false;
+  mkdirSync(p.dbDir, { recursive: true });
+  const tmp = `${p.db}.${process.pid}.tmp`;
+  copyFileSync(snap, tmp);
+  renameSync(tmp, p.db);
+  return true;
+}
+
+/** 1.4.0: idioma escolhido com /config idioma (config pessoal); ausente = o da máquina. */
+export function languagePreference(globalFile: string = globalConfigFile()): string | undefined {
+  const v = readGlobal(globalFile).language;
+  return typeof v === 'string' && v ? v : undefined;
+}
+
+export function setLanguagePreference(lang: string | null, globalFile: string = globalConfigFile()): void {
+  writeGlobal(globalFile, { language: lang ?? undefined });
 }

@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { rmSync } from 'node:fs';
+import { existsSync, rmSync } from 'node:fs';
 import { VERSIONS, type PhaseState, type TaskState } from '@aer/contracts';
 import { IpcServer, type Handler } from '@aer/ipc';
 import { ProjectStore, exportHistory, type CreateTaskInput, type Risk } from '@aer/persistence';
@@ -11,7 +11,7 @@ import { CursorProvider } from '@aer/provider-cursor';
 import { createAntigravityProvider, createKimiProvider, createOpenCodeProvider } from '@aer/provider-acp';
 import { SimulatorProvider } from '@aer/provider-simulator';
 import { runQueue, type AttemptOutcome, type WorkerDeps } from '@aer/scheduler';
-import { ProjectError, historyState, isInterimProject, paths, readManifest, sessionFile, writeSession } from '@aer/project-store';
+import { ProjectError, historyState, isInterimProject, paths, readManifest, restoreSnapshot, sessionFile, snapshotFile, writeSession } from '@aer/project-store';
 import { writeReports } from './reports.ts';
 
 const str = (v: unknown, name: string): string => {
@@ -65,6 +65,11 @@ export class Engine {
   }
 
   static async start(root: string, adapter: PlatformAdapter, o: { simulators?: number } = {}): Promise<Engine> {
+    if (historyState(root) === 'DB_MISSING' && existsSync(snapshotFile(root))) {
+      // 1.4.0: projeto trazido de outra máquina (GitHub/nuvem): o contexto vem da cópia em .ases/snapshot/
+      adapter.ensurePrivateDir(paths(root).dbDir);
+      restoreSnapshot(root);
+    }
     if (historyState(root) === 'DB_MISSING') {
       throw new ProjectError('DB_MISSING', '.ases/HISTORY.jsonl has engine history but .ases/db/ases.sqlite is missing (fresh clone or another worktree). Refusing to start: a new database would overwrite the versioned history. Copy the database from the machine that owns it; restore from the mirror arrives with Project Passport (PHASE-11).');
     }

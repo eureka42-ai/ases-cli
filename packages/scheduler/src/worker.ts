@@ -25,6 +25,9 @@ export interface WorkerDeps {
 // shortcut: cooldown fixo; usar o resetsAt do provider quando algum adapter o reportar de forma verificada
 export const DEFAULT_RATE_LIMIT_COOLDOWN_MS = 15 * 60_000;
 
+/** escopo dos pedidos de aprovação que o próprio agente faz durante uma tarefa */
+export const PROVIDER_OPERATION_SCOPE = 'PROVIDER_OPERATION';
+
 export interface AttemptOutcome {
   taskId: string;
   attemptId: string | null;
@@ -137,6 +140,13 @@ export async function runAttempt(d: WorkerDeps, r: { taskId: string; fencingToke
   const requirements = read((s) => task.reqs.map((id) => s.getRequirement(id)).filter((r) => r !== undefined).map((r) => ({ id: r.id, title: r.title, acceptance: r.acceptance })));
   writeFileSync(instructionsFile, buildPromptPack({ task, requirements, handoff: read((s) => latestHandoff(d.root, s, taskId)) }));
 
+  // aprovações concedidas para esta tarefa vão para o agente e são consumidas aqui: uso único (AER-REQ-162/173)
+  const approvedOperations = d.mutate((s) => {
+    const granted = s.listApprovals().filter((a) => a.scope === PROVIDER_OPERATION_SCOPE && a.taskId === taskId && a.state === 'GRANTED');
+    for (const a of granted) s.consumeApproval(a.id);
+    return granted.map((a) => a.operationHash);
+  });
+
   const ac = new AbortController();
   const onCancel = () => ac.abort();
   signal.addEventListener('abort', onCancel, { once: true });
@@ -161,7 +171,7 @@ export async function runAttempt(d: WorkerDeps, r: { taskId: string; fencingToke
     ev('TaskStarted', { attemptId, worktree: path.relative(d.root, wt.path).split(path.sep).join('/'), branch: wt.branch });
     const stream = provider.start({
       taskId, attemptId, workingDirectory: wt.path, instructionsFile, allowedPaths: ['.'], deniedPaths: ['.git', '.ases'], mode: 'WORKTREE_WRITE',
-      approvedToolPolicyId: 'default-deny', timeoutMs: d.timeoutMs, signal: ac.signal, ...(spec.preference ? { modelPreference: spec.preference } : {}),
+      approvedToolPolicyId: 'default-deny', timeoutMs: d.timeoutMs, ...(approvedOperations.length ? { approvedOperations } : {}), signal: ac.signal, ...(spec.preference ? { modelPreference: spec.preference } : {}),
     });
     for await (const e of stream) {
       switch (e.type) {
@@ -193,9 +203,13 @@ export async function runAttempt(d: WorkerDeps, r: { taskId: string; fencingToke
           ev('ProviderUsageObserved', { metric: e.metric, value: e.value, unit: e.unit, source: e.source });
           break;
         case 'approval_request':
-          // shortcut: sem canal de aprovação nesta fase; a operação fica BLOCKED até /approval (PHASE-10)
-          approval = e.description;
-          ev('ApprovalRequested', { operationHash: e.operationHash, description: redactText(e.description, 1000).text });
+          // sem canal de resposta ao agente: o pedido vira um APR pendente, a tentativa para e a tarefa fica BLOCKED.
+          // Concedido o APR, a próxima tentativa recebe o hash em approvedOperations e o agente segue sem perguntar.
+          {
+            const description = redactText(e.description, 1000).text;
+            const apr = d.mutate((s) => s.requestApproval({ scope: PROVIDER_OPERATION_SCOPE, subject: `${taskId} ${provider.id}`, operationHash: e.operationHash, description, taskId }));
+            approval = `${apr.id}: ${description}. Conceda com /approval grant ${apr.id} <seu nome> e rode /run de novo`;
+          }
           ac.abort();
           break;
         case 'error':

@@ -62,8 +62,8 @@ describe('chat engine and simple commands (PHASE-18, TAR-0086)', () => {
   });
 
   it('every Portuguese command has its English alias', async () => {
-    expect(CHAT_ALIASES).toMatchObject({ '/help': '/ajuda', '/model': '/ia', '/agent': '/ia', '/agents': '/ias', '/plan': '/plano', '/diff': '/ver', '/accept': '/aceitar', '/redo': '/refazer', '/assign': '/trocar', '/undo': '/desfazer', '/stop': '/parar', '/new': '/nova', '/settings': '/config', '/about': '/sobre', '/exit': '/sair', '/update': '/atualizar' });
-    for (const [en, pt] of [['/help', '/ajuda'], ['/about', '/sobre'], ['/model', '/ia'], ['/settings', '/config']]) expect(await say(en!)).toBe(await say(pt!));
+    expect(CHAT_ALIASES).toMatchObject({ '/help': '/ajuda', '/model': '/modelo', '/agent': '/ia', '/agents': '/ias', '/plan': '/plano', '/diff': '/ver', '/accept': '/aceitar', '/redo': '/refazer', '/assign': '/trocar', '/undo': '/desfazer', '/stop': '/parar', '/new': '/nova', '/settings': '/config', '/about': '/sobre', '/exit': '/sair', '/update': '/atualizar' });
+    for (const [en, pt] of [['/help', '/ajuda'], ['/about', '/sobre'], ['/model', '/modelo'], ['/agent', '/ia'], ['/settings', '/config']]) expect(await say(en!)).toBe(await say(pt!));
   });
 
   it('/ia shows and switches the main; /ias lists ready IAs', async () => {
@@ -127,7 +127,7 @@ describe('chat engine and simple commands (PHASE-18, TAR-0086)', () => {
   });
 
   it('/sobre prints the literal about text', async () => {
-    expect(await say('/sobre')).toBe('⌘ Eureka42 · ASES Engineering Runtime (AER) 1.3.1\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\neureka42.org · Licença CC BY-NC-ND 4.0');
+    expect(await say('/sobre')).toBe('⌘ Eureka42 · ASES Engineering Runtime (AER) 1.4.0\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\neureka42.org · Licença CC BY-NC-ND 4.0');
   });
 
   it('/ajuda avançado still lists /phase, /task, /run, /gate', async () => {

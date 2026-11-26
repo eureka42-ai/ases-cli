@@ -78,7 +78,7 @@ export class SimulatorProvider implements AgentProvider {
 
     try {
       yield* runAgentProcess(this.platform, {
-        command: this.node, args: [this.script, '--scenario', scenario, '--task', req.taskId, '--instructions', req.instructionsFile],
+        command: this.node, args: [this.script, '--scenario', scenario, '--task', req.taskId, '--instructions', req.instructionsFile, ...(req.approvedOperations?.length ? ['--approved', req.approvedOperations.join(',')] : [])],
         cwd: req.workingDirectory, timeoutMs: req.timeoutMs, signal: req.signal, ...(this.o.graceMs === undefined ? {} : { graceMs: this.o.graceMs }),
         map: (v) => [normalizeEvent(v)], onSpawn: (pid) => this.running.set(req.attemptId, pid),
       });

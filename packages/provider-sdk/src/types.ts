@@ -52,6 +52,8 @@ export interface AgentRunRequest {
   approvedToolPolicyId: string;
   modelPreference?: string;
   resumeReference?: string;
+  /** sha256 das operações que o usuário já aprovou para esta tarefa (/approval grant); uso único, consumidas nesta tentativa */
+  approvedOperations?: string[];
   timeoutMs: number;
   signal: AbortSignal;
 }

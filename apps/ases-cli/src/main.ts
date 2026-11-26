@@ -6,7 +6,7 @@ import { copyFileSync, mkdirSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { ProjectStore, exportHistory, importLegacy, sqliteVersion } from '@aer/persistence';
 import { SUPPORTED_TARGETS, defaultDeps, syncedFolderHint, targetStatus } from '@aer/platform-core';
-import { brandConfigLayers, chatConfig, desktopDir, findProjectRoot, recentProjects, rememberProject, initProject, isInterimProject, loadPlatformAdapter, paths, readInterimProject, readManifest } from '@aer/project-store';
+import { brandConfigLayers, chatConfig, desktopDir, findProjectRoot, recentProjects, rememberProject, initProject, isInterimProject, loadPlatformAdapter, paths, readInterimProject, preferredCloudRemote, projectSync, readManifest } from '@aer/project-store';
 import { ClaudeCodeProvider } from '@aer/provider-claude';
 import { CodexProvider } from '@aer/provider-codex';
 import { CursorProvider } from '@aer/provider-cursor';
@@ -17,8 +17,9 @@ import { Engine } from './engine.ts';
 import { handleLine } from './commands.ts';
 import { runTui } from './tui.tsx';
 import { runWizard } from './wizard.tsx';
-import { clearScreen, runStartScreen } from './start-screen.tsx';
+import { clearScreen, runStartScreen, type SyncAvail } from './start-screen.tsx';
 import { runUpdate } from './update.ts';
+import { enableSync, initGitRepo, syncAvailability, syncProject } from './sync.ts';
 import { shouldAnimate } from './ticker.ts';
 import { attachRepl, connectResident, daemonStatus, runDaemon, startDaemon, stopDaemon } from './daemon.ts';
 
@@ -201,11 +202,25 @@ async function main(argv: string[]): Promise<number> {
 
   // PHASE-19: "Onde vamos trabalhar?" — a pasta escolhida vira projeto sozinha (sem `ases init`)
   let root = findProjectRoot(process.cwd());
+  let sync: SyncAvail | undefined;
   if (ui.tui) {
     clearScreen(); // PHASE-20: tela limpa, só a pergunta da pasta
-    const picked = await runStartScreen({ color: ui.color, colorDepth: ui.colorDepth, unicode: ui.unicode, theme: ui.theme, logo: ui.logo }, { cwd: root ?? process.cwd(), desktop: desktopDir(), recent: recentProjects().filter((p) => findProjectRoot(p) === p) });
-    if (!picked) return 0;
+    // 1.4.0: GitHub e/ou nuvem (rclone) disponíveis nesta máquina, para abrir projetos de outra máquina
+    const avail = syncAvailability();
+    sync = { github: avail.github, rcloneInstalled: avail.rcloneInstalled, ...(avail.cloud ? { cloud: avail.cloud, cloudName: avail.cloudName ?? avail.cloud } : {}) };
+    const chosen = await runStartScreen({ color: ui.color, colorDepth: ui.colorDepth, unicode: ui.unicode, theme: ui.theme, logo: ui.logo }, { cwd: root ?? process.cwd(), desktop: desktopDir(), recent: recentProjects().filter((p) => findProjectRoot(p) === p), sync });
+    if (!chosen) return 0;
+    const picked = chosen.path;
     root = findProjectRoot(picked) === picked ? picked : (initProject(picked, adapter), picked);
+    // nuvem conectada na própria tela inicial: refaz o retrato para o cabeçalho e para o destino do projeto
+    const pref = preferredCloudRemote();
+    if (pref && pref !== sync.cloud) {
+      const again = syncAvailability();
+      sync = { github: again.github, rcloneInstalled: again.rcloneInstalled, ...(again.cloud ? { cloud: again.cloud, cloudName: again.cloudName ?? again.cloud } : {}) };
+    }
+    if (chosen.targets?.length) enableSync(root, chosen.targets, sync.cloud);
+    // projeto novo (Novo projeto…) já nasce com Git: os planos em paralelo usam uma cópia (worktree) por IA
+    if (chosen.targets !== undefined) initGitRepo(root);
     clearScreen(); // depois da escolha: logo e o resto, numa tela limpa
   }
   if (!root) {
@@ -213,7 +228,7 @@ async function main(argv: string[]): Promise<number> {
     return 2;
   }
   rememberProject(root);
-  return interactive(root, adapter, ui);
+  return interactive(root, adapter, ui, sync);
 }
 
 class UsageError extends Error {}
@@ -261,9 +276,18 @@ async function probeProviders(adapter: Awaited<ReturnType<typeof loadPlatformAda
   }));
 }
 
+/** 1.4.0: com GitHub/nuvem ligados, o projeto (com o contexto) é enviado ao sair, já com o engine fechado. */
+function syncOnExit(root: string): void {
+  if (!projectSync(root).targets.length) return;
+  const s = projectSync(root);
+  const where = s.targets.map((t) => (t === 'github' ? 'GitHub' : (s.cloud ?? 'nuvem'))).join(' e ');
+  console.log(`enviando o projeto para ${where}… (a nuvem pode levar de segundos a 1–2 min; não feche o terminal)`);
+  for (const l of syncProject(root)) console.log(`  ${l}`);
+}
+
 const exitNote = (n: number) => (n ? `${n} tarefa(s) em execução cancelada(s), árvore de processos encerrada` : 'Nenhuma tarefa estava em execução');
 
-async function interactive(root: string, adapter: Awaited<ReturnType<typeof loadPlatformAdapter>>, ui: { color: boolean; colorDepth: 0 | 4 | 8 | 24; banner: boolean; theme: ThemeName; mode: LogoMode; unicode: boolean; logo: LogoMode | undefined; tui: boolean; animation: boolean }): Promise<number> {
+async function interactive(root: string, adapter: Awaited<ReturnType<typeof loadPlatformAdapter>>, ui: { color: boolean; colorDepth: 0 | 4 | 8 | 24; banner: boolean; theme: ThemeName; mode: LogoMode; unicode: boolean; logo: LogoMode | undefined; tui: boolean; animation: boolean }, sync?: SyncAvail): Promise<number> {
   const synced = syncedFolderHint(adapter.id, defaultDeps(), root);
   if (synced) console.error(`AVISO: o projeto está numa pasta sincronizada (${synced}). O sync pode copiar o banco SQLite no meio de uma escrita e corrompê-lo; mova o projeto para uma pasta não sincronizada.`);
   // há um motor residente neste projeto? então este `ases` é só um cliente dele (PHASE-12)
@@ -280,10 +304,11 @@ async function interactive(root: string, adapter: Awaited<ReturnType<typeof load
   if (ui.tui) {
     // PHASE-18: primeiro uso sem principal configurada → assistente (sem IA) antes do chat
     if (!chatConfig(root).main) await runWizard(engine, { color: ui.color, colorDepth: ui.colorDepth, unicode: ui.unicode, theme: ui.theme, logo: ui.logo });
-    const reason = await runTui(engine, { color: ui.color, colorDepth: ui.colorDepth, unicode: ui.unicode, theme: ui.theme, logo: ui.logo, animation: ui.animation });
+    const reason = await runTui(engine, { color: ui.color, colorDepth: ui.colorDepth, unicode: ui.unicode, theme: ui.theme, logo: ui.logo, animation: ui.animation }, sync ? { sync } : {});
     const r = await engine.stop();
     // §6.4/AER-REQ-090: impresso depois que o Ink devolveu o terminal
     console.log(`${reason}: engine encerrado. ${exitNote(r.cancelled)}; estado salvo até seq ${r.lastSeq}.`);
+    syncOnExit(root);
     return 0;
   }
   if (ui.banner) console.log(renderBrand({ app: 'ASES CLI', mode: ui.mode, theme: ui.theme, color: ui.color, colorDepth: ui.colorDepth }));
@@ -300,6 +325,7 @@ async function interactive(root: string, adapter: Awaited<ReturnType<typeof load
     const r = await engine.stop();
     // §6.4/AER-REQ-090: diz claramente o que aconteceu com o motor e com as tarefas ao sair
     console.log(`${why}: engine encerrado. ${exitNote(r.cancelled)}; estado salvo até seq ${r.lastSeq}.`);
+    syncOnExit(root);
   })());
   // /run roda em segundo plano (os outros comandos, inclusive /cancel, seguem respondendo); /exit e o fim da entrada
   // esperam os runs em andamento, então um script `/run` + `/exit` só sai quando o run termina

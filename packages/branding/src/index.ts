@@ -140,7 +140,7 @@ const BANNER = [
 ];
 
 /** Banner grande do `ases`: 6 linhas em blocos + linha de status (site, principal, IAs prontas). */
-export function renderBanner(o: { color: boolean; colorDepth?: 0 | 4 | 8 | 24; unicode: boolean; theme?: ThemeName; main?: string; ready?: number; version?: string }): string {
+export function renderBanner(o: { color: boolean; colorDepth?: 0 | 4 | 8 | 24; unicode: boolean; theme?: ThemeName; main?: string; ready?: number; version?: string; labels?: { main?: string; ready?: string } }): string {
   const t = THEMES[o.theme ?? 'green'];
   const d = o.colorDepth ?? 24;
   const c = o.color && d !== 0;
@@ -148,7 +148,7 @@ export function renderBanner(o: { color: boolean; colorDepth?: 0 | 4 | 8 | 24; u
   const rows = o.unicode ? BANNER : BANNER.map((l) => l.replace(/█/g, '#').replace(/[╗║╔╝╚═]/g, '='));
   const sep = o.unicode ? ' · ' : ' - ';
   const status = [`${o.unicode ? GLYPH : GLYPH_FALLBACK}  ASES Engineering Runtime${o.version ? ` ${o.version}` : ''}`, SITE,
-    ...(o.main ? [`principal: ${o.main}`] : []), ...(o.ready !== undefined ? [`${o.ready} IAs prontas`] : [])].join(sep);
+    ...(o.main ? [`${o.labels?.main ?? 'principal'}: ${o.main}`] : []), ...(o.ready !== undefined ? [(o.labels?.ready ?? '{n} IAs prontas').replace('{n}', String(o.ready))] : [])].join(sep);
   return [...rows.map((l) => paint(l, t.accent, c, true, d === 0 ? 24 : d, hc)), status].join('\n');
 }
 

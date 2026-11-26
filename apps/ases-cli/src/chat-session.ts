@@ -75,14 +75,16 @@ export class ChatSession {
 
   /** Lista de modelos de uma IA (comando de lista da própria CLI, sem shell, só leitura). */
   async models(provider: string) {
-    const { listModels } = await import('./models.ts');
+    const { PROVIDER_CLI, listModels } = await import('./models.ts');
     const { findExecutable, runShort } = await import('@aer/provider-sdk');
-    return listModels(provider, async (cmd, args) => {
+    const cli = PROVIDER_CLI[provider];
+    const list = await listModels(provider, async (cmd, args) => {
       const exe = findExecutable(cmd);
       if (!exe) return { exitCode: 127, stdout: '' };
       const r = await runShort(this.engine.platform, exe, args, { cwd: this.engine.projectRoot, timeoutMs: 30_000 });
       return { exitCode: r.exitCode, stdout: r.stdout };
     });
+    return cli ? { ...list, installed: findExecutable(cli) !== undefined } : list;
   }
 
   /** Interrompe o turno da principal em curso (/parar, saída do ases) e espera ele terminar. */
@@ -116,7 +118,12 @@ export class ChatSession {
   /** IAs que podem receber trabalho: prontas e (simuladas ou autorizadas nesta sessão). */
   async workers(): Promise<string[]> {
     const p = await this.probeAll();
-    return Object.keys(p).filter((id) => p[id]!.availability === 'READY' && (id.startsWith('simulator') || this.consent.has(id)));
+    // 1.4.0: com uma IA real como principal, o simulador nunca recebe trabalho (ele não faz trabalho de verdade: num
+    // plano real, a TAR-0002 de um teste foi parar nele e voltou com um arquivo SIMULATED). Simuladores só trabalham
+    // quando a principal também é simulada (testes e demonstrações).
+    const main = this.engine.store.currentConversation()?.main ?? this.config().main ?? 'simulator';
+    const simulatedMain = main.split(':')[0]!.startsWith('simulator');
+    return Object.keys(p).filter((id) => p[id]!.availability === 'READY' && (id.startsWith('simulator') ? simulatedMain : this.consent.has(id)));
   }
 
   /** Conversa atual; a primeira usa a principal do CONFIG, senão a primeira IA pronta (sempre mostrada ao usuário). */

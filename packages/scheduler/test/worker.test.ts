@@ -6,7 +6,7 @@ import { git } from '@aer/git-bridge';
 import { ProjectStore } from '@aer/persistence';
 import { createBaseAdapter, detectPlatform } from '@aer/platform-core';
 import { SimulatorProvider } from '@aer/provider-simulator';
-import { parseProviderSpec, runAttempt, runQueue, tick, type WorkerDeps } from '../src/index.ts';
+import { PROVIDER_OPERATION_SCOPE, parseProviderSpec, runAttempt, runQueue, tick, type WorkerDeps } from '../src/index.ts';
 import { tempRepo } from '../../git-bridge/test/helpers.ts';
 
 const adapter = createBaseAdapter(detectPlatform(), 'test');
@@ -100,6 +100,24 @@ describe('runAttempt (TAR-0030)', () => {
     expect(await runAttempt(d, reserve(s)[0]!, new AbortController().signal)).toMatchObject({ state: 'BLOCKED', reason: expect.stringMatching(/^APPROVAL_REQUIRED/) });
     expect(types(s, ids[0]!)).toContain('ApprovalRequested');
     expect(s.listAttempts(ids[0]!)[0]).toMatchObject({ state: 'CANCELLED' });
+  });
+
+  it('agent approval request becomes a pending APR; once granted, the next attempt runs it and consumes it (single use)', async () => {
+    const { s, ids, d } = await setup(['simulator:approval']);
+    const first = await runAttempt(d, reserve(s)[0]!, new AbortController().signal);
+    const [apr] = s.listApprovals();
+    expect(apr).toMatchObject({ scope: PROVIDER_OPERATION_SCOPE, taskId: ids[0], state: 'PENDING', description: 'SIMULATED: apagar a pasta build/' });
+    expect(first.reason).toContain(`/approval grant ${apr!.id}`);
+    // sem concessão, repetir não cria pedido duplicado
+    s.transitionTask(ids[0]!, 'READY', s.getTask(ids[0]!)!.version);
+    await runAttempt(d, reserve(s)[0]!, new AbortController().signal);
+    expect(s.listApprovals()).toHaveLength(1);
+
+    s.decideApproval(apr!.id, 'GRANTED', 'tester');
+    s.transitionTask(ids[0]!, 'READY', s.getTask(ids[0]!)!.version);
+    expect(await runAttempt(d, reserve(s)[0]!, new AbortController().signal)).toMatchObject({ state: 'REVIEW' });
+    expect(s.getApproval(apr!.id)!.state).toBe('CONSUMED');
+    expect(s.listAttempts(ids[0]!).at(-1)).toMatchObject({ state: 'EXITED', exitCode: 0 });
   });
 
   it('hung agent past timeout is terminated and FAILED TIMEOUT (AER-REQ-106)', async () => {

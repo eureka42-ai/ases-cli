@@ -111,7 +111,11 @@ export async function* runAgentProcess(platform: ProcessPlatform, o: AgentProces
 export function findExecutable(name: string, env: Readonly<Record<string, string | undefined>> = process.env, platform: string = process.platform): string | undefined {
   const exts = platform === 'win32' ? (env.PATHEXT ?? '.EXE;.CMD;.BAT;.COM').split(';').filter(Boolean) : [''];
   const sep = platform === 'win32' ? ';' : ':';
-  for (const dir of (env.PATH ?? env.Path ?? '').split(sep).filter(Boolean)) {
+  // 1.4.0: além do PATH, as pastas por usuário onde os instaladores oficiais põem as CLIs (o PATH delas costuma vir só
+  // do ~/.bashrc, e um terminal aberto por outro programa pode não ter): ~/.local/bin (claude, agy), ~/.opencode/bin
+  const home = env.HOME ?? env.USERPROFILE;
+  const extra = platform === 'win32' || !home ? [] : [path.join(home, '.local', 'bin'), path.join(home, '.opencode', 'bin')];
+  for (const dir of [...(env.PATH ?? env.Path ?? '').split(sep).filter(Boolean), ...extra]) {
     for (const ext of exts) {
       const full = path.join(dir, name + ext.toLowerCase());
       try {

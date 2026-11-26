@@ -13,7 +13,8 @@ const gitDir = (() => {
   return path.dirname(r.stdout.split(/\r?\n/)[0].trim());
 })();
 const PATH = [path.dirname(process.execPath), gitDir].join(path.delimiter);
-const env = { PATH, Path: PATH };
+// HOME vazio: o AER também procura em ~/.local/bin e ~/.opencode/bin (1.4.0), onde moram as CLIs reais de quem roda
+const env = { PATH, Path: PATH, HOME: path.join(p.dir, 'home-vazio') };
 
 describe('providers without login or cost (TAR-0036, AER-REQ-116/119/123/130)', () => {
   it('doctor: missing official CLIs do not hide the simulator; each shows its contract status', () => {

@@ -1,12 +1,12 @@
 import { describeToolCall, type AgentStreamEvent } from '@aer/provider-sdk';
 
 // PHASE-19: conversa no estilo do Claude Code, com a marca Eureka42. "> " cinza para você, "● " verde para a IA,
-// "● " laranja para o que ela está fazendo e o que mudou (+ verde / − vermelho), listas/negrito/código formatados e
+// "● " na cor do tema (verde Eureka42 por padrão) para o que ela está fazendo e o que mudou (+ verde / − vermelho), listas/negrito/código formatados e
 // quebra por palavra com recuo.
 
 export type EntryKind = 'user' | 'main' | 'activity' | 'system' | 'error' | 'progress';
 export interface Entry { kind: EntryKind; who?: string; text: string }
-export type Color = 'gray' | 'green' | 'red' | 'orange';
+export type Color = 'gray' | 'green' | 'red' | 'activity';
 export interface Segment { text: string; bold?: boolean; color?: Color }
 export interface Line { segments: Segment[]; color?: Color; bold?: boolean; dim?: boolean }
 
@@ -133,7 +133,7 @@ export function renderEntries(entries: readonly Entry[], width: number, unicode:
         break;
       case 'activity': {
         const [head = '', ...rest] = e.text.split('\n');
-        out.push(...wrapWords(head, width - 2).map((t, k) => ({ segments: [k === 0 ? { text: dot, color: 'orange' as const } : { text: '  ' }, { text: t }] })));
+        out.push(...wrapWords(head, width - 2).map((t, k) => ({ segments: [k === 0 ? { text: dot, color: 'activity' as const } : { text: '  ' }, { text: t }] })));
         for (const l of rest) {
           const seg = { text: [...l].slice(0, width).join('') };
           out.push(/^ {4}\+/.test(l) ? { segments: [seg], color: 'green' } : /^ {4}-/.test(l) ? { segments: [seg], color: 'red' } : { segments: [seg], dim: true });

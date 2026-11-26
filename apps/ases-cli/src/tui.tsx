@@ -10,6 +10,16 @@ import { ModelPicker } from './model-picker.tsx';
 import type { ModelList } from './models.ts';
 import { chosenModels, setChosenModel } from '@aer/project-store';
 import type { Engine } from './engine.ts';
+import { THEMES } from '@aer/branding';
+import type { SyncAvail } from './start-screen.tsx';
+import { syncStatusLine } from './sync.ts';
+import { t } from './i18n.ts';
+
+/** Rodapé no idioma atual: os pares tecla/ação vêm da frase traduzida "Enter enviar · / comandos · …". */
+const hintPairs = (updown: string, unicode: boolean): [string, string][] => t('hints').split(' · ').map((h) => {
+  const [k = '', ...rest] = h.split(' ');
+  return [k === '↑↓' ? updown : k === 'Ctrl+C×2' && !unicode ? 'Ctrl+Cx2' : k, rest.join(' ')];
+});
 
 /** O que a TUI precisa do engine; o Engine real satisfaz isto e os testes usam o mesmo Engine sobre um projeto temporário. */
 type EngineLike = Pick<Engine, 'info' | 'store' | 'onChange' | 'mirrorError' | 'runningTasks'> & Parameters<typeof handleLine>[0];
@@ -28,8 +38,10 @@ const KEYS: [string, string][] = [
   ['Ctrl+C ×2', 'sai: tarefas em execução são canceladas (árvore de processos encerrada) e o engine é encerrado'],
 ];
 
-export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reason: string) => void }): ReactElement {
+export function AsesApp({ engine, onExit, sync }: { engine: EngineLike; onExit: (reason: string) => void; sync?: SyncAvail }): ReactElement {
   const ui = useUi();
+  // 1.4.0: nuvem/GitHub conectados e se este projeto é enviado (relido a cada desenho: /sincronizar muda na hora)
+  const syncLine = sync ? syncStatusLine(engine.projectRoot, sync) : undefined;
   const y = symbols(ui.unicode);
   const accent = useAccent();
   const app = useApp();
@@ -153,8 +165,20 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
       if (key.upArrow) return setMenuSel((i) => Math.max(0, i - 1));
       if (key.downArrow) return setMenuSel((i) => Math.min(menu.length - 1, i + 1));
       if (key.tab) {
-        setInput(`${menu[Math.min(menuSel, menu.length - 1)]!.cmd} `);
+        setInput(`${menu[Math.min(menuSel, menu.length - 1)]!.name} `);
         setMenuSel(0);
+        return;
+      }
+      if (key.return) {
+        // 1.4.0: Enter executa a opção destacada do menu (antes executava o texto digitado, ex.: "/mod")
+        const typed = input.trim().toLowerCase();
+        const exact = menu.find((m) => m.name === typed || m.cmd === typed);
+        const pick = menuSel === 0 && exact ? exact : menu[Math.min(menuSel, menu.length - 1)]!;
+        setMenuSel(0);
+        setInput('');
+        setHIdx(-1);
+        setHistory((h) => [...h.filter((x) => x !== pick.name), pick.name].slice(-200));
+        run(pick.cmd);
         return;
       }
     }
@@ -221,12 +245,14 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
   const info = engine.info;
   const wide = columns >= 100;
   const conv = engine.store.currentConversation();
-  const mainName = conv?.main ?? chat.config().main ?? '…';
+  const mainId = conv?.main ?? chat.config().main;
+  // 1.4.0: o modelo em uso aparece junto da principal (trocar para um mais leve sem abrir o /modelo)
+  const mainName = mainId ? `${mainId} (${chosenModels()[mainId] ?? t('model.default')})` : '…';
   const pendingPlan = conv ? engine.store.pendingPlan(conv.id) : undefined;
   const menuItems = focus === 'prompt' && input.startsWith('/') && !input.includes(' ') && !consentAsk ? filterMenu(input).slice(0, Math.max(3, Math.min(12, rows - 14))) : [];
   // banner grande só com espaço: 72+ colunas e altura para ainda caber a sessão
   const bannerOn = columns >= 72 && rows >= 24;
-  const headerRows = bannerOn ? 8 : 1;
+  const headerRows = (bannerOn ? 8 : 1) + (syncLine ? 1 : 0);
   const extraRows = menuItems.length + (consentAsk ? 1 : 0) + (pendingPlan && !consentAsk ? 1 : 0) + (thinking ? 1 : 0) + 2; // +2: moldura do prompt
   const bodyRows = Math.max(3, rows - 3 - headerRows - extraRows); // cabeçalho + prompt + rodapé + margem
   const visible = Math.max(1, bodyRows - 3);
@@ -234,12 +260,13 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
   const logWidth = wide ? columns - sideWidth : columns;
 
   const header = (
-    <BrandHeader app="ASES CLI" columns={columns} {...(bannerOn ? { banner: { main: mainName, ...(ready !== undefined ? { ready } : {}) } } : {})}>
+    <BrandHeader app="ASES CLI" columns={columns} {...(bannerOn ? { banner: { main: mainName, labels: { main: t('banner.main'), ready: t('banner.ready', { n: '{n}' }) }, ...(ready !== undefined ? { ready } : {}) } } : {})}>
       <StatusBadge status="LIVE" />
       <Text wrap="truncate-end">{`  ${info.name}${y.sep}seq ${info.lastSeq}${y.sep}monitores ${info.monitors}${engine.mirrorError ? `${y.sep}ESPELHO PENDENTE` : ''}`}</Text>
     </BrandHeader>
   );
-  const hex: Record<Color, string> = { gray: 'gray', green: '#22C55E', red: 'red', orange: '#F97316' };
+  const syncBar = syncLine ? <Text wrap="truncate-end" {...(accent ? { color: accent } : {})}>{`${ui.unicode ? '☁' : '*'} ${syncLine}`}</Text> : null;
+  const hex: Record<Color, string> = { gray: 'gray', green: '#22C55E', red: 'red', activity: THEMES[ui.theme].accent2 ?? '#16A34A' };
   const tint = (c: Color | undefined) => (ui.color && c ? { color: hex[c] } : {});
   // conversa sem moldura, como no Claude Code; só o painel de tarefas (tela larga) tem borda
   const logPane = (
@@ -276,12 +303,13 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
   return (
     <Box flexDirection="column" width={columns}>
       {header}
+      {syncBar}
       {body}
-      {menuItems.map((m, i) => <Text key={m.cmd} wrap="truncate-end" inverse={ui.color && i === Math.min(menuSel, menuItems.length - 1)}>{`${i === Math.min(menuSel, menuItems.length - 1) ? (ui.unicode ? '›' : '>') : ' '} ${m.cmd.padEnd(11)} ${m.desc}`}</Text>)}
+      {menuItems.map((m, i) => <Text key={m.cmd} wrap="truncate-end" inverse={ui.color && i === Math.min(menuSel, menuItems.length - 1)}>{`${i === Math.min(menuSel, menuItems.length - 1) ? (ui.unicode ? '›' : '>') : ' '} ${m.name.padEnd(16)} ${m.desc}`}</Text>)}
       {consentAsk ? <Text wrap="truncate-end" bold>{`Autorizar o uso da sua conta ${consentAsk.provider}? Ela usa a SUA cota. [s] só nesta sessão  [a] sempre, todas as IAs  [n] não`}</Text> : null}
       {thinking ? (() => {
         const t = thinkingParts(thinking, now, ui.unicode);
-        return <Text wrap="truncate-end"><Text {...tint('orange')}>{`${t.glyph} `}</Text><Text bold {...tint('orange')}>{t.word}</Text><Text dimColor={ui.color}>{` ${t.rest}`}</Text></Text>;
+        return <Text wrap="truncate-end"><Text {...tint('activity')}>{`${t.glyph} `}</Text><Text bold {...tint('activity')}>{t.word}</Text><Text dimColor={ui.color}>{` ${t.rest}`}</Text></Text>;
       })() : null}
       {pendingPlan && !consentAsk ? <Text wrap="truncate-end">{`${pendingPlan.id} pendente: [Enter] executar  [Ctrl+E] editar  [Ctrl+N] descartar`}</Text> : null}
       <Box borderStyle={ui.unicode ? 'round' : 'classic'} borderDimColor={ui.color} width={columns} paddingX={1}>
@@ -290,15 +318,15 @@ export function AsesApp({ engine, onExit }: { engine: EngineLike; onExit: (reaso
           {`${input}${focus === 'prompt' ? cursor : ''}`}
         </Text>
       </Box>
-      <KeyHints hints={[['Enter', 'enviar'], ['/', 'comandos'], [y.updown, 'histórico'], ['Tab', 'tarefas'], ['?', 'ajuda'], [ui.unicode ? 'Ctrl+C×2' : 'Ctrl+Cx2', 'sair']]} />
+      <KeyHints hints={hintPairs(y.updown, ui.unicode)} />
     </Box>
   );
 }
 
 /** Roda a TUI até o usuário sair; devolve o motivo para a mensagem final (impressa fora do Ink). */
-export async function runTui(engine: Engine, ui: Ui): Promise<string> {
+export async function runTui(engine: Engine, ui: Ui, o: { sync?: SyncAvail } = {}): Promise<string> {
   let reason = 'saída';
-  const instance = render(<UiContext.Provider value={ui}><AsesApp engine={engine} onExit={(r) => { reason = r; }} /></UiContext.Provider>, { exitOnCtrlC: false });
+  const instance = render(<UiContext.Provider value={ui}><AsesApp engine={engine} {...(o.sync ? { sync: o.sync } : {})} onExit={(r) => { reason = r; }} /></UiContext.Provider>, { exitOnCtrlC: false });
   const onTerm = () => {
     reason = 'SIGTERM';
     instance.unmount();

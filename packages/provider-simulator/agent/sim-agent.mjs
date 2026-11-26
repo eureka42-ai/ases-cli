@@ -11,7 +11,7 @@ import { parseArgs } from 'node:util';
 const SIM_VERSION = '1.0.0';
 const SCENARIOS = ['ok', 'fail', 'hang', 'approval', 'auth-expired', 'rate-limit', 'garbage', 'escape', 'review', 'review-write', 'chat'];
 
-const { values } = parseArgs({ options: { version: { type: 'boolean' }, scenario: { type: 'string' }, task: { type: 'string' }, instructions: { type: 'string' } } });
+const { values } = parseArgs({ options: { version: { type: 'boolean' }, scenario: { type: 'string' }, task: { type: 'string' }, instructions: { type: 'string' }, approved: { type: 'string' } } });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // pipes são assíncronos no macOS: espera o flush antes de seguir (e antes de process.exit)
 const out = (s) => new Promise((r) => process.stdout.write(s, r));
@@ -97,10 +97,19 @@ switch (scenario) {
   case 'escape':
     await emit({ type: 'file_change', relativePath: '../fora-da-worktree.txt', kind: 'create' });
     process.exit(0);
-  case 'approval':
-    await emit({ type: 'approval_request', operationHash: createHash('sha256').update(`${taskId}:rm-build`).digest('hex'), description: 'SIMULATED: apagar a pasta build/' });
-    await forever(); // espera uma decisão que só chega pelo AER (cancelamento nesta fase)
-    break;
+  case 'approval': {
+    const hash = createHash('sha256').update(`${taskId}:rm-build`).digest('hex');
+    if (!(values.approved ?? '').split(',').includes(hash)) {
+      await emit({ type: 'approval_request', operationHash: hash, description: 'SIMULATED: apagar a pasta build/' });
+      await forever(); // o AER encerra a tentativa; a decisão chega na próxima via --approved
+    }
+    const rel = `SIMULATED/${taskId}-aprovado.md`;
+    mkdirSync('SIMULATED', { recursive: true });
+    writeFileSync(path.join('SIMULATED', `${taskId}-aprovado.md`), `# ${taskId} (SIMULATED)\n\nOperação aprovada pelo usuário: apagar a pasta build/ (sha256 ${hash}).\n`);
+    await emit({ type: 'file_change', relativePath: rel, kind: 'create' });
+    await emit({ type: 'message', text: 'SIMULATED: operação aprovada executada', visibleToUser: true });
+    process.exit(0);
+  }
   case 'hang': {
     // neto que também fica pendurado: o cancelamento precisa encerrar a árvore inteira (AER-REQ-106)
     const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1 << 30)'], { stdio: 'ignore' });

@@ -5,6 +5,7 @@ import {
   discoverProjectMcp, discoverSkills, evaluate, installClaudePlugin, listClaudePlugins, mcpEnv, mcpHealth, operationHash, scanPlugin, skillRoots, verdictOf, type Operation,
 } from '@aer/security';
 import type { ExtensionRow } from '@aer/persistence';
+import { PROVIDER_OPERATION_SCOPE } from '@aer/scheduler';
 import type { Engine } from './engine.ts';
 
 export const SECURITY_HELP = `Segurança e extensões (PHASE-10):
@@ -100,7 +101,12 @@ export function handleSecurity(engine: Engine, cmd: string, sub: string | undefi
       const [id = '', ...w] = rest;
       const ttl = sub === 'grant' && /^\d+$/.test(w[0] ?? '') ? Number(w.shift()) : 60;
       const a = engine.mutate((st) => st.decideApproval(id, sub === 'grant' ? 'GRANTED' : 'DENIED', w.join(' '), ttl));
-      return `${a.id} ${a.state}${a.expiresAt ? ` até ${a.expiresAt}` : ''} (${a.subject})`;
+      const head = `${a.id} ${a.state}${a.expiresAt ? ` até ${a.expiresAt}` : ''} (${a.subject})`;
+      // pedido feito pelo agente: concedido, a tarefa bloqueada por ele volta a READY para o próximo /run
+      const t = a.scope === PROVIDER_OPERATION_SCOPE && a.state === 'GRANTED' && a.taskId ? s.getTask(a.taskId) : undefined;
+      if (!t || t.state !== 'BLOCKED') return head;
+      engine.mutate((st) => st.transitionTask(a.taskId!, 'READY', t.version, `${a.id} concedida`));
+      return `${head}\n${a.taskId} BLOCKED → READY; rode /run para continuar`;
     }
     return 'uso: /approval | /approval grant APR-XXXX [minutos] <nome> | /approval deny APR-XXXX <nome>';
   }

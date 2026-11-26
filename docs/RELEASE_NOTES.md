@@ -1,5 +1,23 @@
 # AER 1.x: notas de versão
 
+## 1.4.0 (26/11/2026): projetos em qualquer máquina
+- **Novo projeto:** na tela "Onde vamos trabalhar?", você digita o nome e o AER cria `~/Projetos Eureka42/<nome>`. Em seguida pergunta onde guardar: **só nesta máquina** (padrão), **GitHub** (repositório privado), **nuvem** ou **GitHub e nuvem**. Só aparecem as opções que funcionam nesta máquina.
+- **Nuvem:** Google Drive, OneDrive, Mega, Dropbox e as demais do [rclone](https://rclone.org). O login é feito uma vez com `rclone config`; o AER nunca vê a senha. O projeto vai para `<nuvem>:Projetos Eureka42/<nome>`. **Conectar uma nuvem** (tela inicial) e **`/conectar google|onedrive|dropbox`** abrem o navegador para o login.
+- **O contexto vai junto:** o projeto continua rodando numa pasta local (sincronizar a pasta ao vivo corrompe o banco). Ao sair, o AER grava uma cópia consistente do banco em `.ases/snapshot/` e envia o projeto. Na outra máquina, essa cópia é restaurada sozinha e o histórico continua de onde parou.
+- **Abrir de outra máquina:** a tela inicial lista os projetos da nuvem e do GitHub (marcados com o tópico `ases-project`) e baixa o escolhido para `~/Projetos Eureka42`. A tela mostra o que está conectado (nuvem e GitHub).
+- **`/sincronizar` (`/sync`):** liga GitHub, nuvem, os dois ou desliga, e envia na hora. Se faltar algo (rclone, login), diz o que fazer.
+- **Aprovações pedidas pela IA:** o pedido agora aparece em `/approval` com número (APR-XXXX). Concedido, a tarefa volta sozinha para a fila e o próximo `/run` executa a operação aprovada, uma única vez.
+- **Idioma da máquina:** a interface (menu do `/`, ajuda, tela inicial, seletor de modelos, cabeçalho) segue o idioma da máquina: português, inglês ou espanhol. No menu em inglês os comandos aparecem como `/model`, `/help`, `/sync`… Os comandos em português e em inglês funcionam sempre. Para fixar: `/config idioma pt|en|es|auto`. Em inglês, `/model` passa a ser o seletor de modelos (a IA principal é `/agent`).
+- **Cabeçalho:** a principal aparece com o modelo em uso, ex.: `principal: google (gemini-3.8-flash-low)`. Logo abaixo, o estado da nuvem e do GitHub e se este projeto é enviado ao sair.
+- **`/modelo`:** IAs não instaladas aparecem em cinza, com "(não instalada)".
+- **Menu do `/`:** Enter executa a opção destacada (antes executava o texto digitado pela metade, ex.: `/mod`).
+- **Projeto novo já nasce com Git** (com um primeiro commit): os planos em paralelo usam uma cópia por IA e recusavam pasta sem Git.
+- **Simulador fora do trabalho real:** com uma IA real como principal, o simulador não recebe tarefas nem faz a revisão cruzada (num teste real, uma tarefa foi parar nele e outra foi "aprovada" por ele).
+- **IAs instaladas fora do PATH:** o AER também procura em `~/.local/bin` e `~/.opencode/bin` (o OpenCode aparecia como não instalado).
+- **Envio mais rápido e avisado:** a nuvem recebe vários arquivos ao mesmo tempo, e a saída mostra "enviando o projeto para…" enquanto envia.
+- **Cores:** o "pensando…" e as atividades usavam um laranja fixo; agora seguem o tema (verde Eureka42 por padrão).
+- **Testes:** o teste de pseudo-terminal declara `COLORTERM` e não depende mais do terminal de quem roda.
+
 ## 1.3.1 (25/11/2026): listas de modelos atualizadas
 - **`/modelo` com as listas atuais:**
   - **Claude:** Opus 5.5, Opus 5, Sonnet 5.5, Haiku 5.5 e Fable 5.2, além dos aliases `fable`, `opus` e `sonnet`.

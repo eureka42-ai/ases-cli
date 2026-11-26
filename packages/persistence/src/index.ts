@@ -5,3 +5,4 @@ export * from './database.ts';
 export * from './project-store.ts';
 export * from './export.ts';
 export * from './legacy.ts';
+export * from './snapshot.ts';

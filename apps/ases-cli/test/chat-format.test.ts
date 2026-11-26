@@ -23,10 +23,10 @@ describe('chat formatting in the Claude Code style (PHASE-19)', () => {
     expect(plain(renderEntries([{ kind: 'main', text: 'x' }], 20, false))[0]).toBe('* x');
   });
 
-  it('activities have an orange ●; added lines are green and removed lines red', () => {
+  it('activities have an accent ●; added lines are green and removed lines red', () => {
     const lines = renderEntries([{ kind: 'activity', text: 'Editou README.md (+1 −1)\n    - # velho\n    + # novo' }], 40, true);
     expect(plain(lines)).toEqual(['● Editou README.md (+1 −1)', '    - # velho', '    + # novo']);
-    expect(lines[0]!.segments[0]).toMatchObject({ text: '● ', color: 'orange' });
+    expect(lines[0]!.segments[0]).toMatchObject({ text: '● ', color: 'activity' });
     expect(lines[1]!.color).toBe('red');
     expect(lines[2]!.color).toBe('green');
   });
@@ -65,7 +65,7 @@ describe('chat formatting in the Claude Code style (PHASE-19)', () => {
     expect(t).toContain('    -x');
   });
 
-  it('the thinking line has a creative orange word, the running time and how to interrupt', () => {
+  it('the thinking line has a creative accent word, the running time and how to interrupt', () => {
     const t = { provider: 'claude', since: 1_000, recent: ['Lendo src/app.ts'] };
     const p = thinkingParts(t, 19_400, true);
     expect(THINKING_WORDS).toContain(p.word.replace('…', ''));
