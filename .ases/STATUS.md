@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 943 (PhaseUpdated, 2026-11-27T03:12:27.397Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 945 (TaskCreated, 2026-11-27T03:20:17.073Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -31,6 +31,7 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | PHASE-24 | Listas de modelos atualizadas (1.3.1) | COMPLETED |
 | PHASE-25 | Lições aprendidas do ESAA e as bases do projeto (1.5.0) | COMPLETED |
 | PHASE-26 | Integração com o ESAA: lições sugeridas, limites de escrita, /verificar, /metricas (1.6.0) | COMPLETED |
+| PHASE-27 | ESAA: cadeia de integridade, registro de problemas e exportação (1.7.0) | PLANNED |
 
 ## Tarefas
 | Tarefa | Fase | Título | Estado | Último teste | Evidência |
@@ -132,5 +133,6 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0095 | PHASE-24 | Listas de modelos do /modelo: Claude 5.5, Codex GPT-6/5.6, Kimi K3.1 (IDs da CLI) | COMPLETED | — | .ases/evidence/PHASE-24-verify.md |
 | TAR-0096 | PHASE-25 | Lições aprendidas (ESAA): tabela, eventos, /licao, injeção nas instruções; /sobre e README com ASES e ESAA | COMPLETED | — | .ases/evidence/PHASE-25-verify.md |
 | TAR-0097 | PHASE-26 | ESAA: lições sugeridas (IA e bloqueios), limites por tipo de tarefa, verificação pelo histórico, métricas por IA | COMPLETED | — | .ases/evidence/PHASE-26-verify.md |
+| TAR-0098 | PHASE-27 | ESAA: hash chain com ponto fixado, issues com sintoma/repro e correção pela principal, exportação activity.jsonl 0.4.2 | PLANNED | — | — |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.

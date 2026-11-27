@@ -1,5 +1,6 @@
 import os from 'node:os';
 import { metricsText } from './metrics.ts';
+import { writeEsaaExport } from './esaa-export.ts';
 import { VERSIONS } from '@aer/contracts';
 import { repoRoot } from '@aer/git-bridge';
 import { aboutText, LOGO_MODES, THEME_CHOICES } from '@aer/branding';
@@ -17,7 +18,7 @@ export const CHAT_ALIASES: Record<string, string> = {
   '/help': '/ajuda', '/agent': '/ia', '/agents': '/ias', '/plan': '/plano', '/diff': '/ver',
   '/accept': '/aceitar', '/redo': '/refazer', '/assign': '/trocar', '/undo': '/desfazer', '/stop': '/parar', '/new': '/nova',
   '/settings': '/config', '/about': '/sobre', '/exit': '/sair', '/update': '/atualizar', '/models': '/modelo',
-  '/lessons': '/licoes', '/lecciones': '/licoes', '/lesson': '/licao', '/leccion': '/licao', '/metrics': '/metricas', '/verify': '/verificar',
+  '/lessons': '/licoes', '/lecciones': '/licoes', '/lesson': '/licao', '/leccion': '/licao', '/metrics': '/metricas', '/verify': '/verificar', '/issues': '/problemas', '/issue': '/problema', '/esaa-export': '/exportar-esaa',
   // 1.4.0: /model é o seletor de modelos (como /modelo); a IA principal é /agent (/ia)
   '/model': '/modelo', '/sync': '/sincronizar', '/connect': '/conectar',
   // nomes do menu em inglês e espanhol (i18n.ts), aceitos em qualquer idioma
@@ -25,7 +26,7 @@ export const CHAT_ALIASES: Record<string, string> = {
 };
 
 /** Comandos do menu do `/` (nome interno em português; o menu mostra o nome no idioma atual). */
-const MENU_CMDS = ['/ajuda', '/iniciar-projeto', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/modelo', '/config', '/sincronizar', '/conectar', '/atualizar', '/licoes', '/metricas', '/verificar', '/sobre', '/sair'];
+const MENU_CMDS = ['/ajuda', '/iniciar-projeto', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/modelo', '/config', '/sincronizar', '/conectar', '/atualizar', '/licoes', '/problemas', '/metricas', '/verificar', '/exportar-esaa', '/sobre', '/sair'];
 
 export interface MenuItem { cmd: string; name: string; desc: string }
 export const slashMenu = (): MenuItem[] => MENU_CMDS.map((cmd) => ({ cmd, name: cmdName(cmd), desc: t(`menu.${cmd}`) }));
@@ -47,7 +48,7 @@ export const chatHelp = (): string => [
   t('help.advanced'),
 ].join('\n');
 
-export const CHAT_COMMANDS = new Set(['/modelo', '/ajuda', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/config', '/sobre', '/sair', '/atualizar', '/sincronizar', '/conectar', '/licao', '/licoes', '/verificar', '/metricas']);
+export const CHAT_COMMANDS = new Set(['/modelo', '/ajuda', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/config', '/sobre', '/sair', '/atualizar', '/sincronizar', '/conectar', '/licao', '/licoes', '/verificar', '/metricas', '/problema', '/problemas', '/exportar-esaa']);
 
 /** `12` → `TAR-0012`; `TAR-0012` fica igual. */
 export function resolveTaskRef(ref: string): string {
@@ -112,11 +113,59 @@ export async function handleChat(engine: Engine, cmd: string, args: string[], ad
     case '/sobre':
       return aboutText(VERSIONS.app);
     case '/verificar': {
-      // PHASE-26 (verify/replay do ESAA): o estado do banco tem de ser o que o histórico diz
-      const r = engine.store.verifyState();
-      return r.problems.length
-        ? [`Verificação: ${r.problems.length} problema(s) · ${r.events} eventos · ${r.checked} itens conferidos`, ...r.problems.slice(0, 20).map((p) => `  ${p}`), 'Algo foi alterado fora do ASES (edição manual ou arquivo corrompido). Restaure de um backup em .ases/ ou peça ajuda.'].join('\n')
-        : `Verificação: OK · ${r.events} eventos · ${r.checked} itens conferidos com o histórico (fases, tarefas, lições) · sequência e hashes íntegros`;
+      // PHASE-26/27 (verify/replay e cadeia do ESAA): o estado do banco tem de ser o que o histórico diz
+      const { chainPin, setChainPin } = await import('@aer/project-store');
+      const pid = engine.store.projectId;
+      if (a === 'fixar') {
+        const head = engine.store.chainHead();
+        setChainPin(pid, head);
+        return `ponto fixado no evento ${head.seq} (${head.hash.slice(0, 12)}…), guardado na sua configuração pessoal, fora do projeto. Daqui em diante /verificar avisa se o histórico até ali for reescrito.`;
+      }
+      const pin = chainPin(pid);
+      const r = engine.store.verifyState(pin ? { pin } : {});
+      if (r.problems.length) return [`Verificação: ${r.problems.length} problema(s) · ${r.events} eventos · ${r.checked} itens conferidos`, ...r.problems.slice(0, 20).map((p) => `  ${p}`), 'Algo foi alterado fora do ASES (edição manual ou arquivo corrompido). Restaure de um backup em .ases/ ou peça ajuda.'].join('\n');
+      return [
+        `Verificação: OK · ${r.events} eventos · ${r.checked} itens conferidos com o histórico (fases, tarefas, lições, problemas) · sequência e hashes íntegros`,
+        `cadeia de integridade íntegra até o evento ${r.head.seq} (${r.head.hash.slice(0, 12)}…)`,
+        pin ? `ponto fixado em ${pin.seq} confere` : 'dica: /verificar fixar guarda o elo atual fora do projeto, para detectar até reescrita completa do histórico',
+      ].join('\n');
+    }
+    case '/problemas': {
+      // PHASE-27 (issues do ESAA): bloqueios viram problemas com sintoma e como reproduzir
+      const all = engine.store.listIssues();
+      if (!all.length) return 'nenhum problema registrado. Bloqueios nos planos viram problemas sozinhos; /problema <título> :: <sintoma> [:: como reproduzir] registra um.';
+      return all.map((x) => [`${x.id} ${x.state} · ${x.title}${x.taskId ? ` (${x.taskId})` : ''}`, `    sintoma: ${x.symptom}`, ...(x.repro ? [`    reproduzir: ${x.repro}`] : []), ...(x.resolution ? [`    resolvido por ${x.resolvedBy}: ${x.resolution}`] : [])].join('\n'))
+        .concat(all.some((x) => x.state === 'OPEN') ? ['/problema corrigir ISS-0001 pede a correção à principal · /problema resolver ISS-0001 <como> fecha'] : []).join('\n');
+    }
+    case '/problema': {
+      const who = os.userInfo().username || 'responsável';
+      try {
+        if (a === 'resolver' && /^ISS-\d{4,}$/.test(b)) {
+          const how = rest.join(' ').trim();
+          if (!how) return `uso: /problema resolver ${b} <como foi resolvido>`;
+          engine.mutate((s) => s.resolveIssue(b, how, who));
+          return `${b} resolvido por ${who}: ${how}`;
+        }
+        if (a === 'corrigir' && /^ISS-\d{4,}$/.test(b)) {
+          const x = engine.store.listIssues().find((i) => i.id === b);
+          if (!x) return `erro NOT_FOUND: ${b} não existe`;
+          if (x.state !== 'OPEN') return `${b} já está resolvido`;
+          // como o hotfix do ESAA: o problema vira pedido à principal, que planeja a correção; fechar é decisão sua
+          const out = await chatMessage(engine, `Corrija o problema ${x.id}: ${x.title}.\nSintoma: ${x.symptom}${x.repro ? `\nComo reproduzir: ${x.repro}` : ''}${x.taskId ? `\nOrigem: ${x.taskId}` : ''}\nSe for grande, divida em tarefas. No fim, diga como confirmar que foi resolvido.`);
+          return `${out}\nDepois de conferir: /problema resolver ${x.id} <como foi resolvido>`;
+        }
+        const [title = '', symptom = '', repro = ''] = args.join(' ').split('::').map((p) => p.trim());
+        if (!title || !symptom) return 'uso: /problema <título> :: <sintoma> [:: como reproduzir] · /problema resolver ISS-0001 <como> · /problema corrigir ISS-0001 · /problemas';
+        const id = engine.mutate((s) => s.reportIssue({ title, symptom, ...(repro ? { repro } : {}) }));
+        return `${id} registrado. /problema corrigir ${id} pede a correção à principal.`;
+      } catch (err) {
+        return `erro ${(err as { code?: string }).code ?? ''}: ${(err as Error).message}`;
+      }
+    }
+    case '/exportar-esaa': {
+      // PHASE-27: formato escolhido = o activity.jsonl do próprio ESAA, para o `esaa verify` do Prof. Elzo Brito auditar
+      const r = writeEsaaExport(engine.store, engine.projectRoot);
+      return [`${r.events} eventos em .ases/esaa/.roadmap/activity.jsonl (formato ESAA 0.4.2).`, 'Para auditar com o ESAA (pip install esaa-core):', '  esaa --root .ases/esaa project', '  esaa --root .ases/esaa verify'].join('\n');
     }
     case '/metricas':
       return metricsText(engine.store.eventsSince(0, 1_000_000));

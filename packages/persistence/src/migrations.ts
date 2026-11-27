@@ -349,4 +349,33 @@ CREATE TRIGGER events_append_only_delete BEFORE DELETE ON events
   );
   `,
   },
+  {
+    version: 7,
+    name: 'event-chain-and-issues',
+    // PHASE-27 (cadeia do ESAA): hash encadeado de cada evento; preenchido pelo store (o SQL não calcula SHA-256)
+    sql: `
+  CREATE TABLE event_chain (
+    seq INTEGER PRIMARY KEY,
+    hash TEXT NOT NULL CHECK (length(hash) = 64)
+  );
+  CREATE TRIGGER event_chain_append_only_update BEFORE UPDATE ON event_chain
+    BEGIN SELECT RAISE(ABORT, 'event chain is append-only'); END;
+  CREATE TRIGGER event_chain_append_only_delete BEFORE DELETE ON event_chain
+    BEGIN SELECT RAISE(ABORT, 'event chain is append-only'); END;
+  CREATE TABLE issues (
+    project_id TEXT NOT NULL REFERENCES projects(id),
+    id TEXT NOT NULL CHECK (id GLOB 'ISS-[0-9][0-9][0-9][0-9]*'),
+    title TEXT NOT NULL,
+    symptom TEXT NOT NULL,
+    repro TEXT,
+    task_id TEXT,
+    state TEXT NOT NULL CHECK (state IN ('OPEN','RESOLVED')),
+    resolution TEXT,
+    resolved_by TEXT,
+    created_at TEXT NOT NULL,
+    resolved_at TEXT,
+    PRIMARY KEY (project_id, id)
+  );
+  `,
+  },
 ];

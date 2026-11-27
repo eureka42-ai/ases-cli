@@ -127,12 +127,39 @@ describe('chat engine and simple commands (PHASE-18, TAR-0086)', () => {
   });
 
   it('/sobre prints the literal about text', async () => {
-    expect(await say('/sobre')).toBe('⌘ Eureka42 · ASES Engineering Runtime (AER) 1.6.0\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\nASES-300/500: metodologia dos Profs. Raul el Greco e Giuseppe Favato. ESAA: governança de agentes do Prof. Elzo Brito.\nJuntos: a metodologia diz o que construir e com que critério; o ESAA garante que cada IA mexa só no que deve e aprenda com os erros.\neureka42.org · Licença CC BY-NC-ND 4.0');
+    expect(await say('/sobre')).toBe('⌘ Eureka42 · ASES Engineering Runtime (AER) 1.7.0\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\nASES-300/500: metodologia dos Profs. Raul el Greco e Giuseppe Favato. ESAA: governança de agentes do Prof. Elzo Brito.\nJuntos: a metodologia diz o que construir e com que critério; o ESAA garante que cada IA mexa só no que deve e aprenda com os erros.\neureka42.org · Licença CC BY-NC-ND 4.0');
   });
 
   it('/verificar rebuilds the state from the history; /metricas summarizes each AI (PHASE-26, ESAA)', async () => {
     expect(await say('/verificar')).toMatch(/^Verificação: OK · \d+ eventos · \d+ itens conferidos com o histórico/);
+    expect(await say('/verificar')).toMatch(/cadeia de integridade íntegra até o evento \d+ \([0-9a-f]{12}…\)/);
+    expect(await say('/verificar fixar')).toMatch(/ponto fixado no evento \d+/);
+    expect(await say('/verificar')).toMatch(/ponto fixado em .* confere/);
     expect(await say('/metricas')).toMatch(/nenhuma tarefa executada|Métricas por IA/);
+  });
+
+  it('/problema reports, /problemas lists, /problema resolver closes it (PHASE-27, ESAA issues)', async () => {
+    expect(await say('/problemas')).toMatch(/nenhum problema/);
+    expect(await say('/problema Login falha :: senha certa dá erro 500 :: entrar com admin/admin')).toMatch(/ISS-0001 registrado/);
+    expect(await say('/problema sem sintoma')).toMatch(/uso:/);
+    expect(await say('/problemas')).toContain('ISS-0001 OPEN · Login falha\n    sintoma: senha certa dá erro 500\n    reproduzir: entrar com admin/admin');
+    expect(await say('/problema resolver ISS-0001 corrigido na validação')).toMatch(/ISS-0001 resolvido/);
+    expect(engine.store.listIssues()[0]).toMatchObject({ state: 'RESOLVED', resolution: 'corrigido na validação' });
+    expect(await say('/problema corrigir ISS-0001')).toMatch(/já está resolvido/);
+    await say('/problema Busca lenta :: demora 10 s');
+    const out = await say('/problema corrigir ISS-0002');
+    expect(out).toMatch(/Plano PLN-\d+ \(3 tarefas\)/); // a principal recebeu o problema e propôs a correção ("divida em tarefas")
+    expect(engine.store.listChatMessages(engine.store.currentConversation()!.id).some((m) => m.role === 'user' && m.text.startsWith('Corrija o problema ISS-0002: Busca lenta.\nSintoma: demora 10 s'))).toBe(true);
+    expect(out).toMatch(/Depois de conferir: \/problema resolver ISS-0002/);
+    await say('/cancel');
+  });
+
+  it('/exportar-esaa writes the history as the ESAA activity.jsonl (PHASE-27)', async () => {
+    const out = await say('/exportar-esaa');
+    expect(out).toMatch(/\d+ eventos em \.ases\/esaa\/\.roadmap\/activity\.jsonl/);
+    expect(out).toMatch(/esaa --root \.ases\/esaa project/);
+    const { existsSync } = await import('node:fs');
+    expect(existsSync(path.join(engine.projectRoot, '.ases', 'esaa', '.roadmap', 'activity.jsonl'))).toBe(true);
   });
 
   it('/licao records an approved lesson; /licoes lists; /licao arquivar removes it from the prompts (PHASE-25, ESAA)', async () => {

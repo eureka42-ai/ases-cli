@@ -132,7 +132,8 @@ Digite `/` no `ases` para abrir o menu. Cada comando em português tem o equival
 | `/sobre` | quem faz o Eureka42 | `/ajuda avançado` | fases, tarefas, gates, requisitos |
 | `/iniciar-projeto` | metodologia guiada do zero (ASES-500 → ASES-300 → GitHub) | `/modelo` | modelo de cada IA |
 | `/licao <texto>` | registra uma lição que toda IA passa a seguir (ESAA) | `/licoes` | lições do projeto (e as sugeridas, para aprovar) |
-| `/verificar` | confere o projeto contra o histórico (ESAA) | `/metricas` | quanto cada IA rende neste projeto |
+| `/verificar` | confere o projeto contra o histórico e a cadeia de integridade (ESAA) | `/metricas` | quanto cada IA rende neste projeto |
+| `/problemas` | problemas registrados, com sintoma e como reproduzir (ESAA) | `/exportar-esaa` | histórico no formato do ESAA |
 | `/sincronizar` | leva o projeto a outra máquina: GitHub, nuvem ou os dois | `/sync` | o mesmo, em inglês |
 
 ## 🤖 IAs suportadas
@@ -241,7 +242,7 @@ O **ESAA** (*Event Sourcing for Autonomous Agents*) é a arquitetura de governan
 | depende de quem executa respeitar o método | não sabe *quais* requisitos o sistema precisa | a metodologia alimenta o plano, e a governança impede atalhos |
 | registra decisões humanas | registra o trabalho das máquinas | **um só histórico**, do pedido do usuário à linha de código, auditável de ponta a ponta |
 
-**O que do ESAA já roda dentro do AER (1.6.0):**
+**O que do ESAA já roda dentro do AER (1.7.0):**
 
 | Peça do ESAA | No AER | Comando |
 |---|---|---|
@@ -249,6 +250,9 @@ O **ESAA** (*Event Sourcing for Autonomous Agents*) é a arquitetura de governan
 | **Limites de escrita por tipo de tarefa** | Tarefa de documentação só altera documentação, a de teste só arquivos de teste, e a revisão não altera nada. Fora disso, a entrega é bloqueada antes dos testes, com a lista dos arquivos | automático nos planos |
 | **Verificação pelo histórico** (*verify/replay*) | Refaz o estado de fases, tarefas e lições a partir dos eventos, confere a sequência e o hash de cada evento e aponta qualquer edição feita por fora | `/verificar` |
 | **Métricas por IA** (*runner metrics*) | Tentativas, % de acerto, refações, tempo médio e tokens de cada IA no projeto, tudo tirado do histórico | `/metricas` |
+| **Cadeia de integridade** (*hash chain*) | Cada evento carrega o hash do anterior. Alterar, apagar ou reordenar qualquer ponto do histórico quebra a cadeia, e o `/verificar` aponta onde. O ponto fixado fica na sua configuração pessoal, fora do projeto | `/verificar`, `/verificar fixar` |
+| **Registro de problemas** (*issues*) | Todo bloqueio num plano vira um problema, com sintoma e como reproduzir. A IA principal vê os problemas abertos. `/problema corrigir` pede a correção (como o *hotfix* do ESAA), e só uma pessoa dá o problema por resolvido | `/problemas`, `/problema <título> :: <sintoma> [:: como reproduzir]`, `/problema corrigir ISS-0001`, `/problema resolver ISS-0001 <como>` |
+| **Formato do ESAA** | O histórico do AER sai como `activity.jsonl` 0.4.2 do ESAA (tarefas, problemas e lições), para auditar com o próprio `esaa verify` | `/exportar-esaa` |
 
 ## 👥 Autores
 
@@ -288,7 +292,8 @@ Os avisos das bibliotecas de terceiros embutidas acompanham o pacote em `THIRD_P
 
 | Versão | Data | Destaques |
 |---|---|---|
-| **1.6.0** | 27/11/2026 | Integração com o ESAA: a IA e o ASES **sugerem lições** (você aprova); **limites de escrita** por tipo de tarefa; **`/verificar`** pelo histórico; **`/metricas`** por IA |
+| **1.7.0** | 27/11/2026 | ESAA: **cadeia de integridade** dos eventos (`/verificar fixar`); **registro de problemas** (`/problemas`, `/problema corrigir`); **`/exportar-esaa`** no formato do ESAA |
+| 1.6.0 | 27/11/2026 | Integração com o ESAA: a IA e o ASES **sugerem lições** (você aprova); **limites de escrita** por tipo de tarefa; **`/verificar`** pelo histórico; **`/metricas`** por IA |
 | 1.5.0 | 26/11/2026 | **Lições aprendidas** do ESAA (`/licao`, `/licoes`) em toda tarefa e na principal; seção "As bases: ASES-300/500 e ESAA"; `/sobre` com os autores; `ases update` sem cache velho |
 | 1.4.0 | 26/11/2026 | Projetos em outra máquina: **Novo projeto** em `~/Projetos Eureka42`, guardado só local, no GitHub, na nuvem (Google Drive, OneDrive, Mega… pelo rclone) ou nos dois, com o contexto junto; **Abrir de outra máquina**; `/sincronizar`; pedidos de aprovação da IA em `/approval`; cores na marca Eureka42; interface no idioma da máquina (pt/en/es); modelo da principal no cabeçalho |
 | 1.3.1 | 25/11/2026 | `/modelo` com as listas atuais: Claude 5.5/Fable 5.2, Codex GPT-6/5.6, Kimi K3.1 |

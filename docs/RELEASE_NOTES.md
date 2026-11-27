@@ -1,5 +1,14 @@
 # AER 1.x: notas de versão
 
+## 1.7.0 (27/11/2026): ESAA: cadeia, problemas e exportação
+- **Cadeia de integridade:** cada evento passa a carregar o SHA-256 do anterior (tabela `event_chain`, também só de acréscimo). O `/verificar` refaz a cadeia e aponta o primeiro evento alterado. `/verificar fixar` guarda o elo atual na configuração pessoal, fora do projeto, e detecta até a reescrita completa do histórico. Bancos antigos ganham a cadeia ao abrir: a migração 7 roda com backup.
+- **Registro de problemas** (`/problemas`, `/problema`):
+  - todo bloqueio num plano (fora do limite, ou testes falhando depois de 2 refações) vira um problema, com sintoma e como reproduzir;
+  - a IA principal vê os problemas abertos;
+  - `/problema corrigir ISS-XXXX` pede a correção à principal, como o *hotfix* do ESAA;
+  - `/problema resolver ISS-XXXX <como>` fecha o problema, o que só uma pessoa faz.
+- **`/exportar-esaa`:** grava `.ases/esaa/.roadmap/activity.jsonl` no formato do próprio ESAA (log 0.4.2), com as tarefas (`task.create`, `claim`, `complete`, `review`), os problemas (`issue.report`, `issue.resolve`) e as lições. Para auditar: `esaa --root .ases/esaa project` e `esaa --root .ases/esaa verify`.
+
 ## 1.6.0 (27/11/2026): integração com o ESAA
 Peças do [ESAA](https://github.com/elzobrito/ESAA-Core), do Prof. Elzo Brito, agora dentro do AER:
 - **Lições sugeridas:** a IA principal sugere lições num bloco `aer-licao`. O ASES também sugere quando uma tarefa é bloqueada, por sair do limite ou por testes falhando depois de 2 refações. A lição sugerida fica **PROPOSED** e só vale depois de `/licao aprovar LES-XXXX`. `/licoes` mostra as sugeridas e de onde vieram.

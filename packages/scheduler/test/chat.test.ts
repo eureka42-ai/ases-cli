@@ -132,6 +132,11 @@ describe('chat turn of the main IA (PHASE-18, TAR-0084)', () => {
     expect(q.pending).toBe(0);
   });
 
+  it('the main AI sees the open problems (PHASE-27, ESAA issues)', () => {
+    const p = buildMainPrompt({ project: 'p', phases: [], openTasks: [], ready: [], main: 'claude', history: [], message: 'oi', issues: [{ id: 'ISS-0002', title: 'Login falha' }] });
+    expect(p).toContain('Problemas abertos: ISS-0002 Login falha');
+  });
+
   it('the main AI also receives the approved lessons (PHASE-25, ESAA)', () => {
     const p = buildMainPrompt({ project: 'p', phases: [], openTasks: [], ready: [], main: 'claude', history: [], message: 'oi', lessons: [{ id: 'LES-0002', text: 'Use pnpm, não npm' }] });
     expect(p).toContain('## Lições do projeto (aprovadas)\n- LES-0002: Use pnpm, não npm');

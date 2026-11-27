@@ -346,6 +346,17 @@ export function setChosenModel(provider: string, model: string | null, globalFil
   writeGlobal(globalFile, { models: cur });
 }
 
+/** PHASE-27: último elo da cadeia de eventos fixado por projeto, fora do projeto (quem reescreve o .ases não alcança). */
+export function chainPin(projectId: string, globalFile: string = globalConfigFile()): { seq: number; hash: string } | undefined {
+  const v = (readGlobal(globalFile).chainPins as Record<string, unknown> | undefined)?.[projectId] as { seq?: unknown; hash?: unknown } | undefined;
+  return v && typeof v.seq === 'number' && typeof v.hash === 'string' ? { seq: v.seq, hash: v.hash } : undefined;
+}
+
+export function setChainPin(projectId: string, pin: { seq: number; hash: string }, globalFile: string = globalConfigFile()): void {
+  const cur = (readGlobal(globalFile).chainPins as Record<string, unknown> | undefined) ?? {};
+  writeGlobal(globalFile, { chainPins: { ...cur, [projectId]: { ...pin, at: new Date().toISOString() } } });
+}
+
 // ---- 1.4.0: levar o projeto para outra máquina (GitHub e/ou nuvem via rclone) ----
 
 export type SyncTarget = 'github' | 'cloud';

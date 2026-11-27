@@ -289,3 +289,5 @@ req_id,phase_id,task_id,last_test,evidence,state
 "AER-REQ-067","PHASE-26","TAR-0097","",".ases/evidence/PHASE-26-verify.md#19cceef2e675","COMPLETED"
 "AER-REQ-068","PHASE-26","TAR-0097","",".ases/evidence/PHASE-26-verify.md#19cceef2e675","COMPLETED"
 "AER-REQ-177","PHASE-26","TAR-0097","",".ases/evidence/PHASE-26-verify.md#19cceef2e675","COMPLETED"
+"AER-REQ-067","PHASE-27","TAR-0098","","","PLANNED"
+"AER-REQ-068","PHASE-27","TAR-0098","","","PLANNED"

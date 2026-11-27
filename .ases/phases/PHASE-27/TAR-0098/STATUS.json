@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0098",
+  "phaseId": "PHASE-27",
+  "title": "ESAA: hash chain com ponto fixado, issues com sintoma/repro e correção pela principal, exportação activity.jsonl 0.4.2",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-067",
+    "AER-REQ-068"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

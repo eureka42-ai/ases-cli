@@ -112,6 +112,7 @@ export async function executePlan(d: WorkerDeps, o: {
             const label = { docs: 'documentação', test: 'teste', review: 'revisão' }[kind];
             x.reason = `BOUNDARY_VIOLATION: tarefa de ${label} alterou ${bad.slice(0, 5).join(', ')}${bad.length > 5 ? ` e mais ${bad.length - 5}` : ''}`;
             d.mutate((s) => s.transitionTask(x.taskId, 'BLOCKED', s.getTask(x.taskId)!.version, x.reason));
+            d.mutate((s) => s.reportIssue({ title: `Tarefa ${t.title} fora do limite de ${label}`, symptom: x.reason, repro: `arquivos fora do limite: ${bad.join(', ')}`, taskId: x.taskId }));
             suggest(`Tarefas de ${label} ${{ docs: 'só alteram documentação', test: 'só alteram arquivos de teste', review: 'não alteram arquivos' }[kind]}; outras mudanças vão numa tarefa "code".`, x.taskId);
             x.done = true;
             progress(x.taskId, 'fora do limite do tipo de tarefa');
@@ -132,6 +133,7 @@ export async function executePlan(d: WorkerDeps, o: {
               continue;
             }
             d.mutate((s) => s.transitionTask(x.taskId, 'BLOCKED', s.getTask(x.taskId)!.version, `TESTS_FAILING_AFTER_2_REWORKS: ${r.log}`));
+            d.mutate((s) => s.reportIssue({ title: `Testes falham em ${t.title}`, symptom: `\`${o.testCommand!.join(' ')}\` saiu com ${r.exitCode} depois de ${MAX_REWORKS} refações`, repro: `na branch da tarefa, rode: ${o.testCommand!.join(' ')} (log: ${r.log})`, taskId: x.taskId }));
             suggest(`Antes de entregar, rode \`${o.testCommand.join(' ')}\` e só entregue com os testes passando.`, x.taskId);
             x.done = true;
             x.reason = `TESTS_FAILING_AFTER_2_REWORKS: ${r.log}`;

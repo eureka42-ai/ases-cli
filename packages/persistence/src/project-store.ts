@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import {
   EVENT_TYPES, PHASE_STATES, TASK_STATES, canTransitionPhase, canTransitionTask, formatAttemptId, formatPhaseId, formatTaskId,
-  payloadSha256, redactText, validatePayload, type EventEnvelope, type EventType, type PhaseState, type TaskState,
+  payloadSha256, redactText, sha256Hex, validatePayload, type EventEnvelope, type EventType, type PhaseState, type TaskState,
 } from '@aer/contracts';
 import { DECISION_STATES, PRIORITIES, REQUIREMENT_STATES, type DecisionState, type RequirementState } from '@aer/ases-methodology';
 import { openDatabase, withBusyRetry, type OpenResult } from './database.ts';
@@ -180,6 +180,20 @@ export interface RequirementRow {
   version: number;
 }
 
+const GENESIS = '0'.repeat(64);
+
+export interface IssueRow {
+  id: string;
+  title: string;
+  symptom: string;
+  repro: string | null;
+  taskId: string | null;
+  state: 'OPEN' | 'RESOLVED';
+  resolution: string | null;
+  resolvedBy: string | null;
+  createdAt: string;
+}
+
 export const LESSON_STATES = ['PROPOSED', 'ACTIVE', 'ARCHIVED'] as const;
 export type LessonState = (typeof LESSON_STATES)[number];
 export interface LessonRow {
@@ -289,6 +303,7 @@ export class ProjectStore {
         store.db.prepare("INSERT INTO id_counters (project_id, kind) VALUES (?, 'PHASE'), (?, 'TASK')").run(project.id, project.id);
         store.appendEvent({ eventType: 'ProjectInitialized', payload: { name: project.name } });
       }
+      store.extendChain(); // bancos de versões anteriores ganham a cadeia ao abrir
     });
     return store;
   }
@@ -339,8 +354,36 @@ export class ProjectStore {
         eventId, this.projectId, input.phaseId ?? null, input.taskId ?? null, input.attemptId ?? null, input.eventType,
         input.occurredAt ?? observedAt, observedAt, input.actor ?? this.actor, JSON.stringify(input.payload), hash,
       );
+      this.extendChain();
       return { seq: Number(r.lastInsertRowid), inserted: true };
     });
+  }
+
+  /** PHASE-27: elo da cadeia = SHA-256 do elo anterior + os campos do evento (inclui o hash do payload). */
+  static chainLink(prev: string, e: EventEnvelope): string {
+    return sha256Hex([prev, e.seq, e.eventId, e.eventType, e.phaseId ?? '', e.taskId ?? '', e.attemptId ?? '', e.occurredAt, e.observedAt, e.actor, e.payloadSha256].join('|'));
+  }
+
+  /** Calcula os elos que faltam, em ordem (dentro da transação de quem chama). */
+  private extendChain(): void {
+    const last = this.db.prepare('SELECT seq, hash FROM event_chain ORDER BY seq DESC LIMIT 1').get() as Row | undefined;
+    let prev = last ? String(last.hash) : GENESIS;
+    let after = last ? Number(last.seq) : 0;
+    const ins = this.db.prepare('INSERT INTO event_chain (seq, hash) VALUES (?, ?)');
+    for (;;) {
+      const page = this.eventsSince(after, 1000);
+      if (!page.length) break;
+      for (const e of page) {
+        prev = ProjectStore.chainLink(prev, e);
+        ins.run(e.seq, prev);
+        after = e.seq;
+      }
+    }
+  }
+
+  chainHead(): { seq: number; hash: string } {
+    const r = this.db.prepare('SELECT seq, hash FROM event_chain ORDER BY seq DESC LIMIT 1').get() as Row | undefined;
+    return r ? { seq: Number(r.seq), hash: String(r.hash) } : { seq: 0, hash: GENESIS };
   }
 
   private nextId(kind: 'PHASE' | 'TASK'): number {
@@ -932,9 +975,12 @@ export class ProjectStore {
    * PHASE-26 (verify/replay do ESAA): refaz o estado de fases, tarefas e lições a partir dos eventos e compara com o banco;
    * também confere a sequência e o hash de cada evento. Itens importados do legado sem eventos não têm o que conferir.
    */
-  verifyState(): { events: number; checked: number; problems: string[] } {
+  verifyState(o: { pin?: { seq: number; hash: string } } = {}): { events: number; checked: number; problems: string[]; head: { seq: number; hash: string } } {
     const problems: string[] = [];
     const replay = new Map<string, string>();
+    const stored = new Map((this.db.prepare('SELECT seq, hash FROM event_chain').all() as Row[]).map((r) => [Number(r.seq), String(r.hash)]));
+    let link = GENESIS;
+    let chainBroken = false;
     let events = 0;
     let last = 0;
     for (;;) {
@@ -945,6 +991,13 @@ export class ProjectStore {
         if (e.seq !== last + 1) problems.push(`evento seq ${e.seq}: esperado ${last + 1} (lacuna no histórico)`);
         last = e.seq;
         if (payloadSha256(e.payload) !== e.payloadSha256) problems.push(`evento seq ${e.seq}: conteúdo não bate com o hash`);
+        link = ProjectStore.chainLink(link, e);
+        if (!chainBroken && stored.get(e.seq) !== link) {
+          // só o primeiro elo quebrado interessa: dali em diante todos divergem
+          problems.push(`cadeia de integridade quebrada no evento seq ${e.seq}: o histórico foi alterado depois de gravado`);
+          chainBroken = true;
+        }
+        if (o.pin && e.seq === o.pin.seq && stored.get(e.seq) !== o.pin.hash) problems.push(`o ponto fixado (seq ${o.pin.seq}) não confere: o histórico foi reescrito desde que foi fixado`);
         const p = e.payload as Record<string, unknown>;
         if (e.eventType === 'PhaseCreated' && e.phaseId) replay.set(e.phaseId, 'PLANNED');
         else if (e.eventType === 'PhaseUpdated' && e.phaseId) replay.set(e.phaseId, String(p.to));
@@ -952,9 +1005,11 @@ export class ProjectStore {
         else if (e.eventType === 'TaskUpdated' && e.taskId) replay.set(e.taskId, String(p.to));
         else if (e.eventType === 'LessonRecorded') replay.set(String(p.id), 'PROPOSED');
         else if (e.eventType === 'LessonUpdated') replay.set(String(p.id), String(p.to));
+        else if (e.eventType === 'IssueReported') replay.set(String(p.id), 'OPEN');
+        else if (e.eventType === 'IssueResolved') replay.set(String(p.id), 'RESOLVED');
       }
     }
-    const actual = [...this.listPhases(), ...this.listTasks(), ...this.listLessons()];
+    const actual = [...this.listPhases(), ...this.listTasks(), ...this.listLessons(), ...this.listIssues()];
     let checked = 0;
     for (const x of actual) {
       const want = replay.get(x.id);
@@ -962,7 +1017,39 @@ export class ProjectStore {
       checked++;
       if (want !== x.state) problems.push(`${x.id}: o banco diz ${x.state}, o histórico diz ${want}`);
     }
-    return { events, checked, problems };
+    if (o.pin && o.pin.seq > last) problems.push(`o ponto fixado (seq ${o.pin.seq}) não existe mais: o histórico foi encurtado`);
+    return { events, checked, problems, head: this.chainHead() };
+  }
+
+  /** PHASE-27 (issues do ESAA): problema com sintoma e passos para reproduzir; só uma pessoa o dá por resolvido. */
+  reportIssue(i: { title: string; symptom: string; repro?: string; taskId?: string }): string {
+    if (!i.title.trim() || !i.symptom.trim()) throw new StoreError('INVALID_INPUT', 'issue title and symptom are required');
+    return this.inWriteTx(() => {
+      const n = Number((this.db.prepare('SELECT count(*) n FROM issues WHERE project_id = ?').get(this.projectId) as Row).n) + 1;
+      const id = `ISS-${String(n).padStart(4, '0')}`;
+      this.db.prepare("INSERT INTO issues (project_id, id, title, symptom, repro, task_id, state, created_at) VALUES (?, ?, ?, ?, ?, ?, 'OPEN', ?)")
+        .run(this.projectId, id, i.title.trim(), i.symptom.trim(), i.repro?.trim() || null, i.taskId ?? null, this.now());
+      this.appendEvent({ eventType: 'IssueReported', taskId: i.taskId ?? null, payload: { id, title: i.title.trim() } });
+      return id;
+    });
+  }
+
+  resolveIssue(id: string, resolution: string, by: string): void {
+    if (!resolution.trim() || !by.trim()) throw new StoreError('INVALID_INPUT', 'resolution and who resolved are required');
+    this.inWriteTx(() => {
+      const cur = this.listIssues().find((x) => x.id === id);
+      if (!cur) throw new StoreError('NOT_FOUND', `issue ${id} not found`);
+      if (cur.state === 'RESOLVED') throw new StoreError('INVALID_TRANSITION', `${id} is already resolved`);
+      this.db.prepare("UPDATE issues SET state = 'RESOLVED', resolution = ?, resolved_by = ?, resolved_at = ? WHERE project_id = ? AND id = ?").run(resolution.trim(), by.trim(), this.now(), this.projectId, id);
+      this.appendEvent({ eventType: 'IssueResolved', taskId: cur.taskId, payload: { id, by: by.trim() } });
+    });
+  }
+
+  listIssues(): IssueRow[] {
+    return (this.db.prepare('SELECT * FROM issues WHERE project_id = ? ORDER BY id').all(this.projectId) as Row[]).map((r) => ({
+      id: String(r.id), title: String(r.title), symptom: String(r.symptom), repro: (r.repro as string | null) ?? null, taskId: (r.task_id as string | null) ?? null,
+      state: r.state as IssueRow['state'], resolution: (r.resolution as string | null) ?? null, resolvedBy: (r.resolved_by as string | null) ?? null, createdAt: String(r.created_at),
+    }));
   }
 
   listLessons(): LessonRow[] {

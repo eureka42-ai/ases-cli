@@ -83,6 +83,8 @@ export const CMD_NAMES: Record<string, { en: string; es: string }> = {
   '/atualizar': { en: '/update', es: '/actualizar' },
   '/licoes': { en: '/lessons', es: '/lecciones' },
   '/metricas': { en: '/metrics', es: '/metricas' },
+  '/problemas': { en: '/issues', es: '/problemas' },
+  '/exportar-esaa': { en: '/esaa-export', es: '/exportar-esaa' },
   '/verificar': { en: '/verify', es: '/verificar' },
   '/sobre': { en: '/about', es: '/acerca' },
   '/sair': { en: '/exit', es: '/salir' },
@@ -120,6 +122,8 @@ add('menu./sincronizar', 'leva o projeto para outra máquina: GitHub, nuvem ou o
 add('menu./conectar', 'conecta uma nuvem: Google Drive, OneDrive ou Dropbox (login no navegador)', 'connect a cloud: Google Drive, OneDrive or Dropbox (browser login)', 'conecta una nube: Google Drive, OneDrive o Dropbox (login en el navegador)');
 add('menu./atualizar', 'atualiza o AER pelo npm', 'update AER from npm', 'actualiza AER desde npm');
 add('menu./licoes', 'lições aprovadas que as IAs seguem (do ESAA)', 'approved lessons the AIs follow (from ESAA)', 'lecciones aprobadas que las IAs siguen (de ESAA)');
+add('menu./problemas', 'problemas registrados e como reproduzir', 'reported problems and how to reproduce them', 'problemas registrados y cómo reproducirlos');
+add('menu./exportar-esaa', 'histórico no formato do ESAA, para o esaa verify', 'history in ESAA format, for esaa verify', 'historial en formato ESAA, para esaa verify');
 add('menu./metricas', 'quanto cada IA rende neste projeto', 'how each AI performs in this project', 'cuánto rinde cada IA en este proyecto');
 add('menu./verificar', 'confere o projeto contra o histórico', 'checks the project against its history', 'verifica el proyecto contra el historial');
 add('menu./sobre', 'quem faz o Eureka42', 'who makes Eureka42', 'quién hace Eureka42');
