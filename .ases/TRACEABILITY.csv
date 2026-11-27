@@ -291,4 +291,4 @@ req_id,phase_id,task_id,last_test,evidence,state
 "AER-REQ-177","PHASE-26","TAR-0097","",".ases/evidence/PHASE-26-verify.md#19cceef2e675","COMPLETED"
 "AER-REQ-067","PHASE-27","TAR-0098","",".ases/evidence/PHASE-27-verify.md#a25b26d38c15","COMPLETED"
 "AER-REQ-068","PHASE-27","TAR-0098","",".ases/evidence/PHASE-27-verify.md#a25b26d38c15","COMPLETED"
-"AER-REQ-174","PHASE-28","TAR-0099","","","MERGING"
+"AER-REQ-174","PHASE-28","TAR-0099","",".ases/evidence/PHASE-28-verify.md#6336707a692b","COMPLETED"

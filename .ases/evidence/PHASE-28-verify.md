@@ -1,6 +1,6 @@
 # PHASE-28: verificação da 1.8.0 (27/11/2026)
 
-- **Local:** `npm run verify`, 489 passed, 8 skipped. `pack-smoke`: 12 ok.
+- **CI run 45997143555:** 8/8. **Local:** `npm run verify`, 489 passed, 8 skipped, rodado de novo depois da troca de versão. `pack-smoke`: 12 ok. O primeiro CI (45996033275) falhou: um teste e2e ainda esperava 1.7.0; corrigido.
 - **Checagem e modos:** `update.test.ts`, bloco "atualização automática":
   - modo auto agenda a instalação; modo avisar só avisa;
   - versão em dia não mostra nada; sem rede, fica em silêncio;

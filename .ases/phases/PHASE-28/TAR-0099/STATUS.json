@@ -4,12 +4,17 @@
   "taskId": "TAR-0099",
   "phaseId": "PHASE-28",
   "title": "Atualização automática: checagem diária ao abrir, instalação ao sair, /config atualizacao auto|avisar|off",
-  "state": "MERGING",
-  "version": 8,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-174"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-28-verify.md",
+      "sha256": "6336707a692b5dbccc4b2af2e9067810f7d25b80d2c9733ca68b9805b9cb4230"
+    }
+  ],
   "lastTest": null
 }
