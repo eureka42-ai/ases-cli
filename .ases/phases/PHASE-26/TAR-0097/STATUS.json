@@ -4,8 +4,8 @@
   "taskId": "TAR-0097",
   "phaseId": "PHASE-26",
   "title": "ESAA: lições sugeridas (IA e bloqueios), limites por tipo de tarefa, verificação pelo histórico, métricas por IA",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-067",
     "AER-REQ-068",
