@@ -13,7 +13,7 @@ describe('built bins (TAR-0011, AER-REQ-004, AER-REQ-245, AER-REQ-247)', () => {
     for (const bin of [BIN.ases, BIN.tar]) {
       const v = runSync(bin, ['--version'], p.dir);
       expect(v.status).toBe(0);
-      expect(v.stdout).toMatch(/^ases(-tar)? 1\.7\.0 \(protocol 1\) · eureka42\.org\n$/);
+      expect(v.stdout).toMatch(/^ases(-tar)? 1\.8\.0 \(protocol 1\) · eureka42\.org\n$/);
       const h = runSync(bin, ['--help'], p.dir);
       expect(h.status).toBe(0);
       expect(h.stdout).toMatch(/Eureka42/);

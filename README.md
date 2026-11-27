@@ -265,22 +265,28 @@ O **Eureka42** é uma iniciativa dos Professores
 
 <table>
 <tr>
-<td align="center" width="40%">
-<h2>⌘ Raul el Greco</h2>
-<b>Professor · Eureka42</b><br/><sub>coautor do ASES-300/500</sub>
+<td align="center" colspan="2">
+<img src="branding/references/Emblema%20Tecnol%C3%B3gico%20Eureka42%20AI%20Framework.png" alt="Emblema Eureka42" width="120"/><br/>
+<h3>Raul el Greco</h3>
+Professor · Eureka42<br/><sub>coautor do ASES-300/500</sub><br/>
+<a href="mailto:raulgreco@eureka42.org">raulgreco@eureka42.org</a>
 </td>
-<td align="center" width="30%">
+</tr>
+<tr>
+<td align="center" width="50%">
+<img src="branding/references/Emblema%20Tecnol%C3%B3gico%20Eureka42%20AI%20Framework.png" alt="Emblema Eureka42" width="120"/><br/>
 <h3>Giuseppe Favato</h3>
-Professor · Eureka42<br/><sub>coautor do ASES-300/500</sub>
+Professor · Eureka42<br/><sub>coautor do ASES-300/500</sub><br/>
+<a href="mailto:giuseppefavato@eureka42.org">giuseppefavato@eureka42.org</a>
 </td>
-<td align="center" width="30%">
+<td align="center" width="50%">
+<img src="branding/references/Emblema%20Tecnol%C3%B3gico%20Eureka42%20AI%20Framework.png" alt="Emblema Eureka42" width="120"/><br/>
 <h3>Elzo Brito</h3>
-Professor · Eureka42<br/><sub>autor do <a href="https://github.com/elzobrito/ESAA-Core">ESAA</a></sub>
+Professor · Eureka42<br/><sub>autor do <a href="https://github.com/elzobrito/ESAA-Core">ESAA</a></sub><br/>
+<a href="mailto:elzobrito@eureka42.org">elzobrito@eureka42.org</a>
 </td>
 </tr>
 </table>
-
-<img src="branding/references/Emblema%20Tecnol%C3%B3gico%20Eureka42%20AI%20Framework.png" alt="Emblema Eureka42" width="220"/>
 
 **[eureka42.org](https://eureka42.org)**
 
