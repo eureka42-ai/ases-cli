@@ -53,11 +53,14 @@ ases --version
 
 O pacote traz **dois comandos**: `ases` (o chat) e `ases-tar` (o monitor). Funciona igual em zsh, bash, PowerShell e cmd.
 
-**Atualizar** (só quando você pedir; nada é verificado em segundo plano):
+**Atualizar:** o `ases` se atualiza sozinho. Uma vez por dia, ao abrir, ele pergunta ao npm qual é a versão mais nova; nada do seu projeto é enviado. Se houver versão nova, ele avisa no chat e a instala quando você sai (`/sair`), nunca no meio de uma tarefa. Na próxima abertura, você já está na versão nova.
 
 ```sh
-ases update          # instala a versão mais nova
-ases update --check  # só mostra se há versão nova
+/config atualizacao avisar   # só avisa; você instala com /atualizar
+/config atualizacao off      # não consulta o npm sozinho
+/config atualizacao auto     # padrão
+ases update                  # instala agora a versão mais nova
+ases update --check          # só mostra se há versão nova
 ```
 
 **Desinstalar:** `npm uninstall -g @eureka42-ai/aer`. Os dados dos seus projetos não são apagados.
@@ -292,7 +295,8 @@ Os avisos das bibliotecas de terceiros embutidas acompanham o pacote em `THIRD_P
 
 | Versão | Data | Destaques |
 |---|---|---|
-| **1.7.0** | 27/11/2026 | ESAA: **cadeia de integridade** dos eventos (`/verificar fixar`); **registro de problemas** (`/problemas`, `/problema corrigir`); **`/exportar-esaa`** no formato do ESAA |
+| **1.8.0** | 27/11/2026 | **Atualização automática**: uma vez por dia o `ases` vê se há versão nova e a instala ao sair (`/config atualizacao auto\|avisar\|off`) |
+| 1.7.0 | 27/11/2026 | ESAA: **cadeia de integridade** dos eventos (`/verificar fixar`); **registro de problemas** (`/problemas`, `/problema corrigir`); **`/exportar-esaa`** no formato do ESAA |
 | 1.6.0 | 27/11/2026 | Integração com o ESAA: a IA e o ASES **sugerem lições** (você aprova); **limites de escrita** por tipo de tarefa; **`/verificar`** pelo histórico; **`/metricas`** por IA |
 | 1.5.0 | 26/11/2026 | **Lições aprendidas** do ESAA (`/licao`, `/licoes`) em toda tarefa e na principal; seção "As bases: ASES-300/500 e ESAA"; `/sobre` com os autores; `ases update` sem cache velho |
 | 1.4.0 | 26/11/2026 | Projetos em outra máquina: **Novo projeto** em `~/Projetos Eureka42`, guardado só local, no GitHub, na nuvem (Google Drive, OneDrive, Mega… pelo rclone) ou nos dois, com o contexto junto; **Abrir de outra máquina**; `/sincronizar`; pedidos de aprovação da IA em `/approval`; cores na marca Eureka42; interface no idioma da máquina (pt/en/es); modelo da principal no cabeçalho |

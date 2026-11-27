@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import os from 'node:os';
 import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { initProject, loadPlatformAdapter } from '@aer/project-store';
+import { initProject, loadPlatformAdapter, updatePrefs } from '@aer/project-store';
 import { CHAT_ALIASES, resolveTaskRef } from '../src/chat-commands.ts';
 import { decidePlanMode } from '../src/chat-session.ts';
 import { handleLine } from '../src/commands.ts';
@@ -127,7 +127,7 @@ describe('chat engine and simple commands (PHASE-18, TAR-0086)', () => {
   });
 
   it('/sobre prints the literal about text', async () => {
-    expect(await say('/sobre')).toBe('⌘ Eureka42 · ASES Engineering Runtime (AER) 1.7.0\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\nASES-300/500: metodologia dos Profs. Raul el Greco e Giuseppe Favato. ESAA: governança de agentes do Prof. Elzo Brito.\nJuntos: a metodologia diz o que construir e com que critério; o ESAA garante que cada IA mexa só no que deve e aprenda com os erros.\neureka42.org · Licença CC BY-NC-ND 4.0');
+    expect(await say('/sobre')).toBe('⌘ Eureka42 · ASES Engineering Runtime (AER) 1.8.0\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\nASES-300/500: metodologia dos Profs. Raul el Greco e Giuseppe Favato. ESAA: governança de agentes do Prof. Elzo Brito.\nJuntos: a metodologia diz o que construir e com que critério; o ESAA garante que cada IA mexa só no que deve e aprenda com os erros.\neureka42.org · Licença CC BY-NC-ND 4.0');
   });
 
   it('/verificar rebuilds the state from the history; /metricas summarizes each AI (PHASE-26, ESAA)', async () => {
@@ -204,5 +204,14 @@ describe('chat engine and simple commands (PHASE-18, TAR-0086)', () => {
     expect(await say('/ia claude')).toMatch(/principal agora: claude/);
     expect(await say('olá')).toMatch(/CONSENT_REQUIRED|autorize/);
     await say('/ia simulator');
+  });
+
+  it('/config atualizacao: automática por padrão, dá para só avisar ou desligar (PHASE-28)', async () => {
+    expect(await say('/config')).toMatch(/atualização: auto/);
+    expect(await say('/config atualizacao avisar')).toMatch(/só avisa/);
+    expect(updatePrefs().mode).toBe('avisar');
+    expect(await say('/config atualizacao off')).toMatch(/não consulta o npm/);
+    expect(await say('/config atualizacao talvez')).toMatch(/auto\|avisar\|off/);
+    expect(await say('/config atualizacao auto')).toMatch(/instala sozinha/);
   });
 });

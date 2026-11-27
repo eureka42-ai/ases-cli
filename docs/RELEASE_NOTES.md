@@ -1,5 +1,14 @@
 # AER 1.x: notas de versão
 
+## 1.8.0 (27/11/2026): atualização automática
+- **Atualização automática, ligada para todos:**
+  - uma vez por dia, ao abrir, o `ases` consulta só o `dist-tags.latest` do pacote no npm, em segundo plano, sem atrasar a abertura; sem internet, não mostra nada;
+  - se houver versão nova, avisa no chat e a instala quando você sai, com o motor já parado. Trocar os arquivos com o `ases` aberto misturaria duas versões;
+  - se a instalação falhar, a versão instalada continua a mesma e o erro aparece na tela.
+- **`/config atualizacao auto|avisar|off`:** fica na configuração pessoal. Com `avisar`, você instala com `/atualizar`; com `off`, o `ases` não consulta o npm sozinho.
+- Quem roda do repositório (`git pull && npm run build`) não é consultado, e o CI também não (`CI` definido).
+- AER-REQ-174 continua valendo: a consulta não leva nada do projeto. O npm só vê o pedido da versão.
+
 ## 1.7.0 (27/11/2026): ESAA: cadeia, problemas e exportação
 - **Cadeia de integridade:** cada evento passa a carregar o SHA-256 do anterior (tabela `event_chain`, também só de acréscimo). O `/verificar` refaz a cadeia e aponta o primeiro evento alterado. `/verificar fixar` guarda o elo atual na configuração pessoal, fora do projeto, e detecta até a reescrita completa do histórico. Bancos antigos ganham a cadeia ao abrir: a migração 7 roda com backup.
 - **Registro de problemas** (`/problemas`, `/problema`):

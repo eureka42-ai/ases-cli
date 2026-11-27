@@ -38,7 +38,7 @@ const KEYS: [string, string][] = [
   ['Ctrl+C ×2', 'sai: tarefas em execução são canceladas (árvore de processos encerrada) e o engine é encerrado'],
 ];
 
-export function AsesApp({ engine, onExit, sync }: { engine: EngineLike; onExit: (reason: string) => void; sync?: SyncAvail }): ReactElement {
+export function AsesApp({ engine, onExit, sync, notice }: { engine: EngineLike; onExit: (reason: string) => void; sync?: SyncAvail; notice?: Promise<string | undefined> }): ReactElement {
   const ui = useUi();
   // 1.4.0: nuvem/GitHub conectados e se este projeto é enviado (relido a cada desenho: /sincronizar muda na hora)
   const syncLine = sync ? syncStatusLine(engine.projectRoot, sync) : undefined;
@@ -77,6 +77,8 @@ export function AsesApp({ engine, onExit, sync }: { engine: EngineLike; onExit: 
     });
     let alive = true;
     void chat.probeAll().then((pr) => alive && setReady(Object.values(pr).filter((x) => x.availability === 'READY').length), () => undefined);
+    // PHASE-28: aviso de versão nova (a checagem roda em segundo plano, sem atrasar a abertura)
+    void notice?.then((m) => alive && m && add({ kind: 'system', text: m }), () => undefined);
     return () => {
       alive = false;
     };
@@ -324,9 +326,9 @@ export function AsesApp({ engine, onExit, sync }: { engine: EngineLike; onExit: 
 }
 
 /** Roda a TUI até o usuário sair; devolve o motivo para a mensagem final (impressa fora do Ink). */
-export async function runTui(engine: Engine, ui: Ui, o: { sync?: SyncAvail } = {}): Promise<string> {
+export async function runTui(engine: Engine, ui: Ui, o: { sync?: SyncAvail; notice?: Promise<string | undefined> } = {}): Promise<string> {
   let reason = 'saída';
-  const instance = render(<UiContext.Provider value={ui}><AsesApp engine={engine} {...(o.sync ? { sync: o.sync } : {})} onExit={(r) => { reason = r; }} /></UiContext.Provider>, { exitOnCtrlC: false });
+  const instance = render(<UiContext.Provider value={ui}><AsesApp engine={engine} {...(o.sync ? { sync: o.sync } : {})} {...(o.notice ? { notice: o.notice } : {})} onExit={(r) => { reason = r; }} /></UiContext.Provider>, { exitOnCtrlC: false });
   const onTerm = () => {
     reason = 'SIGTERM';
     instance.unmount();

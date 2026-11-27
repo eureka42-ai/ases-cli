@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0099",
+  "phaseId": "PHASE-28",
+  "title": "Atualização automática: checagem diária ao abrir, instalação ao sair, /config atualizacao auto|avisar|off",
+  "state": "REVIEW",
+  "version": 6,
+  "reqs": [
+    "AER-REQ-174"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

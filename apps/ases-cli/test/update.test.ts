@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
-import { installedFromNpmGlobal, latestVersion, runUpdate } from '../src/update.ts';
+import { autoUpdateCheck, installedFromNpmGlobal, latestVersion, runUpdate } from '../src/update.ts';
 
 const dir = mkdtempSync(path.join(os.tmpdir(), 'aer-update-'));
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
@@ -60,5 +60,31 @@ describe('ases update (PHASE-18, TAR-0088)', () => {
   });
   it('an older version on the registry is never installed', async () => {
     expect((await runUpdate({ current: '1.2.0', check: false, running: 0, binPath: GLOBAL_BIN, fetchImpl: registry('1.1.0') })).status).toBe('UP_TO_DATE');
+  });
+});
+
+describe('atualização automática (PHASE-28, TAR-0099)', () => {
+  const now = Date.parse('2026-11-27T12:00:00Z');
+  const base = { current: '1.7.0', binPath: GLOBAL_BIN, now };
+  it('by default finds the new version and schedules the install for when the user exits', async () => {
+    const r = await autoUpdateCheck({ ...base, fetchImpl: registry('1.8.0') });
+    expect(r).toMatchObject({ to: '1.8.0', install: true, checkedAt: '2026-11-27T12:00:00.000Z' });
+    expect(r?.message).toMatch(/quando você sair/);
+  });
+  it('mode "avisar" only notifies', async () => {
+    expect(await autoUpdateCheck({ ...base, mode: 'avisar', fetchImpl: registry('1.8.0') })).toMatchObject({ to: '1.8.0', install: false, message: expect.stringMatching(/\/atualizar/) });
+  });
+  it('up to date: records the check, says nothing', async () => {
+    expect(await autoUpdateCheck({ ...base, fetchImpl: registry('1.7.0') })).toEqual({ checkedAt: '2026-11-27T12:00:00.000Z' });
+  });
+  it('no network: silent, tries again next time', async () => {
+    expect(await autoUpdateCheck({ ...base, fetchImpl: (async () => { throw new Error('offline'); }) as unknown as typeof fetch })).toBeUndefined();
+  });
+  it('does not touch the network when off, when checked in the last 24h, or when running from the repository', async () => {
+    const boom = (async () => { throw new Error('não devia consultar'); }) as unknown as typeof fetch;
+    expect(await autoUpdateCheck({ ...base, mode: 'off', fetchImpl: boom })).toBeUndefined();
+    expect(await autoUpdateCheck({ ...base, checkedAt: '2026-11-27T01:00:00.000Z', fetchImpl: boom })).toBeUndefined();
+    expect(await autoUpdateCheck({ ...base, binPath: '/repo/apps/ases-cli/bin/ases.js', fetchImpl: boom })).toBeUndefined();
+    expect(await autoUpdateCheck({ ...base, checkedAt: '2026-11-26T11:00:00.000Z', fetchImpl: registry('1.7.0') })).toBeDefined();
   });
 });

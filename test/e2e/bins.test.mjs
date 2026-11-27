@@ -24,7 +24,7 @@ describe('built bins (TAR-0011, AER-REQ-004, AER-REQ-245, AER-REQ-247)', () => {
 
   it('--json output is pure JSON (no banner, no ANSI)', () => {
     const v = runSync(BIN.ases, ['--version', '--json'], p.dir);
-    expect(JSON.parse(v.stdout)).toEqual({ app: '1.7.0', protocol: 1 });
+    expect(JSON.parse(v.stdout)).toEqual({ app: '1.8.0', protocol: 1 });
     const d = runSync(BIN.ases, ['doctor', '--json'], p.dir);
     expect(d.status).toBe(0);
     const report = JSON.parse(d.stdout);
@@ -39,7 +39,7 @@ describe('built bins (TAR-0011, AER-REQ-004, AER-REQ-245, AER-REQ-247)', () => {
   });
 
   it('ases about and ases-tar --about print the literal about text (PHASE-18)', () => {
-    const about = '⌘ Eureka42 · ASES Engineering Runtime (AER) 1.7.0\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\nASES-300/500: metodologia dos Profs. Raul el Greco e Giuseppe Favato. ESAA: governança de agentes do Prof. Elzo Brito.\nJuntos: a metodologia diz o que construir e com que critério; o ESAA garante que cada IA mexa só no que deve e aprenda com os erros.\neureka42.org · Licença CC BY-NC-ND 4.0\n';
+    const about = '⌘ Eureka42 · ASES Engineering Runtime (AER) 1.8.0\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\nASES-300/500: metodologia dos Profs. Raul el Greco e Giuseppe Favato. ESAA: governança de agentes do Prof. Elzo Brito.\nJuntos: a metodologia diz o que construir e com que critério; o ESAA garante que cada IA mexa só no que deve e aprenda com os erros.\neureka42.org · Licença CC BY-NC-ND 4.0\n';
     for (const [bin, args] of [[BIN.ases, ['about']], [BIN.tar, ['--about']]]) {
       const r = runSync(bin, args, p.dir);
       expect(r.status).toBe(0);

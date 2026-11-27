@@ -4,8 +4,9 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { npmCli } from '@aer/platform-core';
 
-// PHASE-18 §5.9: `ases update` / `/atualizar`. Só consulta o registro quando o usuário pede (sem checagem automática
-// nem telemetria, AER-REQ-174) e instala a versão exata pelo npm-cli.js do próprio Node, sem shell.
+// PHASE-18 §5.9: `ases update` / `/atualizar` instala a versão exata pelo npm-cli.js do próprio Node, sem shell.
+// PHASE-28: ao abrir, no máximo uma vez por dia, consulta só o dist-tags.latest (nada do projeto vai junto, AER-REQ-174)
+// e, por padrão, instala ao sair (/config atualizacao auto|avisar|off).
 
 const PACKAGE = '@eureka42-ai/aer';
 const DEFAULT_REGISTRY = 'https://registry.npmjs.org';
@@ -58,4 +59,29 @@ export async function runUpdate(o: { current: string; check: boolean; running: n
     const e = err as { stderr?: string; message: string };
     return { status: 'FAILED', from, to, message: `o npm falhou; nada foi alterado na versão instalada (${from}):\n${(e.stderr ?? e.message).trim().split('\n').slice(-6).join('\n')}` };
   }
+}
+
+export type AutoUpdateMode = 'auto' | 'avisar' | 'off';
+export const AUTO_UPDATE_MODES: readonly AutoUpdateMode[] = ['auto', 'avisar', 'off'];
+const DAY_MS = 24 * 60 * 60_000;
+
+/**
+ * Checagem ao abrir. undefined = nada a fazer nem a registrar (desligada, já checou hoje, roda do repositório, sem rede).
+ * A instalação fica para a saída: trocar os arquivos do pacote com o ases aberto misturaria módulos de duas versões.
+ */
+export async function autoUpdateCheck(o: { current: string; binPath: string; mode?: string; checkedAt?: string; now?: number; registry?: string; fetchImpl?: typeof fetch }): Promise<{ checkedAt: string; to?: string; install?: boolean; message?: string } | undefined> {
+  const mode = o.mode ?? 'auto';
+  if (mode === 'off' || !installedFromNpmGlobal(o.binPath)) return undefined;
+  const now = o.now ?? Date.now();
+  if (o.checkedAt && now - Date.parse(o.checkedAt) < DAY_MS) return undefined;
+  let to: string;
+  try {
+    to = await latestVersion({ ...(o.registry ? { registry: o.registry } : {}), ...(o.fetchImpl ? { fetchImpl: o.fetchImpl } : {}), timeoutMs: 5_000 });
+  } catch {
+    return undefined;
+  }
+  const checkedAt = new Date(now).toISOString();
+  if (!newer(to, o.current)) return { checkedAt };
+  const install = mode === 'auto';
+  return { checkedAt, to, install, message: install ? `Nova versão do AER: ${to} (você tem ${o.current}). Ela é instalada sozinha quando você sair (/sair). Para só avisar: /config atualizacao avisar` : `Nova versão do AER: ${to} (você tem ${o.current}). Atualize com /atualizar` };
 }

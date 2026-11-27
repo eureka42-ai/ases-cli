@@ -346,6 +346,16 @@ export function setChosenModel(provider: string, model: string | null, globalFil
   writeGlobal(globalFile, { models: cur });
 }
 
+/** PHASE-28: atualização automática (auto por padrão | avisar | off) e quando o npm foi consultado pela última vez. */
+export function updatePrefs(globalFile: string = globalConfigFile()): { mode: string; checkedAt?: string } {
+  const g = readGlobal(globalFile);
+  return { mode: typeof g.autoUpdate === 'string' ? g.autoUpdate : 'auto', ...(typeof g.updateCheckedAt === 'string' ? { checkedAt: g.updateCheckedAt } : {}) };
+}
+
+export function setUpdatePrefs(p: { mode?: string; checkedAt?: string }, globalFile: string = globalConfigFile()): void {
+  writeGlobal(globalFile, { ...(p.mode ? { autoUpdate: p.mode } : {}), ...(p.checkedAt ? { updateCheckedAt: p.checkedAt } : {}) });
+}
+
 /** PHASE-27: último elo da cadeia de eventos fixado por projeto, fora do projeto (quem reescreve o .ases não alcança). */
 export function chainPin(projectId: string, globalFile: string = globalConfigFile()): { seq: number; hash: string } | undefined {
   const v = (readGlobal(globalFile).chainPins as Record<string, unknown> | undefined)?.[projectId] as { seq?: unknown; hash?: unknown } | undefined;

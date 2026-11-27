@@ -5,7 +5,7 @@ import { VERSIONS } from '@aer/contracts';
 import { repoRoot } from '@aer/git-bridge';
 import { aboutText, LOGO_MODES, THEME_CHOICES } from '@aer/branding';
 import type { PlanRow, PlannedTask } from '@aer/persistence';
-import { saveChatConfig, saveUiConfig, setLanguagePreference, type ChatMode } from '@aer/project-store';
+import { saveChatConfig, saveUiConfig, setLanguagePreference, setUpdatePrefs, updatePrefs, type ChatMode } from '@aer/project-store';
 import type { ChatTurnResult, PlanResult } from '@aer/scheduler';
 import { ChatSession, decidePlanMode } from './chat-session.ts';
 import { changesText } from './chat-format.ts';
@@ -328,8 +328,8 @@ function config(engine: Engine, chat: ChatSession, a: string, b: string, rest: s
     case '':
       return [`principal: ${cfg.main ?? '(primeira IA pronta)'} (${cfg.sources.main})`, `modo: ${cfg.mode} (${cfg.sources.mode})`,
         `limites: ${Object.entries(cfg.limits).map(([k, v]) => `${k}=${v}`).join(' ') || '1 por IA'} (${cfg.sources.limits})`, `revisão cruzada: ${cfg.crossReview ? 'ligada' : 'desligada'} (${cfg.sources.crossReview})`,
-        `comando de teste: ${cfg.testCommand ? `${cfg.testCommand.join(' ')} (${chat.testApproved(cfg.testCommand) ? 'autorizado' : `não autorizado; confirme com /config teste ${cfg.testCommand.join(' ')}`})` : 'nenhum'} [${cfg.sources.testCommand}]`, `autorizadas: ${[...chat.consent].join(', ') || 'nenhuma'}`,
-        'mude com: /config consentir|revogar <ia> · limite <ia> <n> · revisão on|off · teste <comando…> · modo manual|auto|hybrid · principal <ia> · tema <t> · logo <l>'].join('\n');
+        `comando de teste: ${cfg.testCommand ? `${cfg.testCommand.join(' ')} (${chat.testApproved(cfg.testCommand) ? 'autorizado' : `não autorizado; confirme com /config teste ${cfg.testCommand.join(' ')}`})` : 'nenhum'} [${cfg.sources.testCommand}]`, `autorizadas: ${[...chat.consent].join(', ') || 'nenhuma'}`, `atualização: ${updatePrefs().mode} (config pessoal)`,
+        'mude com: /config consentir|revogar <ia> · limite <ia> <n> · revisão on|off · teste <comando…> · modo manual|auto|hybrid · principal <ia> · tema <t> · logo <l> · atualizacao auto|avisar|off'].join('\n');
     case 'consentir': {
       if (b === 'todas' || b === 'all') {
         chat.setConsentAll(true);
@@ -397,8 +397,19 @@ function config(engine: Engine, chat: ChatSession, a: string, b: string, rest: s
       if (!(LOGO_MODES as readonly string[]).includes(b)) return `logo inválido; use ${LOGO_MODES.join('|')}`;
       saveUiConfig('project', root, { logo: b });
       return `logo ${b} gravado; vale na próxima abertura do ases`;
+    case 'atualizacao':
+    case 'atualização': {
+      const msg: Record<string, string> = {
+        auto: 'atualização automática: uma vez por dia o ases consulta o npm ao abrir e, se houver versão nova, ela se instala sozinha quando você sair',
+        avisar: 'atualização: só avisa quando houver versão nova; você instala com /atualizar',
+        off: 'atualização desligada: o ases não consulta o npm sozinho (use /atualizar quando quiser)',
+      };
+      if (!msg[b]) return 'uso: /config atualizacao auto|avisar|off';
+      setUpdatePrefs({ mode: b });
+      return msg[b];
+    }
     default:
-      return 'uso: /config [consentir|revogar|limite|revisão|teste|modo|principal|tema|logo|idioma]';
+      return 'uso: /config [consentir|revogar|limite|revisão|teste|modo|principal|tema|logo|idioma|atualizacao]';
   }
 }
 

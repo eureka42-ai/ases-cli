@@ -6,7 +6,7 @@ import { copyFileSync, mkdirSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { ProjectStore, exportHistory, importLegacy, sqliteVersion } from '@aer/persistence';
 import { SUPPORTED_TARGETS, defaultDeps, syncedFolderHint, targetStatus } from '@aer/platform-core';
-import { brandConfigLayers, chatConfig, desktopDir, findProjectRoot, recentProjects, rememberProject, initProject, isInterimProject, loadPlatformAdapter, paths, readInterimProject, preferredCloudRemote, projectSync, readManifest } from '@aer/project-store';
+import { brandConfigLayers, chatConfig, desktopDir, findProjectRoot, recentProjects, rememberProject, initProject, isInterimProject, loadPlatformAdapter, paths, readInterimProject, preferredCloudRemote, projectSync, readManifest, setUpdatePrefs, updatePrefs } from '@aer/project-store';
 import { ClaudeCodeProvider } from '@aer/provider-claude';
 import { CodexProvider } from '@aer/provider-codex';
 import { CursorProvider } from '@aer/provider-cursor';
@@ -18,7 +18,7 @@ import { handleLine } from './commands.ts';
 import { runTui } from './tui.tsx';
 import { runWizard } from './wizard.tsx';
 import { clearScreen, runStartScreen, type SyncAvail } from './start-screen.tsx';
-import { runUpdate } from './update.ts';
+import { autoUpdateCheck, runUpdate } from './update.ts';
 import { enableSync, initGitRepo, syncAvailability, syncProject } from './sync.ts';
 import { shouldAnimate } from './ticker.ts';
 import { attachRepl, connectResident, daemonStatus, runDaemon, startDaemon, stopDaemon } from './daemon.ts';
@@ -33,7 +33,7 @@ Uso:
   ases secret status | set <id> | has <id> | delete <id>   chave de API no cofre nativo (valor pelo stdin; nunca impresso)
   ases daemon start | stop | status   motor residente: tarefas seguem com o terminal fechado; o ases vira cliente dele
   ases about                 quem faz o Eureka42, site e licença
-  ases update [--check]      atualiza o AER para a versão mais nova do npm (--check só mostra; consulta o npm só quando pedido)
+  ases update [--check]      atualiza o AER para a versão mais nova do npm (--check só mostra). Sozinho: 1×/dia avisa e instala ao sair; /config atualizacao auto|avisar|off
 
 Opções:
   --no-color   --no-banner   --no-tui   --no-animation (para o relógio de "pensando")   --theme auto|green|teal|blue|purple|gold|mono|contrast   --logo banner|full|compact|minimal|ascii
@@ -277,6 +277,27 @@ async function probeProviders(adapter: Awaited<ReturnType<typeof loadPlatformAda
 }
 
 /** 1.4.0: com GitHub/nuvem ligados, o projeto (com o contexto) é enviado ao sair, já com o engine fechado. */
+type UpdateCheck = Awaited<ReturnType<typeof autoUpdateCheck>>;
+
+/** PHASE-28: checagem de versão ao abrir, em segundo plano; nunca derruba nem atrasa o ases. */
+function startUpdateCheck(): Promise<UpdateCheck> {
+  if (process.env.CI) return Promise.resolve(undefined);
+  return (async () => {
+    const prefs = updatePrefs();
+    const r = await autoUpdateCheck({ current: VERSIONS.app, binPath: realpathSync(process.argv[1] ?? '.'), mode: prefs.mode, ...(prefs.checkedAt ? { checkedAt: prefs.checkedAt } : {}) });
+    if (r) setUpdatePrefs({ checkedAt: r.checkedAt });
+    return r;
+  })().catch(() => undefined);
+}
+
+/** Instala ao sair, com o motor já parado (trocar os arquivos com o ases aberto misturaria versões). Checagem ainda pendente não segura a saída. */
+async function installUpdateOnExit(check: Promise<UpdateCheck>): Promise<void> {
+  const r = await Promise.race([check, new Promise<undefined>((res) => setTimeout(() => res(undefined), 0))]);
+  if (!r?.install) return;
+  console.log(`Atualizando o AER para ${r.to}… (só avisar: /config atualizacao avisar)`);
+  console.log((await runUpdate({ current: VERSIONS.app, check: false, running: 0, binPath: realpathSync(process.argv[1] ?? '.') })).message);
+}
+
 function syncOnExit(root: string): void {
   if (!projectSync(root).targets.length) return;
   const s = projectSync(root);
@@ -301,14 +322,16 @@ async function interactive(root: string, adapter: Awaited<ReturnType<typeof load
     return attachRepl(resident.client, resident.pid, process.stdin.isTTY === true);
   }
   const engine = await Engine.start(root, adapter);
+  const update = startUpdateCheck();
   if (ui.tui) {
     // PHASE-18: primeiro uso sem principal configurada → assistente (sem IA) antes do chat
     if (!chatConfig(root).main) await runWizard(engine, { color: ui.color, colorDepth: ui.colorDepth, unicode: ui.unicode, theme: ui.theme, logo: ui.logo });
-    const reason = await runTui(engine, { color: ui.color, colorDepth: ui.colorDepth, unicode: ui.unicode, theme: ui.theme, logo: ui.logo, animation: ui.animation }, sync ? { sync } : {});
+    const reason = await runTui(engine, { color: ui.color, colorDepth: ui.colorDepth, unicode: ui.unicode, theme: ui.theme, logo: ui.logo, animation: ui.animation }, { ...(sync ? { sync } : {}), notice: update.then((r) => r?.message) });
     const r = await engine.stop();
     // §6.4/AER-REQ-090: impresso depois que o Ink devolveu o terminal
     console.log(`${reason}: engine encerrado. ${exitNote(r.cancelled)}; estado salvo até seq ${r.lastSeq}.`);
     syncOnExit(root);
+    await installUpdateOnExit(update);
     return 0;
   }
   if (ui.banner) console.log(renderBrand({ app: 'ASES CLI', mode: ui.mode, theme: ui.theme, color: ui.color, colorDepth: ui.colorDepth }));
@@ -326,6 +349,7 @@ async function interactive(root: string, adapter: Awaited<ReturnType<typeof load
     // §6.4/AER-REQ-090: diz claramente o que aconteceu com o motor e com as tarefas ao sair
     console.log(`${why}: engine encerrado. ${exitNote(r.cancelled)}; estado salvo até seq ${r.lastSeq}.`);
     syncOnExit(root);
+    await installUpdateOnExit(update);
   })());
   // /run roda em segundo plano (os outros comandos, inclusive /cancel, seguem respondendo); /exit e o fim da entrada
   // esperam os runs em andamento, então um script `/run` + `/exit` só sai quando o run termina
@@ -337,6 +361,7 @@ async function interactive(root: string, adapter: Awaited<ReturnType<typeof load
     rl.on('SIGINT', () => void stop('Ctrl+C').then(resolve));
     process.once('SIGINT', () => void stop('SIGINT').then(resolve));
   });
+  void update.then((r) => r?.message && console.log(r.message));
   if (process.stdin.isTTY) rl.prompt();
   const report = (err: unknown) => {
     const e = err as Error & { code?: string };
