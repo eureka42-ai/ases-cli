@@ -1,13 +1,13 @@
 <!-- GERADO pelo engine do AER a partir do banco; não editar -->
 # PHASE-28 — 1.8.0: atualização automática
 
-- **Estado:** PLANNED (v1)
+- **Estado:** VERIFYING (v4)
 - **Requisitos da fase** (união das tarefas): AER-REQ-174
 
 ## Tarefas e dependências (DAG)
 | Tarefa | Estado | Provider | Depende de | Requisitos |
 |---|---|---|---|---|
-| TAR-0099 — Atualização automática: checagem diária ao abrir, instalação ao sair, /config atualizacao auto/avisar/off | REVIEW | — | — | AER-REQ-174 |
+| TAR-0099 — Atualização automática: checagem diária ao abrir, instalação ao sair, /config atualizacao auto/avisar/off | MERGING | — | — | AER-REQ-174 |
 
 ## Critérios
 - **Entrada:** tarefas com requisitos ligados e dependências sem ciclo.

@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0099 |
 | phase_id | PHASE-28 |
-| estado | REVIEW (v6) |
+| estado | MERGING (v8) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |
