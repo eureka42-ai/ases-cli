@@ -333,4 +333,20 @@ CREATE TRIGGER events_append_only_delete BEFORE DELETE ON events
   );
   `,
   },
+  {
+    version: 6,
+    name: 'lessons',
+    sql: `
+  CREATE TABLE lessons (
+    project_id TEXT NOT NULL REFERENCES projects(id),
+    id TEXT NOT NULL CHECK (id GLOB 'LES-[0-9][0-9][0-9][0-9]*'),
+    text TEXT NOT NULL,
+    state TEXT NOT NULL CHECK (state IN ('PROPOSED','ACTIVE','ARCHIVED')),
+    source TEXT,
+    approved_by TEXT,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (project_id, id)
+  );
+  `,
+  },
 ];

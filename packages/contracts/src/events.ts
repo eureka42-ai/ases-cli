@@ -15,6 +15,8 @@ export const EVENT_TYPES = [
   'MethodologySourceImported', 'RequirementCreated', 'RequirementUpdated', 'DecisionRecorded', 'ChangeRecorded',
   // PHASE-18: chat com a IA principal e planos
   'ConversationStarted', 'ChatMessageAdded', 'MainProviderChanged', 'PlanProposed', 'PlanDecided', 'ChatTurnFailed', 'RestorePointCreated', 'RestorePointApplied',
+  // PHASE-25: lições aprendidas (do ESAA, de Elzo Brito)
+  'LessonRecorded', 'LessonUpdated',
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
@@ -53,6 +55,8 @@ export const CRITICAL_PAYLOADS = {
   RestorePointCreated: z.strictObject({ conversationId, n: z.number().int().min(1), ref: z.string().min(1), commit: z.string().regex(/^[0-9a-f]{40,64}$/), files: z.array(z.string()) }),
   RestorePointApplied: z.strictObject({ conversationId, n: z.number().int().min(1) }),
   TestRunCompleted: z.strictObject({ command: z.string().min(1), exitCode: z.number().int(), total: z.number().int().min(0), passed: z.number().int().min(0), failed: z.number().int().min(0), skipped: z.number().int().min(0) }),
+  LessonRecorded: z.strictObject({ id: z.string().regex(/^LES-\d{4,}$/), source: z.string().nullable() }),
+  LessonUpdated: z.strictObject({ id: z.string().regex(/^LES-\d{4,}$/), from: z.string(), to: z.enum(['ACTIVE', 'ARCHIVED', 'PROPOSED']), by: z.string().min(1) }),
 } as const satisfies Partial<Record<EventType, z.ZodType>>;
 
 export const EventEnvelopeSchema = z.strictObject({

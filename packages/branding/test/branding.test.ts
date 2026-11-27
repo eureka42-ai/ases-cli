@@ -116,6 +116,6 @@ describe('PHASE-18: green banner, about, site (TAR-0078)', () => {
   });
   it('about text is the literal approved by the owner', () => {
     expect(SITE).toBe('eureka42.org');
-    expect(aboutText('1.1.0')).toBe('⌘ Eureka42 · ASES Engineering Runtime (AER) 1.1.0\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\neureka42.org · Licença CC BY-NC-ND 4.0');
+    expect(aboutText('1.1.0')).toBe('⌘ Eureka42 · ASES Engineering Runtime (AER) 1.1.0\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\nASES-300/500: metodologia dos Profs. Raul el Greco e Giuseppe Favato. ESAA: governança de agentes do Prof. Elzo Brito.\nJuntos: a metodologia diz o que construir e com que critério; o ESAA garante que cada IA mexa só no que deve e aprenda com os erros.\neureka42.org · Licença CC BY-NC-ND 4.0');
   });
 });

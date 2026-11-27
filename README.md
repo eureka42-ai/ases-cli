@@ -131,6 +131,7 @@ Digite `/` no `ases` para abrir o menu. Cada comando em português tem o equival
 | `/config` | tema, logo, modo, limites, teste, autorizações | `/atualizar` | atualiza o AER |
 | `/sobre` | quem faz o Eureka42 | `/ajuda avançado` | fases, tarefas, gates, requisitos |
 | `/iniciar-projeto` | metodologia guiada do zero (ASES-500 → ASES-300 → GitHub) | `/modelo` | modelo de cada IA |
+| `/licao <texto>` | registra uma lição que toda IA passa a seguir (ESAA) | `/licoes` | lições do projeto |
 | `/sincronizar` | leva o projeto a outra máquina: GitHub, nuvem ou os dois | `/sync` | o mesmo, em inglês |
 
 ## 🤖 IAs suportadas
@@ -196,6 +197,51 @@ node scripts/pack.mjs && node scripts/pack-smoke.mjs   # pacote e instalação d
 
 Os testes usam processos reais, pty, ConPTY no Windows e um simulador de IA. Nenhuma IA real é chamada nos testes.
 
+## 📚 As bases: ASES-300/500 e ESAA
+
+O AER junta duas linhas de trabalho dos professores do Eureka42. Uma define **o que** construir e **com que critério**; a outra garante **como** as IAs trabalham sem atropelar umas às outras.
+
+### ASES-300 e ASES-500: Profs. Raul el Greco e Giuseppe Favato
+
+O **ASES** é a metodologia de **Engenharia de Software Orientada a Agentes** desenvolvida pelos **Profs. Raul el Greco** e **Giuseppe Favato**. Ela é um modelo didático e operacional para construir software com agentes de IA. Ela tem duas partes:
+
+| Parte | O que é | Para que serve |
+|---|---|---|
+| **ASES-500** | O especificador interativo: uma entrevista em trilhas (produto, usuários, dados, segurança, operação…), uma pergunta por vez | Transformar uma ideia solta em decisões registradas e em requisitos do **seu** sistema (REQ-301 em diante), cada um com critério de aceite verificável |
+| **ASES-300** | Um catálogo de **300 requisitos gerais**, que valem para quase todo software (segurança, testes, rastreabilidade, acessibilidade, operação…) | Garantir que nada essencial fique esquecido. Cada requisito é aplicado ou marcado como "não se aplica", com justificativa e aprovação de uma pessoa |
+
+**Por que nasceu:** quando agentes de IA passaram a investigar repositórios, alterar vários arquivos e executar comandos sozinhos, a facilidade de gerar código criou a impressão de que especificar, validar e governar o desenvolvimento tinha ficado menos necessário. Os professores viram o contrário. Um pedido como "precisamos de um sistema de usuários" não descreve um sistema: ele só inicia uma investigação. E o agente raciocina apenas a partir do contexto que recebe, então o que não foi dito simplesmente não existe para ele. Prompts cada vez maiores não resolvem: escrever "todas as rotas devem ser protegidas" não prova que uma rota nova recebeu autorização. O ASES foi criado para dar uma linguagem comum a humanos e agentes, respondendo de forma verificável **o que deve existir, por que, como será construído e como se demonstra que funciona**:
+- **perguntar antes de construir** (ASES-500);
+- **conferir contra uma lista madura do que todo software precisa** (ASES-300);
+- **ligar cada linha de código a um requisito aprovado e a uma evidência.**
+
+No AER, tudo isso roda com o `/iniciar-projeto`.
+
+### ESAA: Prof. Elzo Brito
+
+O **ESAA** (*Event Sourcing for Autonomous Agents*) é a arquitetura de governança para agentes de código criada pelo **Prof. Elzo Brito** (Elzo Brito dos Santos Filho). Há [artigo publicado no arXiv](https://arxiv.org/abs/2602.23193) e [código aberto (MIT)](https://github.com/elzobrito/ESAA-Core).
+
+**Por que nasceu:** nas palavras do próprio projeto, agentes de código "são bons em produzir artefatos e ruins em disciplina operacional". Sem governança, um fluxo com várias IAs sofre de:
+- **estado mágico:** arquivos mudam sem registro de quem, quando e por quê;
+- **histórico invisível:** decisões se perdem no meio de um prompt;
+- **colapso de etapas:** o agente reivindica, executa e aprova tudo de uma vez;
+- **retrabalho:** o mesmo erro se repete, porque nada registra a lição.
+
+**A ideia central:** todo avanço é um **evento imutável**, validado por um **único escritor**. Os agentes só **emitem intenções**, e o estado do projeto pode ser **reconstruído e verificado** a partir do histórico. Somam-se a isso:
+- limites de escrita por tipo de tarefa;
+- revisão por um agente diferente do que executou;
+- **lições aprendidas** que passam a valer em toda tarefa seguinte.
+
+### Por que juntar os dois
+
+| Sozinho, o ASES… | Sozinho, o ESAA… | Juntos, no AER |
+|---|---|---|
+| diz *o que* construir e como provar que está certo | garante que cada agente siga o protocolo e deixe rastro | cada tarefa nasce de um **requisito aprovado**, roda numa **IA governada** e termina com **evidência** |
+| depende de quem executa respeitar o método | não sabe *quais* requisitos o sistema precisa | a metodologia alimenta o plano, e a governança impede atalhos |
+| registra decisões humanas | registra o trabalho das máquinas | **um só histórico**, do pedido do usuário à linha de código, auditável de ponta a ponta |
+
+A primeira peça do ESAA já está no AER: as **lições aprendidas** (`/licao`, `/licoes`). Uma lição aprovada pelo responsável entra nas instruções de toda tarefa e da IA principal, e as IAs param de repetir o mesmo erro. Os limites de escrita por tipo de tarefa e a verificação do histórico vêm a seguir.
+
 ## 👥 Autores
 
 <div align="center">
@@ -206,15 +252,15 @@ O **Eureka42** é uma iniciativa dos Professores
 <tr>
 <td align="center" width="40%">
 <h2>⌘ Raul el Greco</h2>
-<b>Professor · Eureka42</b>
+<b>Professor · Eureka42</b><br/><sub>coautor do ASES-300/500</sub>
 </td>
 <td align="center" width="30%">
 <h3>Giuseppe Favato</h3>
-Professor · Eureka42
+Professor · Eureka42<br/><sub>coautor do ASES-300/500</sub>
 </td>
 <td align="center" width="30%">
 <h3>Elzo Brito</h3>
-Professor · Eureka42
+Professor · Eureka42<br/><sub>autor do <a href="https://github.com/elzobrito/ESAA-Core">ESAA</a></sub>
 </td>
 </tr>
 </table>
@@ -234,7 +280,8 @@ Os avisos das bibliotecas de terceiros embutidas acompanham o pacote em `THIRD_P
 
 | Versão | Data | Destaques |
 |---|---|---|
-| **1.4.0** | 26/11/2026 | Projetos em outra máquina: **Novo projeto** em `~/Projetos Eureka42`, guardado só local, no GitHub, na nuvem (Google Drive, OneDrive, Mega… pelo rclone) ou nos dois, com o contexto junto; **Abrir de outra máquina**; `/sincronizar`; pedidos de aprovação da IA em `/approval`; cores na marca Eureka42; interface no idioma da máquina (pt/en/es); modelo da principal no cabeçalho |
+| **1.5.0** | 26/11/2026 | **Lições aprendidas** do ESAA (`/licao`, `/licoes`) em toda tarefa e na principal; seção "As bases: ASES-300/500 e ESAA"; `/sobre` com os autores; `ases update` sem cache velho |
+| 1.4.0 | 26/11/2026 | Projetos em outra máquina: **Novo projeto** em `~/Projetos Eureka42`, guardado só local, no GitHub, na nuvem (Google Drive, OneDrive, Mega… pelo rclone) ou nos dois, com o contexto junto; **Abrir de outra máquina**; `/sincronizar`; pedidos de aprovação da IA em `/approval`; cores na marca Eureka42; interface no idioma da máquina (pt/en/es); modelo da principal no cabeçalho |
 | 1.3.1 | 25/11/2026 | `/modelo` com as listas atuais: Claude 5.5/Fable 5.2, Codex GPT-6/5.6, Kimi K3.1 |
 | 1.3.0 | 25/11/2026 | `/iniciar-projeto`: ASES-500 guiada → requisitos → ASES-300 → G1 → repositório no GitHub (privado por padrão) |
 | 1.2.1 | 25/11/2026 | Cursor seguro: shell barrado pela regra `deny` antes de executar e acesso fora do projeto interrompido; Cursor **VERIFIED** 2026.11.22 |

@@ -180,6 +180,17 @@ export interface RequirementRow {
   version: number;
 }
 
+export const LESSON_STATES = ['PROPOSED', 'ACTIVE', 'ARCHIVED'] as const;
+export type LessonState = (typeof LESSON_STATES)[number];
+export interface LessonRow {
+  id: string;
+  text: string;
+  state: LessonState;
+  source: string | null;
+  approvedBy: string | null;
+  createdAt: string;
+}
+
 export interface DecisionRow {
   id: string;
   questionId: string;
@@ -891,6 +902,41 @@ export class ProjectStore {
     const c = this.getChange(changeId);
     if (!c) throw new StoreError('NOT_FOUND', `change ${changeId} not found`);
     if (!c.targets.includes(target)) throw new StoreError('CHANGE_REQUIRED', `${changeId} does not cite ${target}`);
+  }
+
+  /** PHASE-25 (lições do ESAA): uma lição nasce PROPOSED e só entra nas instruções das IAs depois que uma pessoa a aprova. */
+  addLesson(i: { text: string; source?: string }): string {
+    if (!i.text.trim()) throw new StoreError('INVALID_INPUT', 'lesson text is required');
+    return this.inWriteTx(() => {
+      const n = Number((this.db.prepare('SELECT count(*) n FROM lessons WHERE project_id = ?').get(this.projectId) as Row).n) + 1;
+      const id = `LES-${String(n).padStart(4, '0')}`;
+      this.db.prepare("INSERT INTO lessons (project_id, id, text, state, source, approved_by, created_at) VALUES (?, ?, ?, 'PROPOSED', ?, NULL, ?)")
+        .run(this.projectId, id, i.text.trim(), i.source ?? null, this.now());
+      this.appendEvent({ eventType: 'LessonRecorded', payload: { id, source: i.source ?? null } });
+      return id;
+    });
+  }
+
+  setLessonState(id: string, state: LessonState, by: string): void {
+    if (!(LESSON_STATES as readonly string[]).includes(state)) throw new StoreError('INVALID_INPUT', `state must be one of ${LESSON_STATES.join(', ')}`);
+    if (!by.trim()) throw new StoreError('INVALID_INPUT', 'a person must approve or archive a lesson');
+    this.inWriteTx(() => {
+      const cur = this.listLessons().find((l) => l.id === id);
+      if (!cur) throw new StoreError('NOT_FOUND', `lesson ${id} not found`);
+      this.db.prepare('UPDATE lessons SET state = ?, approved_by = ? WHERE project_id = ? AND id = ?').run(state, state === 'ACTIVE' ? by.trim() : cur.approvedBy, this.projectId, id);
+      this.appendEvent({ eventType: 'LessonUpdated', payload: { id, from: cur.state, to: state, by: by.trim() } });
+    });
+  }
+
+  listLessons(): LessonRow[] {
+    return (this.db.prepare('SELECT * FROM lessons WHERE project_id = ? ORDER BY id').all(this.projectId) as Row[]).map((r) => ({
+      id: String(r.id), text: String(r.text), state: r.state as LessonState, source: (r.source as string | null) ?? null,
+      approvedBy: (r.approved_by as string | null) ?? null, createdAt: String(r.created_at),
+    }));
+  }
+
+  activeLessons(): LessonRow[] {
+    return this.listLessons().filter((l) => l.state === 'ACTIVE');
   }
 
   listDecisions(): DecisionRow[] {

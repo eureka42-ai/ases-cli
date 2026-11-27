@@ -1,5 +1,13 @@
 # AER 1.x: notas de versão
 
+## 1.5.0 (26/11/2026): lições aprendidas (ESAA) e as bases do projeto
+- **Lições aprendidas**, a primeira peça do [ESAA](https://github.com/elzobrito/ESAA-Core), do Prof. Elzo Brito:
+  - `/licao <texto>` registra uma lição. Ela entra nas instruções de **toda tarefa** e da **IA principal**, e as IAs param de repetir o mesmo erro.
+  - `/licoes` lista as lições, e `/licao arquivar LES-0001` tira uma lição de uso.
+  - Cada passo vira evento no histórico. O banco migra para a versão 6, com backup automático.
+- **`/sobre` e README:** o ASES-300/500 é dos Profs. Raul el Greco e Giuseppe Favato, e o ESAA, do Prof. Elzo Brito. Há uma nova seção, "As bases: ASES-300/500 e ESAA", sobre o que cada um é e por que juntar os dois.
+- **`ases update`:** passa a pedir a versão ao registro do npm, sem usar o cache local. Antes, logo depois de uma publicação, ele dava "No matching version found".
+
 ## 1.4.0 (26/11/2026): projetos em qualquer máquina
 - **Novo projeto:** na tela "Onde vamos trabalhar?", você digita o nome e o AER cria `~/Projetos Eureka42/<nome>`. Em seguida pergunta onde guardar: **só nesta máquina** (padrão), **GitHub** (repositório privado), **nuvem** ou **GitHub e nuvem**. Só aparecem as opções que funcionam nesta máquina.
 - **Nuvem:** Google Drive, OneDrive, Mega, Dropbox e as demais do [rclone](https://rclone.org). O login é feito uma vez com `rclone config`; o AER nunca vê a senha. O projeto vai para `<nuvem>:Projetos Eureka42/<nome>`. **Conectar uma nuvem** (tela inicial) e **`/conectar google|onedrive|dropbox`** abrem o navegador para o login.

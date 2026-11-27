@@ -116,6 +116,7 @@ add('menu./config', 'tema, logo, idioma, modo, limites, teste, autorizações', 
 add('menu./sincronizar', 'leva o projeto para outra máquina: GitHub, nuvem ou os dois', 'take the project to another machine: GitHub, cloud or both', 'lleva el proyecto a otra máquina: GitHub, nube o ambos');
 add('menu./conectar', 'conecta uma nuvem: Google Drive, OneDrive ou Dropbox (login no navegador)', 'connect a cloud: Google Drive, OneDrive or Dropbox (browser login)', 'conecta una nube: Google Drive, OneDrive o Dropbox (login en el navegador)');
 add('menu./atualizar', 'atualiza o AER pelo npm', 'update AER from npm', 'actualiza AER desde npm');
+add('menu./licoes', 'lições aprovadas que as IAs seguem (do ESAA)', 'approved lessons the AIs follow (from ESAA)', 'lecciones aprobadas que las IAs siguen (de ESAA)');
 add('menu./sobre', 'quem faz o Eureka42', 'who makes Eureka42', 'quién hace Eureka42');
 add('menu./sair', 'sai do ases', 'quit ases', 'sale de ases');
 

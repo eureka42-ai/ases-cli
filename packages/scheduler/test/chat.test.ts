@@ -123,6 +123,11 @@ describe('chat turn of the main IA (PHASE-18, TAR-0084)', () => {
     expect(q.pending).toBe(0);
   });
 
+  it('the main AI also receives the approved lessons (PHASE-25, ESAA)', () => {
+    const p = buildMainPrompt({ project: 'p', phases: [], openTasks: [], ready: [], main: 'claude', history: [], message: 'oi', lessons: [{ id: 'LES-0002', text: 'Use pnpm, não npm' }] });
+    expect(p).toContain('## Lições do projeto (aprovadas)\n- LES-0002: Use pnpm, não npm');
+  });
+
   it('history beyond budget is trimmed, the new message is always kept', () => {
     const history = Array.from({ length: 200 }, (_, i) => ({ n: i + 1, role: (i % 2 ? 'main' : 'user') as 'main' | 'user', provider: null, text: `m${i} ${'x'.repeat(500)}`, createdAt: '' }));
     const p = buildMainPrompt({ project: 'p', phases: [], openTasks: [], ready: ['codex'], main: 'claude', history, message: 'MENSAGEM NOVA' });

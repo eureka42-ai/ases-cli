@@ -5,6 +5,7 @@ import { createRestorePoint, markTurnEnd, repoRoot, resolveInside, turnDiff } fr
 import type { ChatMessageRow, PhaseRow, TaskRow } from '@aer/persistence';
 import { redactText, type AgentStreamEvent } from '@aer/provider-sdk';
 import { assignProviders, parseMainReply } from './chat-plan.ts';
+import { lessonsBlock } from './continuity.ts';
 import { parseProviderSpec, type WorkerDeps } from './worker.ts';
 
 // PHASE-18: um turno da IA principal. Ela lê e edita direto no projeto (com ponto de restauração antes) e, para
@@ -29,7 +30,7 @@ export function isDeniedPath(root: string, rel: string, platform: string = proce
 }
 
 /** Prompt do papel de principal: regras, IAs disponíveis, projeto, histórico (cortado do mais antigo) e a mensagem. */
-export function buildMainPrompt(i: { project: string; phases: PhaseRow[]; openTasks: TaskRow[]; ready: string[]; main: string; history: ChatMessageRow[]; message: string; budgetChars?: number }): string {
+export function buildMainPrompt(i: { project: string; phases: PhaseRow[]; openTasks: TaskRow[]; ready: string[]; main: string; history: ChatMessageRow[]; message: string; lessons?: { id: string; text: string }[]; budgetChars?: number }): string {
   const budget = i.budgetChars ?? 24_000;
   const others = i.ready.filter((p) => p !== i.main);
   const phases = i.phases.slice(-10);
@@ -44,7 +45,7 @@ O ASES escolhe quem executa cada tarefa entre: ${others.length ? others.join(', 
 ## Projeto
 ${i.project} · fases${i.phases.length > phases.length ? ` (últimas ${phases.length} de ${i.phases.length})` : ''}: ${phases.map((p) => `${p.id} ${p.state} ${p.title}`).join('; ') || 'nenhuma'}
 Tarefas abertas: ${i.openTasks.map((t) => `${t.id} ${t.state} ${t.title}`).slice(0, 30).join('; ') || 'nenhuma'}
-`;
+${lessonsBlock(i.lessons)}`;
   // o cabeçalho tem teto; a mensagem é reservada primeiro e, se for cortada, o corte é dito
   const head = head0.length > Math.floor(budget / 3) ? `${head0.slice(0, Math.floor(budget / 3) - 40)}\n[contexto do projeto cortado]\n` : head0;
   const roomForMessage = budget - head.length - 120;
@@ -115,7 +116,7 @@ export async function runChatTurn(d: WorkerDeps, o: { conversationId: string; me
   const instructionsFile = path.join(tmp, `${cnv}-${n}.md`);
   writeFileSync(instructionsFile, buildMainPrompt({
     project: path.basename(d.root), phases: read((s) => s.listPhases()), openTasks: read((s) => s.listTasks().filter((t) => !['COMPLETED', 'CANCELLED'].includes(t.state))),
-    ready: o.ready, main: o.main, history, message: o.message,
+    ready: o.ready, main: o.main, history, message: o.message, lessons: read((s) => s.activeLessons()),
   }));
   const texts: string[] = [];
   let error: string | undefined;

@@ -66,6 +66,13 @@ describe('prompt pack (AER-REQ-177/179)', () => {
     expect(text).toContain('Aceite: aparece na agenda');
     expect(text).toMatch(/truncado pelo orçamento de 4000 caracteres; texto completo em \.ases\/handoffs\/TAR-0009-H01\.md/);
   });
+
+  it('approved lessons go into every task (PHASE-25, ESAA)', () => {
+    const task = { id: 'TAR-0009', phaseId: 'PHASE-01', title: 'x', description: 'd', state: 'READY', priority: 50, risk: 'LOW', version: 1, reqs: [], dependsOn: [], resources: [], provider: null, extensions: [] } as const;
+    const base = { task: { ...task, reqs: [], dependsOn: [], resources: [], extensions: [] }, requirements: [] };
+    expect(buildPromptPack({ ...base, lessons: [{ id: 'LES-0001', text: 'Rode os testes antes de entregar' }] })).toContain('## Lições do projeto (aprovadas)\n- LES-0001: Rode os testes antes de entregar');
+    expect(buildPromptPack(base)).not.toContain('Lições');
+  });
 });
 
 describe('recovery (TAR-0057, AER-REQ-180/182)', () => {

@@ -126,7 +126,7 @@ export const SITE = 'eureka42.org';
 
 /** Texto do /sobre, literal aprovado pelo responsável (24/11/2026). */
 export function aboutText(version: string): string {
-  return `⌘ Eureka42 · ASES Engineering Runtime (AER) ${version}\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\n${SITE} · Licença CC BY-NC-ND 4.0`;
+  return `⌘ Eureka42 · ASES Engineering Runtime (AER) ${version}\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\nASES-300/500: metodologia dos Profs. Raul el Greco e Giuseppe Favato. ESAA: governança de agentes do Prof. Elzo Brito.\nJuntos: a metodologia diz o que construir e com que critério; o ESAA garante que cada IA mexa só no que deve e aprenda com os erros.\n${SITE} · Licença CC BY-NC-ND 4.0`;
 }
 
 // EUREKA 42 em blocos (ANSI Shadow), desenho aprovado pelo responsável em 24/11/2026

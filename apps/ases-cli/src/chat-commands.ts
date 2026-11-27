@@ -1,3 +1,4 @@
+import os from 'node:os';
 import { VERSIONS } from '@aer/contracts';
 import { repoRoot } from '@aer/git-bridge';
 import { aboutText, LOGO_MODES, THEME_CHOICES } from '@aer/branding';
@@ -22,7 +23,7 @@ export const CHAT_ALIASES: Record<string, string> = {
 };
 
 /** Comandos do menu do `/` (nome interno em português; o menu mostra o nome no idioma atual). */
-const MENU_CMDS = ['/ajuda', '/iniciar-projeto', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/modelo', '/config', '/sincronizar', '/conectar', '/atualizar', '/sobre', '/sair'];
+const MENU_CMDS = ['/ajuda', '/iniciar-projeto', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/modelo', '/config', '/sincronizar', '/conectar', '/atualizar', '/licoes', '/sobre', '/sair'];
 
 export interface MenuItem { cmd: string; name: string; desc: string }
 export const slashMenu = (): MenuItem[] => MENU_CMDS.map((cmd) => ({ cmd, name: cmdName(cmd), desc: t(`menu.${cmd}`) }));
@@ -44,7 +45,7 @@ export const chatHelp = (): string => [
   t('help.advanced'),
 ].join('\n');
 
-export const CHAT_COMMANDS = new Set(['/modelo', '/ajuda', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/config', '/sobre', '/sair', '/atualizar', '/sincronizar', '/conectar']);
+export const CHAT_COMMANDS = new Set(['/modelo', '/ajuda', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/config', '/sobre', '/sair', '/atualizar', '/sincronizar', '/conectar', '/licao', '/licoes']);
 
 /** `12` → `TAR-0012`; `TAR-0012` fica igual. */
 export function resolveTaskRef(ref: string): string {
@@ -108,6 +109,27 @@ export async function handleChat(engine: Engine, cmd: string, args: string[], ad
       return a === 'avançado' || a === 'avancado' || a === 'advanced' || a === 'avanzado' ? advancedHelp() : chatHelp();
     case '/sobre':
       return aboutText(VERSIONS.app);
+    case '/licoes': {
+      // PHASE-25 (ESAA): as lições ACTIVE entram nas instruções de toda tarefa e da principal
+      const all = engine.store.listLessons();
+      return all.length ? all.map((l) => `${l.id} ${l.state} · ${l.text}${l.approvedBy ? ` (aprovada por ${l.approvedBy})` : ''}`).join('\n') : 'nenhuma lição ainda. /licao <texto> registra uma (ex.: /licao sempre rode os testes antes de entregar)';
+    }
+    case '/licao': {
+      const who = os.userInfo().username || 'responsável';
+      try {
+        if ((a === 'arquivar' || a === 'aprovar') && /^LES-\d{4,}$/.test(b)) {
+          engine.mutate((s) => s.setLessonState(b, a === 'aprovar' ? 'ACTIVE' : 'ARCHIVED', who));
+          return `${b} ${a === 'aprovar' ? 'aprovada: entra nas próximas tarefas' : 'arquivada: sai das instruções das IAs'}`;
+        }
+        const text = args.join(' ').trim();
+        if (!text) return 'uso: /licao <texto> · /licao arquivar LES-0001 · /licao aprovar LES-0001 · /licoes';
+        const id = engine.mutate((s) => s.addLesson({ text, source: 'chat' }));
+        engine.mutate((s) => s.setLessonState(id, 'ACTIVE', who)); // quem digita é o responsável: já fica aprovada
+        return `${id} aprovada por ${who}: entra nas instruções de toda tarefa e da principal (/licoes, /licao arquivar ${id})`;
+      } catch (err) {
+        return `erro ${(err as { code?: string }).code ?? ''}: ${(err as Error).message}`;
+      }
+    }
     case '/sincronizar':
       return syncCommand(engine.projectRoot, a, b);
     case '/conectar':

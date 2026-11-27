@@ -45,7 +45,7 @@ describe('ases update (PHASE-18, TAR-0088)', () => {
     const npm = fakeNpm();
     const r = await runUpdate({ current: '1.1.0', check: false, running: 0, binPath: GLOBAL_BIN, fetchImpl: registry('1.2.0'), npm: { cli: npm.cli, node: process.execPath } });
     expect(r).toMatchObject({ status: 'UPDATED', from: '1.1.0', to: '1.2.0' });
-    expect(JSON.parse(readFileSync(npm.log, 'utf8'))).toEqual(['install', '-g', '@eureka42-ai/aer@1.2.0']);
+    expect(JSON.parse(readFileSync(npm.log, 'utf8'))).toEqual(['install', '-g', '@eureka42-ai/aer@1.2.0', '--prefer-online']); // sem o cache velho do npm (ETARGET logo após publicar)
   });
   it('refuses while tasks are running', async () => {
     expect(await runUpdate({ current: '1.1.0', check: false, running: 2, binPath: GLOBAL_BIN, fetchImpl: registry('1.2.0') })).toMatchObject({ status: 'REFUSED', message: expect.stringMatching(/pare as tarefas antes \(\/parar\)/) });

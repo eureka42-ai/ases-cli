@@ -138,7 +138,7 @@ export async function runAttempt(d: WorkerDeps, r: { taskId: string; fencingToke
   const instructionsFile = path.join(d.root, '.ases', 'worktrees', `${taskId}-${attemptId}.instructions.md`);
   // pacote de contexto: só a tarefa, os requisitos dela e o último handoff, dentro do orçamento (AER-REQ-177/179)
   const requirements = read((s) => task.reqs.map((id) => s.getRequirement(id)).filter((r) => r !== undefined).map((r) => ({ id: r.id, title: r.title, acceptance: r.acceptance })));
-  writeFileSync(instructionsFile, buildPromptPack({ task, requirements, handoff: read((s) => latestHandoff(d.root, s, taskId)) }));
+  writeFileSync(instructionsFile, buildPromptPack({ task, requirements, handoff: read((s) => latestHandoff(d.root, s, taskId)), lessons: read((s) => s.activeLessons()) }));
 
   // aprovações concedidas para esta tarefa vão para o agente e são consumidas aqui: uso único (AER-REQ-162/173)
   const approvedOperations = d.mutate((s) => {

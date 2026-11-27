@@ -42,7 +42,7 @@ export async function runReview(d: WorkerDeps, taskId: string, reviewerSpec: str
   const stat = firstBase ? await diffStat(d.root, firstBase, wt.branch).catch(() => '') : '';
   const instructionsFile = path.join(d.root, '.ases', 'worktrees', `${taskId}-${reviewId}.instructions.md`);
   const requirements = read((s) => task.reqs.map((id) => s.getRequirement(id)).filter((r) => r !== undefined).map((r) => ({ id: r.id, title: r.title, acceptance: r.acceptance })));
-  writeFileSync(instructionsFile, `${buildPromptPack({ task, requirements, handoff: read((s) => latestHandoff(d.root, s, taskId)) })}
+  writeFileSync(instructionsFile, `${buildPromptPack({ task, requirements, handoff: read((s) => latestHandoff(d.root, s, taskId)), lessons: read((s) => s.activeLessons()) })}
 ## MODO REVISÃO (somente leitura)
 Você é o revisor independente desta tarefa. NÃO altere, crie nem apague arquivos. Verifique se as alterações abaixo
 atendem aos critérios de aceite e responda começando com APROVADO ou REPROVADO, seguido dos motivos.

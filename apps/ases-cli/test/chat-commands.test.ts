@@ -127,7 +127,17 @@ describe('chat engine and simple commands (PHASE-18, TAR-0086)', () => {
   });
 
   it('/sobre prints the literal about text', async () => {
-    expect(await say('/sobre')).toBe('⌘ Eureka42 · ASES Engineering Runtime (AER) 1.4.0\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\neureka42.org · Licença CC BY-NC-ND 4.0');
+    expect(await say('/sobre')).toBe('⌘ Eureka42 · ASES Engineering Runtime (AER) 1.5.0\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\nASES-300/500: metodologia dos Profs. Raul el Greco e Giuseppe Favato. ESAA: governança de agentes do Prof. Elzo Brito.\nJuntos: a metodologia diz o que construir e com que critério; o ESAA garante que cada IA mexa só no que deve e aprenda com os erros.\neureka42.org · Licença CC BY-NC-ND 4.0');
+  });
+
+  it('/licao records an approved lesson; /licoes lists; /licao arquivar removes it from the prompts (PHASE-25, ESAA)', async () => {
+    expect(await say('/licoes')).toMatch(/nenhuma lição/);
+    expect(await say('/licao Sempre rode os testes antes de entregar')).toMatch(/LES-0001 aprovada/);
+    expect(engine.store.activeLessons().map((l) => l.text)).toEqual(['Sempre rode os testes antes de entregar']);
+    expect(await say('/licoes')).toMatch(/LES-0001 ACTIVE · Sempre rode os testes/);
+    expect(await say('/licao arquivar LES-0001')).toMatch(/LES-0001 arquivada/);
+    expect(engine.store.activeLessons()).toEqual([]);
+    expect(await say('/licao arquivar LES-0099')).toMatch(/erro/);
   });
 
   it('/ajuda avançado still lists /phase, /task, /run, /gate', async () => {
