@@ -4,8 +4,8 @@
   "taskId": "TAR-0096",
   "phaseId": "PHASE-25",
   "title": "Lições aprendidas (ESAA): tabela, eventos, /licao, injeção nas instruções; /sobre e README com ASES e ESAA",
-  "state": "REVIEW",
-  "version": 6,
+  "state": "COMPLETED",
+  "version": 9,
   "reqs": [
     "AER-REQ-177",
     "AER-REQ-179"

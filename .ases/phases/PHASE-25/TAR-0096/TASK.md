@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0096 |
 | phase_id | PHASE-25 |
-| estado | REVIEW (v6) |
+| estado | COMPLETED (v9) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |
