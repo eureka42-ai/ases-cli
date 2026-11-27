@@ -54,6 +54,15 @@ describe('chat turn of the main IA (PHASE-18, TAR-0084)', () => {
     expect(r).toMatchObject({ ok: true, restore: { files: ['SIMULATED/CHAT.md'] } });
   });
 
+  it('a lesson suggested by the main AI is stored as PROPOSED, never active by itself (PHASE-26, ESAA)', async () => {
+    const { s, d, cnv } = await setup();
+    const r = await turn(d, cnv, 'aprendi que o build quebrou');
+    expect(s.listLessons()).toMatchObject([{ id: 'LES-0001', state: 'PROPOSED', text: 'Rode o build antes de entregar', source: cnv }]);
+    expect(s.activeLessons()).toEqual([]);
+    expect(r.ok && r.reply).toBe('SIMULATED: anotado\n\nLição sugerida LES-0001: Rode o build antes de entregar. Para valer nas próximas tarefas: /licao aprovar LES-0001');
+    expect(r.ok && r.reply).not.toContain('aer-licao');
+  });
+
   it('a split request stores a PENDING plan with assignments excluding the main', async () => {
     const { s, d, cnv } = await setup();
     const r = await turn(d, cnv, 'divida em tarefas o cadastro');

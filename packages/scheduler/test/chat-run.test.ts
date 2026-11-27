@@ -39,10 +39,20 @@ describe('plan execution and quality loop (PHASE-18, TAR-0085)', () => {
   });
 
   it('failing tests send the task back for rework at most twice, then BLOCKED', async () => {
-    const { run } = await setup([task('A', 'simulator-2')]);
+    const { s, run } = await setup([task('A', 'simulator-2')]);
     const r = await run({ testCommand: [process.execPath, '-e', 'process.exit(1)'], testsApproved: true });
     expect(r.tasks[0]).toMatchObject({ state: 'BLOCKED', tests: 'FAIL', reworks: 2 });
+    expect(s.listLessons()[0]).toMatchObject({ state: 'PROPOSED', text: `Antes de entregar, rode \`${process.execPath} -e process.exit(1)\` e só entregue com os testes passando.` });
     expect(r.tasks[0]!.reason).toMatch(/TESTS_FAILING_AFTER_2_REWORKS/);
+  });
+
+  it('a test task that changes non-test files is blocked; a docs task writing .md passes (PHASE-26, ESAA boundaries)', async () => {
+    const { s, run } = await setup([{ ...task('T', 'simulator-2'), kind: 'test' }, { ...task('D', 'simulator-3'), kind: 'docs' }]);
+    const r = await run();
+    expect(s.listLessons()).toMatchObject([{ state: 'PROPOSED', source: 'TAR-0001', text: 'Tarefas de teste só alteram arquivos de teste; outras mudanças vão numa tarefa "code".' }]);
+    expect(r.tasks[0]).toMatchObject({ state: 'BLOCKED' });
+    expect(r.tasks[0]!.reason).toMatch(/BOUNDARY_VIOLATION: tarefa de teste alterou SIMULATED\/TAR-0001\.md/);
+    expect(r.tasks[1]).toMatchObject({ state: 'REVIEW' }); // o simulador grava SIMULATED/<tarefa>.md, que é documentação
   });
 
   it('passing tests are recorded as PASS', async () => {

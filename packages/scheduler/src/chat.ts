@@ -4,7 +4,7 @@ import path from 'node:path';
 import { createRestorePoint, markTurnEnd, repoRoot, resolveInside, turnDiff } from '@aer/git-bridge';
 import type { ChatMessageRow, PhaseRow, TaskRow } from '@aer/persistence';
 import { redactText, type AgentStreamEvent } from '@aer/provider-sdk';
-import { assignProviders, parseMainReply } from './chat-plan.ts';
+import { assignProviders, extractLessons, parseMainReply } from './chat-plan.ts';
 import { lessonsBlock } from './continuity.ts';
 import { parseProviderSpec, type WorkerDeps } from './worker.ts';
 
@@ -41,6 +41,8 @@ Para um pedido grande, que vale dividir entre outras IAs trabalhando em paralelo
 {"tasks":[{"title":"curto","instructions":"o que fazer, com critérios de aceite","kind":"code|test|docs|review|other","dependsOn":[1],"prefer":"<ia opcional>"}]}
 \`\`\`
 O ASES escolhe quem executa cada tarefa entre: ${others.length ? others.join(', ') : `${i.main} (só você está disponível)`}. Não use o bloco para conversa simples.
+Use o "kind" com cuidado: tarefas docs só podem alterar documentação, test só arquivos de teste e review não altera nada; fora disso a entrega é bloqueada.
+Se perceber um erro que não deve se repetir neste projeto, sugira uma lição curta num bloco \`\`\`aer-licao (uma regra por bloco). O usuário decide se aprova.
 
 ## Projeto
 ${i.project} · fases${i.phases.length > phases.length ? ` (últimas ${phases.length} de ${i.phases.length})` : ''}: ${phases.map((p) => `${p.id} ${p.state} ${p.title}`).join('; ') || 'nenhuma'}
@@ -179,7 +181,14 @@ export async function runChatTurn(d: WorkerDeps, o: { conversationId: string; me
   const text = texts.join('\n').trim();
   if (!text) return fail('NO_REPLY', 'a principal não respondeu nada');
 
-  const parsed = parseMainReply(text);
+  const ex = extractLessons(text);
+  const parsed0 = parseMainReply(ex.text);
+  // sugestões de lição ficam PROPOSED (nunca ativas sozinhas); repetidas não são registradas de novo
+  const known = new Set(read((s) => s.listLessons()).map((l) => l.text.toLowerCase()));
+  const suggested = ex.lessons.filter((l) => !known.has(l.toLowerCase())).map((l) => ({ id: d.mutate((s) => s.addLesson({ text: l, source: cnv })), text: l }));
+  const parsed = suggested.length
+    ? { ...parsed0, reply: [parsed0.reply, ...suggested.map((l) => `Lição sugerida ${l.id}: ${l.text.replace(/\.$/, '')}. Para valer nas próximas tarefas: /licao aprovar ${l.id}`)].filter(Boolean).join('\n\n') }
+    : parsed0;
   d.mutate((s) => s.addChatMessage(cnv, { role: 'main', provider: provider.id, text: parsed.reply || text }));
   if (parsed.error) return { ok: true, reply: parsed.reply, planError: parsed.error, ...(restore ? { restore } : {}) };
   if (!parsed.plan) return { ok: true, reply: parsed.reply, ...(restore ? { restore } : {}) };

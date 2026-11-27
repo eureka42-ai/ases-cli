@@ -131,7 +131,8 @@ Digite `/` no `ases` para abrir o menu. Cada comando em português tem o equival
 | `/config` | tema, logo, modo, limites, teste, autorizações | `/atualizar` | atualiza o AER |
 | `/sobre` | quem faz o Eureka42 | `/ajuda avançado` | fases, tarefas, gates, requisitos |
 | `/iniciar-projeto` | metodologia guiada do zero (ASES-500 → ASES-300 → GitHub) | `/modelo` | modelo de cada IA |
-| `/licao <texto>` | registra uma lição que toda IA passa a seguir (ESAA) | `/licoes` | lições do projeto |
+| `/licao <texto>` | registra uma lição que toda IA passa a seguir (ESAA) | `/licoes` | lições do projeto (e as sugeridas, para aprovar) |
+| `/verificar` | confere o projeto contra o histórico (ESAA) | `/metricas` | quanto cada IA rende neste projeto |
 | `/sincronizar` | leva o projeto a outra máquina: GitHub, nuvem ou os dois | `/sync` | o mesmo, em inglês |
 
 ## 🤖 IAs suportadas
@@ -240,7 +241,14 @@ O **ESAA** (*Event Sourcing for Autonomous Agents*) é a arquitetura de governan
 | depende de quem executa respeitar o método | não sabe *quais* requisitos o sistema precisa | a metodologia alimenta o plano, e a governança impede atalhos |
 | registra decisões humanas | registra o trabalho das máquinas | **um só histórico**, do pedido do usuário à linha de código, auditável de ponta a ponta |
 
-A primeira peça do ESAA já está no AER: as **lições aprendidas** (`/licao`, `/licoes`). Uma lição aprovada pelo responsável entra nas instruções de toda tarefa e da IA principal, e as IAs param de repetir o mesmo erro. Os limites de escrita por tipo de tarefa e a verificação do histórico vêm a seguir.
+**O que do ESAA já roda dentro do AER (1.6.0):**
+
+| Peça do ESAA | No AER | Comando |
+|---|---|---|
+| **Lições aprendidas** | Uma lição aprovada entra nas instruções de toda tarefa, das revisões e da IA principal. A própria IA sugere lições, e o ASES também sugere quando uma tarefa é bloqueada. **Nada vale sem a sua aprovação.** | `/licao <texto>`, `/licoes`, `/licao aprovar LES-0001`, `/licao arquivar LES-0001` |
+| **Limites de escrita por tipo de tarefa** | Tarefa de documentação só altera documentação, a de teste só arquivos de teste, e a revisão não altera nada. Fora disso, a entrega é bloqueada antes dos testes, com a lista dos arquivos | automático nos planos |
+| **Verificação pelo histórico** (*verify/replay*) | Refaz o estado de fases, tarefas e lições a partir dos eventos, confere a sequência e o hash de cada evento e aponta qualquer edição feita por fora | `/verificar` |
+| **Métricas por IA** (*runner metrics*) | Tentativas, % de acerto, refações, tempo médio e tokens de cada IA no projeto, tudo tirado do histórico | `/metricas` |
 
 ## 👥 Autores
 
@@ -280,7 +288,8 @@ Os avisos das bibliotecas de terceiros embutidas acompanham o pacote em `THIRD_P
 
 | Versão | Data | Destaques |
 |---|---|---|
-| **1.5.0** | 26/11/2026 | **Lições aprendidas** do ESAA (`/licao`, `/licoes`) em toda tarefa e na principal; seção "As bases: ASES-300/500 e ESAA"; `/sobre` com os autores; `ases update` sem cache velho |
+| **1.6.0** | 27/11/2026 | Integração com o ESAA: a IA e o ASES **sugerem lições** (você aprova); **limites de escrita** por tipo de tarefa; **`/verificar`** pelo histórico; **`/metricas`** por IA |
+| 1.5.0 | 26/11/2026 | **Lições aprendidas** do ESAA (`/licao`, `/licoes`) em toda tarefa e na principal; seção "As bases: ASES-300/500 e ESAA"; `/sobre` com os autores; `ases update` sem cache velho |
 | 1.4.0 | 26/11/2026 | Projetos em outra máquina: **Novo projeto** em `~/Projetos Eureka42`, guardado só local, no GitHub, na nuvem (Google Drive, OneDrive, Mega… pelo rclone) ou nos dois, com o contexto junto; **Abrir de outra máquina**; `/sincronizar`; pedidos de aprovação da IA em `/approval`; cores na marca Eureka42; interface no idioma da máquina (pt/en/es); modelo da principal no cabeçalho |
 | 1.3.1 | 25/11/2026 | `/modelo` com as listas atuais: Claude 5.5/Fable 5.2, Codex GPT-6/5.6, Kimi K3.1 |
 | 1.3.0 | 25/11/2026 | `/iniciar-projeto`: ASES-500 guiada → requisitos → ASES-300 → G1 → repositório no GitHub (privado por padrão) |

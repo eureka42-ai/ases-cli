@@ -1,4 +1,5 @@
 import os from 'node:os';
+import { metricsText } from './metrics.ts';
 import { VERSIONS } from '@aer/contracts';
 import { repoRoot } from '@aer/git-bridge';
 import { aboutText, LOGO_MODES, THEME_CHOICES } from '@aer/branding';
@@ -16,6 +17,7 @@ export const CHAT_ALIASES: Record<string, string> = {
   '/help': '/ajuda', '/agent': '/ia', '/agents': '/ias', '/plan': '/plano', '/diff': '/ver',
   '/accept': '/aceitar', '/redo': '/refazer', '/assign': '/trocar', '/undo': '/desfazer', '/stop': '/parar', '/new': '/nova',
   '/settings': '/config', '/about': '/sobre', '/exit': '/sair', '/update': '/atualizar', '/models': '/modelo',
+  '/lessons': '/licoes', '/lecciones': '/licoes', '/lesson': '/licao', '/leccion': '/licao', '/metrics': '/metricas', '/verify': '/verificar',
   // 1.4.0: /model é o seletor de modelos (como /modelo); a IA principal é /agent (/ia)
   '/model': '/modelo', '/sync': '/sincronizar', '/connect': '/conectar',
   // nomes do menu em inglês e espanhol (i18n.ts), aceitos em qualquer idioma
@@ -23,7 +25,7 @@ export const CHAT_ALIASES: Record<string, string> = {
 };
 
 /** Comandos do menu do `/` (nome interno em português; o menu mostra o nome no idioma atual). */
-const MENU_CMDS = ['/ajuda', '/iniciar-projeto', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/modelo', '/config', '/sincronizar', '/conectar', '/atualizar', '/licoes', '/sobre', '/sair'];
+const MENU_CMDS = ['/ajuda', '/iniciar-projeto', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/modelo', '/config', '/sincronizar', '/conectar', '/atualizar', '/licoes', '/metricas', '/verificar', '/sobre', '/sair'];
 
 export interface MenuItem { cmd: string; name: string; desc: string }
 export const slashMenu = (): MenuItem[] => MENU_CMDS.map((cmd) => ({ cmd, name: cmdName(cmd), desc: t(`menu.${cmd}`) }));
@@ -45,7 +47,7 @@ export const chatHelp = (): string => [
   t('help.advanced'),
 ].join('\n');
 
-export const CHAT_COMMANDS = new Set(['/modelo', '/ajuda', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/config', '/sobre', '/sair', '/atualizar', '/sincronizar', '/conectar', '/licao', '/licoes']);
+export const CHAT_COMMANDS = new Set(['/modelo', '/ajuda', '/ia', '/ias', '/plano', '/auto', '/tarefas', '/ver', '/aceitar', '/refazer', '/trocar', '/desfazer', '/parar', '/nova', '/config', '/sobre', '/sair', '/atualizar', '/sincronizar', '/conectar', '/licao', '/licoes', '/verificar', '/metricas']);
 
 /** `12` → `TAR-0012`; `TAR-0012` fica igual. */
 export function resolveTaskRef(ref: string): string {
@@ -109,10 +111,19 @@ export async function handleChat(engine: Engine, cmd: string, args: string[], ad
       return a === 'avançado' || a === 'avancado' || a === 'advanced' || a === 'avanzado' ? advancedHelp() : chatHelp();
     case '/sobre':
       return aboutText(VERSIONS.app);
+    case '/verificar': {
+      // PHASE-26 (verify/replay do ESAA): o estado do banco tem de ser o que o histórico diz
+      const r = engine.store.verifyState();
+      return r.problems.length
+        ? [`Verificação: ${r.problems.length} problema(s) · ${r.events} eventos · ${r.checked} itens conferidos`, ...r.problems.slice(0, 20).map((p) => `  ${p}`), 'Algo foi alterado fora do ASES (edição manual ou arquivo corrompido). Restaure de um backup em .ases/ ou peça ajuda.'].join('\n')
+        : `Verificação: OK · ${r.events} eventos · ${r.checked} itens conferidos com o histórico (fases, tarefas, lições) · sequência e hashes íntegros`;
+    }
+    case '/metricas':
+      return metricsText(engine.store.eventsSince(0, 1_000_000));
     case '/licoes': {
       // PHASE-25 (ESAA): as lições ACTIVE entram nas instruções de toda tarefa e da principal
       const all = engine.store.listLessons();
-      return all.length ? all.map((l) => `${l.id} ${l.state} · ${l.text}${l.approvedBy ? ` (aprovada por ${l.approvedBy})` : ''}`).join('\n') : 'nenhuma lição ainda. /licao <texto> registra uma (ex.: /licao sempre rode os testes antes de entregar)';
+      return all.length ? all.map((l) => `${l.id} ${l.state} · ${l.text}${l.state === 'PROPOSED' ? ` (sugerida em ${l.source ?? '?'}; /licao aprovar ${l.id})` : l.approvedBy ? ` (aprovada por ${l.approvedBy})` : ''}`).join('\n') : 'nenhuma lição ainda. /licao <texto> registra uma (ex.: /licao sempre rode os testes antes de entregar)';
     }
     case '/licao': {
       const who = os.userInfo().username || 'responsável';

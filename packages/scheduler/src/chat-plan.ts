@@ -38,6 +38,13 @@ function validate(j: unknown): RawPlan | string {
 }
 
 /** Separa a resposta da principal do último bloco `aer-plan`. Plano inválido = `error`, e nada é executado. */
+const LESSON_RE = /```aer-licao[ \t]*\r?\n([\s\S]*?)\r?\n?```/g;
+/** PHASE-26 (lições do ESAA): blocos ```aer-licao da principal viram sugestões; o texto sai da resposta visível. */
+export function extractLessons(text: string): { text: string; lessons: string[] } {
+  const lessons = [...text.matchAll(LESSON_RE)].map((m) => m[1]!.trim().replace(/\s+/g, ' ')).filter(Boolean).map((l) => l.slice(0, 500));
+  return { text: lessons.length ? text.replace(LESSON_RE, '').replace(/\n{3,}/g, '\n\n').trim() : text, lessons };
+}
+
 export function parseMainReply(text: string): { reply: string; plan?: RawPlan; error?: string } {
   const blocks = [...text.matchAll(BLOCK_RE)];
   if (!blocks.length) return { reply: text };

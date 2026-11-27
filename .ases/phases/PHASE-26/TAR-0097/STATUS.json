@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 2,
+  "generatedBy": "aer-engine",
+  "taskId": "TAR-0097",
+  "phaseId": "PHASE-26",
+  "title": "ESAA: lições sugeridas (IA e bloqueios), limites por tipo de tarefa, verificação pelo histórico, métricas por IA",
+  "state": "PLANNED",
+  "version": 1,
+  "reqs": [
+    "AER-REQ-067",
+    "AER-REQ-068",
+    "AER-REQ-177"
+  ],
+  "dependsOn": [],
+  "evidence": [],
+  "lastTest": null
+}

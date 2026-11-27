@@ -928,6 +928,43 @@ export class ProjectStore {
     });
   }
 
+  /**
+   * PHASE-26 (verify/replay do ESAA): refaz o estado de fases, tarefas e lições a partir dos eventos e compara com o banco;
+   * também confere a sequência e o hash de cada evento. Itens importados do legado sem eventos não têm o que conferir.
+   */
+  verifyState(): { events: number; checked: number; problems: string[] } {
+    const problems: string[] = [];
+    const replay = new Map<string, string>();
+    let events = 0;
+    let last = 0;
+    for (;;) {
+      const page = this.eventsSince(last, 1000);
+      if (!page.length) break;
+      for (const e of page) {
+        events++;
+        if (e.seq !== last + 1) problems.push(`evento seq ${e.seq}: esperado ${last + 1} (lacuna no histórico)`);
+        last = e.seq;
+        if (payloadSha256(e.payload) !== e.payloadSha256) problems.push(`evento seq ${e.seq}: conteúdo não bate com o hash`);
+        const p = e.payload as Record<string, unknown>;
+        if (e.eventType === 'PhaseCreated' && e.phaseId) replay.set(e.phaseId, 'PLANNED');
+        else if (e.eventType === 'PhaseUpdated' && e.phaseId) replay.set(e.phaseId, String(p.to));
+        else if (e.eventType === 'TaskCreated' && e.taskId) replay.set(e.taskId, 'PLANNED');
+        else if (e.eventType === 'TaskUpdated' && e.taskId) replay.set(e.taskId, String(p.to));
+        else if (e.eventType === 'LessonRecorded') replay.set(String(p.id), 'PROPOSED');
+        else if (e.eventType === 'LessonUpdated') replay.set(String(p.id), String(p.to));
+      }
+    }
+    const actual = [...this.listPhases(), ...this.listTasks(), ...this.listLessons()];
+    let checked = 0;
+    for (const x of actual) {
+      const want = replay.get(x.id);
+      if (want === undefined) continue; // legado sem eventos
+      checked++;
+      if (want !== x.state) problems.push(`${x.id}: o banco diz ${x.state}, o histórico diz ${want}`);
+    }
+    return { events, checked, problems };
+  }
+
   listLessons(): LessonRow[] {
     return (this.db.prepare('SELECT * FROM lessons WHERE project_id = ? ORDER BY id').all(this.projectId) as Row[]).map((r) => ({
       id: String(r.id), text: String(r.text), state: r.state as LessonState, source: (r.source as string | null) ?? null,

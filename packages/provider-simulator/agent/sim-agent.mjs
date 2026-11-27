@@ -54,6 +54,9 @@ switch (scenario) {
       writeFileSync(path.join('SIMULATED', 'CHAT.md'), `# editado pela principal SIMULADA\n\n${msg.slice(0, 200)}\n`);
       await emit({ type: 'file_change', relativePath: rel, kind: 'modify' });
       await emit({ type: 'message', text: `SIMULATED: editei ${rel}`, visibleToUser: true });
+    } else if (/\baprendi\b/i.test(msg)) {
+      // PHASE-26: a principal sugere uma lição (vira PROPOSED; só vale depois que uma pessoa aprova)
+      await emit({ type: 'message', text: 'SIMULATED: anotado\n\n```aer-licao\nRode o build antes de entregar\n```', visibleToUser: true });
     } else if (/\b(tarefas|divida)\b/i.test(msg)) {
       const plan = { tasks: [1, 2, 3].map((n) => ({ title: `Parte ${n}`, instructions: `SIMULATED: faça a parte ${n} de: ${msg.slice(0, 120)}`, kind: 'code', ...(n === 3 ? { dependsOn: [1] } : {}) })) };
       await emit({ type: 'message', text: `SIMULATED: proposta abaixo\n\n\`\`\`aer-plan\n${JSON.stringify(plan, null, 2)}\n\`\`\``, visibleToUser: true });

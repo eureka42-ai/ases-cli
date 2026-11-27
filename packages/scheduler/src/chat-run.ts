@@ -1,3 +1,4 @@
+import { boundaryViolations, changedFiles } from './boundaries.ts';
 import type { TaskState } from '@aer/contracts';
 import { StoreError } from '@aer/persistence';
 import { redactText, type ProcessPlatform } from '@aer/provider-sdk';
@@ -90,6 +91,8 @@ export async function executePlan(d: WorkerDeps, o: {
     return b;
   };
 
+  // PHASE-26 (lições do ESAA): um bloqueio vira sugestão de lição (PROPOSED); só vale depois que uma pessoa aprova
+  const suggest = (text: string, source: string) => d.mutate((s) => (s.listLessons().some((l) => l.text === text) ? undefined : s.addLesson({ text, source })));
   release();
   while (!o.signal.aborted) {
     await runQueue(d, { ownerId: `plan:${o.planId}`, maxParallel, maxPerProvider: limits, phaseId, signal: o.signal, ...(o.controllers ? { controllers: o.controllers } : {}), onOutcome: (x) => progress(x.taskId) });
@@ -98,6 +101,23 @@ export async function executePlan(d: WorkerDeps, o: {
       if (x.done || !x.released) continue;
       const t = task(x.taskId);
       if (t.state === 'REVIEW') {
+        // 0) limites de escrita do tipo da tarefa (boundaries do ESAA): fora do limite, a entrega não segue
+        const kind = plan.tasks[x.i]!.kind;
+        if (kind === 'docs' || kind === 'test' || kind === 'review') {
+          const atts = read((s) => s.listAttempts(x.taskId));
+          const base = atts.find((a) => a.baseCommit)?.baseCommit;
+          const tip = atts.findLast((a) => a.branch)?.branch;
+          const bad = base && tip ? boundaryViolations(kind, await changedFiles(d.root, base, tip).catch(() => [])) : [];
+          if (bad.length) {
+            const label = { docs: 'documentação', test: 'teste', review: 'revisão' }[kind];
+            x.reason = `BOUNDARY_VIOLATION: tarefa de ${label} alterou ${bad.slice(0, 5).join(', ')}${bad.length > 5 ? ` e mais ${bad.length - 5}` : ''}`;
+            d.mutate((s) => s.transitionTask(x.taskId, 'BLOCKED', s.getTask(x.taskId)!.version, x.reason));
+            suggest(`Tarefas de ${label} ${{ docs: 'só alteram documentação', test: 'só alteram arquivos de teste', review: 'não alteram arquivos' }[kind]}; outras mudanças vão numa tarefa "code".`, x.taskId);
+            x.done = true;
+            progress(x.taskId, 'fora do limite do tipo de tarefa');
+            continue;
+          }
+        }
         // 1) testes obrigatórios, quando o projeto tem comando autorizado
         if (o.testCommand && o.testsApproved) {
           const r = await runTestInWorktree(d, o.platform, x.taskId, o.testCommand);
@@ -112,6 +132,7 @@ export async function executePlan(d: WorkerDeps, o: {
               continue;
             }
             d.mutate((s) => s.transitionTask(x.taskId, 'BLOCKED', s.getTask(x.taskId)!.version, `TESTS_FAILING_AFTER_2_REWORKS: ${r.log}`));
+            suggest(`Antes de entregar, rode \`${o.testCommand.join(' ')}\` e só entregue com os testes passando.`, x.taskId);
             x.done = true;
             x.reason = `TESTS_FAILING_AFTER_2_REWORKS: ${r.log}`;
             continue;

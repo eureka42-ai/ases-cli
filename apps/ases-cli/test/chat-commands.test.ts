@@ -127,7 +127,12 @@ describe('chat engine and simple commands (PHASE-18, TAR-0086)', () => {
   });
 
   it('/sobre prints the literal about text', async () => {
-    expect(await say('/sobre')).toBe('⌘ Eureka42 · ASES Engineering Runtime (AER) 1.5.0\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\nASES-300/500: metodologia dos Profs. Raul el Greco e Giuseppe Favato. ESAA: governança de agentes do Prof. Elzo Brito.\nJuntos: a metodologia diz o que construir e com que critério; o ESAA garante que cada IA mexa só no que deve e aprenda com os erros.\neureka42.org · Licença CC BY-NC-ND 4.0');
+    expect(await say('/sobre')).toBe('⌘ Eureka42 · ASES Engineering Runtime (AER) 1.6.0\nO Eureka42 é uma iniciativa dos Professores Raul el Greco, Giuseppe Favato e Elzo Brito.\nASES-300/500: metodologia dos Profs. Raul el Greco e Giuseppe Favato. ESAA: governança de agentes do Prof. Elzo Brito.\nJuntos: a metodologia diz o que construir e com que critério; o ESAA garante que cada IA mexa só no que deve e aprenda com os erros.\neureka42.org · Licença CC BY-NC-ND 4.0');
+  });
+
+  it('/verificar rebuilds the state from the history; /metricas summarizes each AI (PHASE-26, ESAA)', async () => {
+    expect(await say('/verificar')).toMatch(/^Verificação: OK · \d+ eventos · \d+ itens conferidos com o histórico/);
+    expect(await say('/metricas')).toMatch(/nenhuma tarefa executada|Métricas por IA/);
   });
 
   it('/licao records an approved lesson; /licoes lists; /licao arquivar removes it from the prompts (PHASE-25, ESAA)', async () => {
@@ -138,6 +143,13 @@ describe('chat engine and simple commands (PHASE-18, TAR-0086)', () => {
     expect(await say('/licao arquivar LES-0001')).toMatch(/LES-0001 arquivada/);
     expect(engine.store.activeLessons()).toEqual([]);
     expect(await say('/licao arquivar LES-0099')).toMatch(/erro/);
+  });
+
+  it('a proposed lesson shows in /licoes with how to approve it (PHASE-26)', async () => {
+    const id = engine.mutate((s) => s.addLesson({ text: 'Sugerida pela IA', source: 'CNV-0001' }));
+    expect(await say('/licoes')).toContain(`${id} PROPOSED · Sugerida pela IA (sugerida em CNV-0001; /licao aprovar ${id})`);
+    expect(await say(`/licao aprovar ${id}`)).toMatch(/aprovada: entra nas próximas tarefas/);
+    engine.mutate((s) => s.setLessonState(id, 'ARCHIVED', 'teste'));
   });
 
   it('/ajuda avançado still lists /phase, /task, /run, /gate', async () => {

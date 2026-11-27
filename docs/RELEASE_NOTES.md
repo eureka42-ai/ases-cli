@@ -1,5 +1,18 @@
 # AER 1.x: notas de versão
 
+## 1.6.0 (27/11/2026): integração com o ESAA
+Peças do [ESAA](https://github.com/elzobrito/ESAA-Core), do Prof. Elzo Brito, agora dentro do AER:
+- **Lições sugeridas:** a IA principal sugere lições num bloco `aer-licao`. O ASES também sugere quando uma tarefa é bloqueada, por sair do limite ou por testes falhando depois de 2 refações. A lição sugerida fica **PROPOSED** e só vale depois de `/licao aprovar LES-XXXX`. `/licoes` mostra as sugeridas e de onde vieram.
+- **Limites de escrita por tipo de tarefa:**
+  - `docs` só altera documentação;
+  - `test` só altera arquivos de teste;
+  - `review` não altera nada;
+  - `code` e `other` continuam livres dentro da worktree.
+  - Fora do limite, a tarefa vai para BLOCKED com `BOUNDARY_VIOLATION` e a lista dos arquivos, antes dos testes e da revisão. A IA principal é avisada dessa regra ao montar planos.
+- **`/verificar` (`/verify`):** refaz o estado de fases, tarefas e lições a partir do histórico, confere a sequência e o hash de cada evento e aponta qualquer diferença.
+- **`/metricas` (`/metrics`):** tentativas, % de acerto, refações, tempo médio e tokens de cada IA, calculados do histórico do projeto.
+- A 1.5.0 não chegou a ser publicada no npm; a 1.6.0 traz tudo dela.
+
 ## 1.5.0 (26/11/2026): lições aprendidas (ESAA) e as bases do projeto
 - **Lições aprendidas**, a primeira peça do [ESAA](https://github.com/elzobrito/ESAA-Core), do Prof. Elzo Brito:
   - `/licao <texto>` registra uma lição. Ela entra nas instruções de **toda tarefa** e da **IA principal**, e as IAs param de repetir o mesmo erro.
