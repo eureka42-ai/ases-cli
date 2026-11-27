@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0097 |
 | phase_id | PHASE-26 |
-| estado | PLANNED (v1) |
+| estado | REVIEW (v6) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |
@@ -27,7 +27,7 @@ ESAA: lições sugeridas (IA e bloqueios), limites por tipo de tarefa, verifica�
 - nenhum (validação NÃO concluída)
 
 ## Evidências, revisões e handoffs
-- nenhuma
+- EVIDENCE .ases/evidence/PHASE-26-verify.md (sha256 19cceef2e675…)
 
 ## Critério de saída
 COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

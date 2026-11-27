@@ -4,14 +4,19 @@
   "taskId": "TAR-0097",
   "phaseId": "PHASE-26",
   "title": "ESAA: lições sugeridas (IA e bloqueios), limites por tipo de tarefa, verificação pelo histórico, métricas por IA",
-  "state": "PLANNED",
-  "version": 1,
+  "state": "REVIEW",
+  "version": 6,
   "reqs": [
     "AER-REQ-067",
     "AER-REQ-068",
     "AER-REQ-177"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-26-verify.md",
+      "sha256": "19cceef2e67591b5a5f3e01fea8cf45688c60eeef08eb1c231ca4364f4ae633b"
+    }
+  ],
   "lastTest": null
 }

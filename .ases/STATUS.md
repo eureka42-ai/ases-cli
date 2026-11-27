@@ -1,6 +1,6 @@
 # STATUS
 
-Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 931 (TaskCreated, 2026-11-27T03:00:39.414Z)
+Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: seq 936 (TaskUpdated, 2026-11-27T03:10:35.658Z)
 
 ## Fases
 | Fase | Título | Estado |
@@ -131,6 +131,6 @@ Gerado pelo engine a partir do banco (`.ases/db/ases.sqlite`). Último evento: s
 | TAR-0094 | PHASE-23 | /iniciar-projeto: Git, fontes, ASES-500 guiada, requisitos, ASES-300, G1 e GitHub privado | COMPLETED | — | .ases/evidence/PHASE-23-verify.md |
 | TAR-0095 | PHASE-24 | Listas de modelos do /modelo: Claude 5.5, Codex GPT-6/5.6, Kimi K3.1 (IDs da CLI) | COMPLETED | — | .ases/evidence/PHASE-24-verify.md |
 | TAR-0096 | PHASE-25 | Lições aprendidas (ESAA): tabela, eventos, /licao, injeção nas instruções; /sobre e README com ASES e ESAA | COMPLETED | — | .ases/evidence/PHASE-25-verify.md |
-| TAR-0097 | PHASE-26 | ESAA: lições sugeridas (IA e bloqueios), limites por tipo de tarefa, verificação pelo histórico, métricas por IA | PLANNED | — | — |
+| TAR-0097 | PHASE-26 | ESAA: lições sugeridas (IA e bloqueios), limites por tipo de tarefa, verificação pelo histórico, métricas por IA | REVIEW | — | .ases/evidence/PHASE-26-verify.md |
 
 COMPLETED exige evidência ou test run aprovado (o engine recusa o contrário). NOT_RUN ≠ PASS.
