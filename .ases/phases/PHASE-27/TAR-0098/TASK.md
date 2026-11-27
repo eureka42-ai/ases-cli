@@ -5,7 +5,7 @@
 |---|---|
 | task_id | TAR-0098 |
 | phase_id | PHASE-27 |
-| estado | PLANNED (v1) |
+| estado | REVIEW (v6) |
 | prioridade / risco | 50 / MODERATE |
 | provider | — |
 | dependências | — |
@@ -26,7 +26,7 @@ ESAA: hash chain com ponto fixado, issues com sintoma/repro e correção pela pr
 - nenhum (validação NÃO concluída)
 
 ## Evidências, revisões e handoffs
-- nenhuma
+- EVIDENCE .ases/evidence/PHASE-27-verify.md (sha256 a25b26d38c15…)
 
 ## Critério de saída
 COMPLETED só com evidência ou test run aprovado, depois de REVIEW → APPROVED → MERGING (o engine recusa o contrário).

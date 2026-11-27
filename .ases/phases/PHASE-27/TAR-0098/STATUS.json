@@ -4,13 +4,18 @@
   "taskId": "TAR-0098",
   "phaseId": "PHASE-27",
   "title": "ESAA: hash chain com ponto fixado, issues com sintoma/repro e correção pela principal, exportação activity.jsonl 0.4.2",
-  "state": "PLANNED",
-  "version": 1,
+  "state": "REVIEW",
+  "version": 6,
   "reqs": [
     "AER-REQ-067",
     "AER-REQ-068"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-27-verify.md",
+      "sha256": "a25b26d38c15671748f6f77a31130027281c9d94f7e581c5f1431cdeb179638a"
+    }
+  ],
   "lastTest": null
 }

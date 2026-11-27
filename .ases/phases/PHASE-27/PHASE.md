@@ -7,7 +7,7 @@
 ## Tarefas e dependências (DAG)
 | Tarefa | Estado | Provider | Depende de | Requisitos |
 |---|---|---|---|---|
-| TAR-0098 — ESAA: hash chain com ponto fixado, issues com sintoma/repro e correção pela principal, exportação activity.jsonl 0.4.2 | PLANNED | — | — | AER-REQ-067, AER-REQ-068 |
+| TAR-0098 — ESAA: hash chain com ponto fixado, issues com sintoma/repro e correção pela principal, exportação activity.jsonl 0.4.2 | REVIEW | — | — | AER-REQ-067, AER-REQ-068 |
 
 ## Critérios
 - **Entrada:** tarefas com requisitos ligados e dependências sem ciclo.
