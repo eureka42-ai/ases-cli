@@ -7,7 +7,7 @@
 ## Tarefas e dependências (DAG)
 | Tarefa | Estado | Provider | Depende de | Requisitos |
 |---|---|---|---|---|
-| TAR-0096 — Lições aprendidas (ESAA): tabela, eventos, /licao, injeção nas instruções; /sobre e README com ASES e ESAA | PLANNED | — | — | AER-REQ-177, AER-REQ-179 |
+| TAR-0096 — Lições aprendidas (ESAA): tabela, eventos, /licao, injeção nas instruções; /sobre e README com ASES e ESAA | REVIEW | — | — | AER-REQ-177, AER-REQ-179 |
 
 ## Critérios
 - **Entrada:** tarefas com requisitos ligados e dependências sem ciclo.

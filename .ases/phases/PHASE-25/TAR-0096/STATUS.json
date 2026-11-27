@@ -4,13 +4,18 @@
   "taskId": "TAR-0096",
   "phaseId": "PHASE-25",
   "title": "Lições aprendidas (ESAA): tabela, eventos, /licao, injeção nas instruções; /sobre e README com ASES e ESAA",
-  "state": "PLANNED",
-  "version": 1,
+  "state": "REVIEW",
+  "version": 6,
   "reqs": [
     "AER-REQ-177",
     "AER-REQ-179"
   ],
   "dependsOn": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "path": ".ases/evidence/PHASE-25-verify.md",
+      "sha256": "21353780dfb5ab7e4d24ea1093a258746c54f80befde948d6ec9d240b492d0de"
+    }
+  ],
   "lastTest": null
 }
